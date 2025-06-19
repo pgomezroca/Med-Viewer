@@ -9,11 +9,13 @@ const regionsMap = {
   hombro: ['manguito-rotador', 'acromio-clavicular'],
   brazo: ['fracturas', 'ruptura-biceps'],
   codo: ['fracturas-codo', 'luxaciones-codo'],
-  antebrazo:[],
-  muñeca:[],
-  mano:[],
-  microcirugia:[],
-  det:[]
+  antebrazo:['fracturas-antebrazo','luxaciones-antebrazo','heridas-graves','otros-antebrazo'],
+  muñeca:['fracturas-muñeca','luxaciones-muñeca','heridas-graves-munieca'],
+  mano:['fracturas-mano','inestabilidades','seccion-tendones-nervios','amputaciones','tumores-mano',
+    'otros-mano'
+  ],
+  microcirugia:['reimplantes','colgajos'],
+  det:['hombro','muñeca','det-otro']
 
 };
 const phaseOptions = ['Pre', 'Intra', 'Post'];
