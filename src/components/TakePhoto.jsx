@@ -95,7 +95,35 @@ const TakePhoto = () => {
     setPhotoData(dataURL);
     setScreen('photo');
   };
-  const savePhoto = () => {
+  // const savePhoto = () => {
+  //   if (!photoData) return;
+  //   try {
+  //     const exifObj = {
+  //       '0th': {
+  //         [piexif.ImageIFD.Make]: 'MedPhotoReact',
+  //         [piexif.ImageIFD.ImageDescription]: `${diagnostic} - ${phase}`
+  //       },
+  //       Exif: {
+  //         [piexif.ExifIFD.DateTimeOriginal]: new Date().toISOString().slice(0,19).replace(/-/g, ':').replace('T', ' ')
+  //       }
+  //     };
+  //     const exifBytes = piexif.dump(exifObj);
+  //     const newDataURL = piexif.insert(exifBytes, photoData);
+  //     const fecha = new Date().toISOString().replace(/[:.]/g, '-');
+  //     const nombreArchivo = `${dni}_${region}_${diagnostic}_${phase}_${fecha}.jpg`;
+  //     const link = document.createElement('a');
+  //     link.href = newDataURL;
+  //     link.download = nombreArchivo;
+  //     document.body.appendChild(link);
+  //     link.click();
+  //     document.body.removeChild(link);
+  //     // Aquí podrías enviar datos al backend (e.g., fetch POST con dni, region, diagnostic, phase)
+  //   } catch (error) {
+  //     alert('No se pudo insertar EXIF: ' + error.message);
+  //   }
+  // };
+
+  const savePhoto = async () => {
     if (!photoData) return;
     try {
       const exifObj = {
@@ -104,22 +132,46 @@ const TakePhoto = () => {
           [piexif.ImageIFD.ImageDescription]: `${diagnostic} - ${phase}`
         },
         Exif: {
-          [piexif.ExifIFD.DateTimeOriginal]: new Date().toISOString().slice(0,19).replace(/-/g, ':').replace('T', ' ')
+          [piexif.ExifIFD.DateTimeOriginal]: new Date().toISOString().slice(0, 19).replace(/-/g, ':').replace('T', ' ')
         }
       };
       const exifBytes = piexif.dump(exifObj);
       const newDataURL = piexif.insert(exifBytes, photoData);
-      const fecha = new Date().toISOString().replace(/[:.]/g, '-');
-      const nombreArchivo = `${dni}_${region}_${diagnostic}_${phase}_${fecha}.jpg`;
-      const link = document.createElement('a');
-      link.href = newDataURL;
-      link.download = nombreArchivo;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      // Aquí podrías enviar datos al backend (e.g., fetch POST con dni, region, diagnostic, phase)
+  
+      // Convertir dataURL a blob
+      const res = await fetch(newDataURL);
+      const blob = await res.blob();
+  
+      const formData = new FormData();
+      formData.append('image', blob, 'photo.jpg');
+      formData.append('region', region);
+      formData.append('diagnosis', diagnostic);
+      formData.append('phase', phase);
+      formData.append('optionalDNI', dni);
+      //Este user es de prueba
+      formData.append('uploadedBy', '60f71889c9d1f814c8a3b123');
+  
+      const uploadRes = await fetch('http://localhost:3000/api/images/upload', {
+        method: 'POST',
+        body: formData
+      });
+  
+      if (!uploadRes.ok) {
+        const error = await uploadRes.json();
+        console.error('❌ Error al subir:', error);
+        alert('Error al subir la imagen');
+        return;
+      }
+  
+      const imageData = await uploadRes.json();
+      console.log('✅ Imagen subida:', imageData);
+      alert('Imagen subida con éxito');
+  
+      // Volver a pantalla anterior
+      navigate('/Despedida');
     } catch (error) {
-      alert('No se pudo insertar EXIF: ' + error.message);
+      console.error(error);
+      alert('No se pudo subir la imagen: ' + error.message);
     }
   };
   return (
