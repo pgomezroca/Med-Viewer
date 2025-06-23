@@ -1,0 +1,15 @@
+.selectRow {
+  display: flex;
+  flex-direction:row ;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 10px;
+}
+
+.selectRow select {
+  min-width: 180px;
+  padding: 8px;
+  font-size: 1rem;
+  border: 3px solid turquoise;
+  border-radius:10px ;
+}
