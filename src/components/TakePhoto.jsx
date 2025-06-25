@@ -13,9 +13,9 @@ const TakePhoto = () => {
   const [region, setRegion] = useState('');
   const [etiologia, setEtiologia] = useState('');
   const [tejido, setTejido] = useState('');
- const [diagnostico, setDiagnostico] = useState('');
- const [tratamiento, setTratamiento] = useState('');
-
+  const [diagnostico, setDiagnostico] = useState('');
+  const [tratamiento, setTratamiento] = useState('');
+ const [fase, setFase]=useState('')
   const [photoData, setPhotoData] = useState(null);
 
   const videoRef = useRef(null);
@@ -69,7 +69,7 @@ const TakePhoto = () => {
       const exifObj = {
         '0th': {
           [piexif.ImageIFD.Make]: 'MedPhotoReact',
-          [piexif.ImageIFD.ImageDescription]:  `${region} - ${etiologia} - ${tejido} - ${diagnostico} - ${tratamiento}`
+          [piexif.ImageIFD.ImageDescription]:  `${region} - ${etiologia} - ${tejido} - ${diagnostico} - ${tratamiento} - Fase: ${fase}`
         },
         Exif: {
           [piexif.ExifIFD.DateTimeOriginal]: new Date().toISOString().slice(0, 19).replace(/-/g, ':').replace('T', ' ')
@@ -131,6 +131,7 @@ const TakePhoto = () => {
               setTejido(tejido);
               setDiagnostico(diagnostico);
               setTratamiento(tratamiento);
+              setFase(fase || '')
             }}
           />
          

@@ -8,11 +8,12 @@ const FormularioJerarquico = ({ onChange }) => {
   const [tejido, setTejido] = useState('');
   const [diagnostico, setDiagnostico] = useState('');
   const [tratamiento, setTratamiento] = useState('');
+  const [fase, setFase] = useState('');
 
   // Enviar cambios al componente padre
   useEffect(() => {
-    onChange({ region, etiologia, tejido, diagnostico, tratamiento });
-  }, [region, etiologia, tejido, diagnostico, tratamiento]);
+    onChange({ region, etiologia, tejido, diagnostico, tratamiento,fase });
+  }, [region, etiologia, tejido, diagnostico, tratamiento,fase]);
 
   return (
     <div className={styles.selectRow}>
@@ -81,6 +82,15 @@ const FormularioJerarquico = ({ onChange }) => {
           ))}
         </select>
       )}
+        {region && etiologia && tejido && diagnostico && tratamiento && (
+     <select value={fase} onChange={e => setFase(e.target.value)}>
+       <option value="">Seleccioná fase</option>
+       <option value="pre">pre</option>
+       <option value="intra">intra</option>
+       <option value="post">post</option>
+     </select>
+    )}
+
     </div>
   );
 };

@@ -11,6 +11,7 @@ const ImportPhoto = () => {
   const navigate = useNavigate();
   const fileInputRef = useRef(null);
   const [previewImages, setPreviewImages] = useState([]);
+  const [fase, setFase] = useState('');
 
   const handleImportClick = () => {
     if (fileInputRef.current) {
