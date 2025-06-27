@@ -9,6 +9,7 @@ const FormularioJerarquico = ({ onChange }) => {
   const [diagnostico, setDiagnostico] = useState('');
   const [tratamiento, setTratamiento] = useState('');
   const [fase, setFase] = useState('');
+  
 
   // Enviar cambios al componente padre
   useEffect(() => {
