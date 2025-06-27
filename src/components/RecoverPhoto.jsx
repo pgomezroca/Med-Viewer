@@ -17,6 +17,7 @@ const RecoverPhoto = () => {
   const [expanded, setExpanded] = useState({});
   const [mostrarResultados, setMostrarResultados] = useState(false);
   const [resultados, setResultados] = useState([]);
+  const apiUrl = import.meta.env.VITE_API_URL;
 
   const agruparPorJerarquia = (imagenes) => {
     const estructura = [];
@@ -79,7 +80,7 @@ const RecoverPhoto = () => {
       if (fase) params.append("phase", fase);
 
       const res = await fetch(
-        `http://localhost:3000/api/images/search?${params.toString()}`
+        `${apiUrl}/api/images/search?${params.toString()}`
       );
       const images = await res.json();
 

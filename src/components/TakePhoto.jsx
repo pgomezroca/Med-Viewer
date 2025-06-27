@@ -20,6 +20,7 @@ const TakePhoto = () => {
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
   const streamRef = useRef(null);
+  const apiUrl = import.meta.env.VITE_API_URL;
 
   const [isRecording, setIsRecording] = useState(false);
   const [videoBlobURL, setVideoBlobURL] = useState(null);
@@ -122,7 +123,7 @@ const TakePhoto = () => {
       formData.append("optionalDNI", dni);
       formData.append("uploadedBy", "60f71889c9d1f814c8a3b123");
   
-      const uploadRes = await fetch("http://localhost:3000/api/images/upload", {
+      const uploadRes = await fetch(`${apiUrl}/api/images/upload`, {
         method: "POST",
         body: formData,
       });
@@ -200,7 +201,7 @@ const TakePhoto = () => {
       formData.append("optionalDNI", dni);
       formData.append("uploadedBy", "60f71889c9d1f814c8a3b123");
   
-      const uploadRes = await fetch("http://localhost:3000/api/images/upload", {
+      const uploadRes = await fetch(`${apiUrl}/api/images/upload`, {
         method: "POST",
         body: formData,
       });

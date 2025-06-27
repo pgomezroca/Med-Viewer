@@ -11,6 +11,7 @@ const ImportPhoto = () => {
   const navigate = useNavigate();
   const fileInputRef = useRef(null);
   const [previewImages, setPreviewImages] = useState([]);
+  const apiUrl = import.meta.env.VITE_API_URL;
 
   const handleImportClick = () => {
     if (fileInputRef.current) {
@@ -51,7 +52,7 @@ const ImportPhoto = () => {
       data.append("fase", formData.fase || "");
 
       try {
-        const res = await fetch("http://localhost:3000/api/images/upload", {
+        const res = await fetch(`${apiUrl}/api/images/upload`, {
           method: "POST",
           body: data,
         });
