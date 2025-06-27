@@ -72,20 +72,20 @@ const TakePhoto = () => {
   const takePhoto = () => {
     const video = videoRef.current;
     const canvas = canvasRef.current;
-
+  
     if (!video || !canvas || !video.videoWidth) {
       alert("La cámara aún no está lista");
       return;
     }
-
+  
     canvas.width = video.videoWidth;
     canvas.height = video.videoHeight;
-
+  
     const ctx = canvas.getContext("2d");
     ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
     const dataURL = canvas.toDataURL("image/jpeg", 0.92);
-
-    setPhotoData(dataURL);
+  
+    setPhotoData(dataURL);     // Solo previsualiza
     setScreen("photo");
   };
 
@@ -95,8 +95,7 @@ const TakePhoto = () => {
       const exifObj = {
         "0th": {
           [piexif.ImageIFD.Make]: "MedPhotoReact",
-          [piexif.ImageIFD
-            .ImageDescription]: `${region} - ${etiologia} - ${tejido} - ${diagnostico} - ${tratamiento} - Fase: ${fase}`,
+          [piexif.ImageIFD.ImageDescription]: `${region} - ${etiologia} - ${tejido} - ${diagnostico} - ${tratamiento} - Fase: ${fase}`,
         },
         Exif: {
           [piexif.ExifIFD.DateTimeOriginal]: new Date()
@@ -108,10 +107,10 @@ const TakePhoto = () => {
       };
       const exifBytes = piexif.dump(exifObj);
       const newDataURL = piexif.insert(exifBytes, photoData);
-
+  
       const res = await fetch(newDataURL);
       const blob = await res.blob();
-
+  
       const formData = new FormData();
       formData.append("image", blob, "photo.jpg");
       formData.append("region", region);
@@ -121,25 +120,26 @@ const TakePhoto = () => {
       formData.append("tratamiento", tratamiento);
       formData.append("fase", fase || "");
       formData.append("optionalDNI", dni);
-      formData.append("uploadedBy", "60f71889c9d1f814c8a3b123"); // usuario de prueba
-
+      formData.append("uploadedBy", "60f71889c9d1f814c8a3b123");
+  
       const uploadRes = await fetch("http://localhost:3000/api/images/upload", {
         method: "POST",
         body: formData,
       });
-
+  
       if (!uploadRes.ok) {
         const error = await uploadRes.json();
         console.error("❌ Error al subir:", error);
         alert("Error al subir la imagen");
         return;
       }
-
+  
       const imageData = await uploadRes.json();
       console.log("✅ Imagen subida:", imageData);
-      alert("Imagen subida con éxito");
-
-      setScreen("photo");
+      alert("Foto guardada con éxito");
+  
+      setPhotoData(null);
+      setScreen("camera");  // Volver a cámara para tomar otra
     } catch (error) {
       console.error(error);
       alert("No se pudo subir la imagen: " + error.message);
@@ -164,6 +164,7 @@ const TakePhoto = () => {
       const blob = new Blob(recordedChunksRef.current, { type: "video/webm" });
       const url = URL.createObjectURL(blob);
       setVideoBlobURL(url);
+      setScreen('videoPreview');
     };
 
     mediaRecorderRef.current = mediaRecorder;
@@ -181,19 +182,46 @@ const TakePhoto = () => {
     }
   };
 
-  const saveVideo = () => {
+  const saveVideo = async () => {
     if (!videoBlobURL) return;
-
-    const fecha = new Date().toISOString().replace(/[:.]/g, "-");
-    const nombre = `${dni}_${region}_${diagnostico}_${fecha}.webm`;
-
-    const a = document.createElement("a");
-    a.href = videoBlobURL;
-    a.download = nombre;
-    a.click();
-
-    URL.revokeObjectURL(videoBlobURL);
-    setVideoBlobURL(null);
+  
+    try {
+      const res = await fetch(videoBlobURL);
+      const blob = await res.blob();
+  
+      const formData = new FormData();
+      formData.append("image", blob, "video.webm");
+      formData.append("region", region);
+      formData.append("etiologia", etiologia);
+      formData.append("tejido", tejido);
+      formData.append("diagnostico", diagnostico);
+      formData.append("tratamiento", tratamiento);
+      formData.append("fase", fase || "");
+      formData.append("optionalDNI", dni);
+      formData.append("uploadedBy", "60f71889c9d1f814c8a3b123");
+  
+      const uploadRes = await fetch("http://localhost:3000/api/images/upload", {
+        method: "POST",
+        body: formData,
+      });
+  
+      if (!uploadRes.ok) {
+        const error = await uploadRes.json();
+        console.error("❌ Error al subir video:", error);
+        alert("Error al subir el video");
+        return;
+      }
+  
+      const videoData = await uploadRes.json();
+      console.log("✅ Video subido:", videoData);
+      alert("Video subido con éxito");
+  
+      setVideoBlobURL(null);
+      setScreen("camera");
+    } catch (error) {
+      console.error("Error en saveVideo:", error);
+      alert("No se pudo subir el video: " + error.message);
+    }
   };
 
   return (
@@ -332,12 +360,42 @@ const TakePhoto = () => {
           <img
             src={photoData}
             alt="captura"
+            style={{
+              maxWidth: '90%',
+              borderRadius: '8px',
+              boxShadow: '0 0 10px #aaa'
+            }}
+          />
+          <div style={{ marginTop: 20, display: 'flex', justifyContent: 'center', gap: 20 }}>
+            <button onClick={savePhoto}>💾 Guardar esta foto</button>
+            <button onClick={() => { setPhotoData(null); setScreen('camera'); }}>🔄 Tomar otra (descartar)</button>
+            <button onClick={() => {
+              streamRef.current?.getTracks().forEach(track => track.stop());
+              setPhotoData(null);
+              setScreen('form');
+            }}>✅ Finalizar caso</button>
+          </div>
+        </div>
+      )}
+
+      {screen === 'videoPreview' && videoBlobURL && (
+        <div style={{ textAlign: 'center', padding: 20 }}>
+          <h3>Previsualización del Video</h3>
+          <video
+            src={videoBlobURL}
+            controls
             style={{ maxWidth: '90%', borderRadius: '8px', boxShadow: '0 0 10px #aaa' }}
           />
           <div style={{ marginTop: 20, display: 'flex', justifyContent: 'center', gap: 20 }}>
-            <button onClick={savePhoto}>💾 Guardar foto</button>
-            <button onClick={() => setScreen('camera')}>🔄 Reintentar</button>
-            <button onClick={() => setScreen('form')}>⬅️ Volver al inicio</button>
+            <button onClick={saveVideo}>💾 Guardar video</button>
+            <button onClick={() => {
+              setVideoBlobURL(null);
+              setScreen('camera');
+            }}>🔄 Grabar otro</button>
+            <button onClick={() => {
+              setVideoBlobURL(null);
+              setScreen('form');
+            }}>🏁 Finalizar caso</button>
           </div>
         </div>
       )}
