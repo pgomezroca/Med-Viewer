@@ -16,34 +16,46 @@ const TakePhoto = () => {
   const [tratamiento, setTratamiento] = useState("");
   const [fase, setFase] = useState("");
   const [photoData, setPhotoData] = useState(null);
-  const [modo, setModo] = useState('foto'); // 'foto' o 'video'
+  const [modo, setModo] = useState("foto"); // 'foto' o 'video'
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
   const streamRef = useRef(null);
- 
+
   const [isRecording, setIsRecording] = useState(false);
   const [videoBlobURL, setVideoBlobURL] = useState(null);
 
-const mediaRecorderRef = useRef(null);
-const recordedChunksRef = useRef([]);
-  
-  useEffect(() => () => {
-    if (streamRef.current) {
-      streamRef.current.getTracks().forEach(track => track.stop());
-    }
-  }, []);
+  const mediaRecorderRef = useRef(null);
+  const recordedChunksRef = useRef([]);
+
+  useEffect(
+    () => () => {
+      if (streamRef.current) {
+        streamRef.current.getTracks().forEach((track) => track.stop());
+      }
+    },
+    []
+  );
 
   useEffect(() => {
     if (screen === "camera" && videoRef.current && streamRef.current) {
       const video = videoRef.current;
       video.srcObject = streamRef.current;
-      video.onloadedmetadata = () => setVideoReady(true);
+
+      video
+        .play()
+        .then(() => {
+          setVideoReady(true);
+        })
+        .catch((err) => {
+          console.error("No se pudo iniciar el video:", err);
+          alert("Error al iniciar cámara");
+        });
     }
-  }, [screen]);
+  }, [screen, videoRef.current, streamRef.current]);
 
   const startCamera = async () => {
     if (!dni || !region || !etiologia || !diagnostico || !tratamiento) {
-      alert('Completa el formulario por favor.');
+      alert("Completa el formulario por favor.");
       return;
     }
     try {
@@ -51,21 +63,28 @@ const recordedChunksRef = useRef([]);
         video: { facingMode: "environment" },
       });
       streamRef.current = stream;
-      setScreen('selectMode');
+      setScreen("selectMode");
     } catch (error) {
       alert("Error al acceder a la cámara: " + error.message);
     }
   };
 
   const takePhoto = () => {
-    if (!videoReady) return;
     const video = videoRef.current;
     const canvas = canvasRef.current;
+
+    if (!video || !canvas || !video.videoWidth) {
+      alert("La cámara aún no está lista");
+      return;
+    }
+
     canvas.width = video.videoWidth;
     canvas.height = video.videoHeight;
+
     const ctx = canvas.getContext("2d");
-    ctx.drawImage(video, 0, 0);
+    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
     const dataURL = canvas.toDataURL("image/jpeg", 0.92);
+
     setPhotoData(dataURL);
     setScreen("photo");
   };
@@ -128,48 +147,51 @@ const recordedChunksRef = useRef([]);
   };
   const startRecording = () => {
     if (!streamRef.current) return;
-  
+
     recordedChunksRef.current = [];
-  
+
     const mediaRecorder = new MediaRecorder(streamRef.current, {
-      mimeType: 'video/webm;codecs=vp9'
+      mimeType: "video/webm;codecs=vp9",
     });
-  
+
     mediaRecorder.ondataavailable = (event) => {
       if (event.data.size > 0) {
         recordedChunksRef.current.push(event.data);
       }
     };
-  
+
     mediaRecorder.onstop = () => {
-      const blob = new Blob(recordedChunksRef.current, { type: 'video/webm' });
+      const blob = new Blob(recordedChunksRef.current, { type: "video/webm" });
       const url = URL.createObjectURL(blob);
       setVideoBlobURL(url);
     };
-  
+
     mediaRecorderRef.current = mediaRecorder;
     mediaRecorder.start();
     setIsRecording(true);
   };
-  
+
   const stopRecording = () => {
-    if (mediaRecorderRef.current && mediaRecorderRef.current.state === 'recording') {
+    if (
+      mediaRecorderRef.current &&
+      mediaRecorderRef.current.state === "recording"
+    ) {
       mediaRecorderRef.current.stop();
       setIsRecording(false);
     }
   };
-  
+
   const saveVideo = () => {
     if (!videoBlobURL) return;
-  
-    const fecha = new Date().toISOString().replace(/[:.]/g, '-');
+
+    const fecha = new Date().toISOString().replace(/[:.]/g, "-");
     const nombre = `${dni}_${region}_${diagnostico}_${fecha}.webm`;
-  
-    const a = document.createElement('a');
+
+    const a = document.createElement("a");
     a.href = videoBlobURL;
     a.download = nombre;
     a.click();
-  
+
     URL.revokeObjectURL(videoBlobURL);
     setVideoBlobURL(null);
   };
@@ -208,63 +230,117 @@ const recordedChunksRef = useRef([]);
           <button onClick={startCamera}>Continuar</button>
         </div>
       )}
-         {screen === 'selectMode' && (
-       <div style={{
-        display: 'flex',
-        flexDirection: 'column',
-         alignItems: 'center',
-         justifyContent: 'center',
-        height: '100vh',
-        background: '#000',
-        color: '#fff',
-        gap: '20px'
-        }}>
-    <h2>¿Qué querés hacer?</h2>
-    <button onClick={() => { setModo('foto'); setScreen('camera'); }}>📸 Sacar Foto</button>
-    <button onClick={() => { setModo('video'); setScreen('camera'); }}>🎥 Grabar Video</button>
-    <button onClick={() => setScreen('form')} style={{ marginTop: '20px' }}>
-      <ArrowLeft size={32} />
-    </button>
-  </div>
-)}
-      {screen === 'camera' && (
-  <div style={{ position: 'relative', width: '100%', height: '100vh', background: '#000' }}>
-    <video
-      ref={videoRef}
-      autoPlay
-      playsInline
-      style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-    />
+      {screen === "selectMode" && (
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            justifyContent: "center",
+            height: "100vh",
+            background: "#000",
+            color: "#fff",
+            gap: "20px",
+          }}
+        >
+          <h2>¿Qué querés hacer?</h2>
+          <button
+            onClick={() => {
+              setModo("foto");
+              setScreen("camera");
+            }}
+          >
+            📸 Sacar Foto
+          </button>
+          <button
+            onClick={() => {
+              setModo("video");
+              setScreen("camera");
+            }}
+          >
+            🎥 Grabar Video
+          </button>
+          <button
+            onClick={() => setScreen("form")}
+            style={{ marginTop: "20px" }}
+          >
+            <ArrowLeft size={32} />
+          </button>
+        </div>
+      )}
+      {screen === "camera" && (
+        <div
+          style={{
+            position: "relative",
+            width: "100%",
+            height: "100vh",
+            background: "#000",
+          }}
+        >
+          <video
+            ref={videoRef}
+            autoPlay
+            playsInline
+            style={{ width: "100%", height: "100%", objectFit: "cover" }}
+          />
 
-    <div style={{
-      position: 'absolute',
-      bottom: 20,
-      left: 0,
-      right: 0,
-      display: 'flex',
-      justifyContent: 'center',
-      gap: 10
-    }}>
-      {modo === 'foto' && (
-        <button onClick={takePhoto} disabled={!videoReady}>
-          {videoReady ? 'Tomar foto' : 'Cargando cámara…'}
-        </button>
+          <div
+            style={{
+              position: "absolute",
+              bottom: 20,
+              left: 0,
+              right: 0,
+              display: "flex",
+              justifyContent: "center",
+              gap: 10,
+            }}
+          >
+            {modo === "foto" && (
+              <button onClick={takePhoto} disabled={!videoReady}>
+                {videoReady ? "Tomar foto" : "Cargando cámara…"}
+              </button>
+            )}
+
+            {modo === "video" && (
+              <>
+                {!isRecording && (
+                  <button onClick={startRecording}>🎥 Empezar</button>
+                )}
+                {isRecording && (
+                  <button onClick={stopRecording}>⏹️ Detener</button>
+                )}
+                {videoBlobURL && (
+                  <button onClick={saveVideo}>💾 Guardar</button>
+                )}
+              </>
+            )}
+          </div>
+
+          <button
+            id="camera-back-button"
+            onClick={() => setScreen("form")}
+            style={{ position: "absolute", top: 10, left: 10 }}
+          >
+            <ArrowLeft size={32} />
+          </button>
+        </div>
       )}
 
-      {modo === 'video' && (
-        <>
-          {!isRecording && <button onClick={startRecording}>🎥 Empezar</button>}
-          {isRecording && <button onClick={stopRecording}>⏹️ Detener</button>}
-          {videoBlobURL && <button onClick={saveVideo}>💾 Guardar</button>}
-        </>
+      {screen === 'photo' && photoData && (
+        <div style={{ textAlign: 'center', padding: 20 }}>
+          <h3>Previsualización</h3>
+          <img
+            src={photoData}
+            alt="captura"
+            style={{ maxWidth: '90%', borderRadius: '8px', boxShadow: '0 0 10px #aaa' }}
+          />
+          <div style={{ marginTop: 20, display: 'flex', justifyContent: 'center', gap: 20 }}>
+            <button onClick={savePhoto}>💾 Guardar foto</button>
+            <button onClick={() => setScreen('camera')}>🔄 Reintentar</button>
+            <button onClick={() => setScreen('form')}>⬅️ Volver al inicio</button>
+          </div>
+        </div>
       )}
-    </div>
-
-    <button id="camera-back-button" onClick={() => setScreen('form')} style={{ position: 'absolute', top: 10, left: 10 }}>
-      <ArrowLeft size={32} />
-    </button>
-  </div>
-)}
 
       <canvas ref={canvasRef} style={{ display: "none" }} />
     </div>
