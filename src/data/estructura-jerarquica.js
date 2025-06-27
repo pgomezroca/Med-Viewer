@@ -1,7 +1,7 @@
 export const estructuraJerarquica = {
-  "cuello": {
-    "traumatica": {
-      "oseo": {
+  "Cuello": {
+    "Traumatica": {
+      "Oseo": {
         "FX-CLAVICULA": [
           "Reducción y yeso",
           "Clavijas",
@@ -12,12 +12,12 @@ export const estructuraJerarquica = {
           "Otro"
         ]
       },
-      "vascular": {
+      "Vascular": {
         "Lesiones de la subclavia": [
-          "reparacion"
+          "Reparacion"
         ]
       },
-      "nervioso": {
+      "Nervioso": {
         "Lesión de plexo braquial": [
           "Neurorrafia",
           "Neurolisis",
@@ -26,8 +26,8 @@ export const estructuraJerarquica = {
         ]
       }
     },
-    "tumoral": {
-      "oseo": {
+    "Tumoral": {
+      "Oseo": {
         "Tumor óseo": [
           "Resección",
           ""
@@ -38,19 +38,19 @@ export const estructuraJerarquica = {
           "Reseccion"
         ]
       },
-      "nervioso": {
-        "tumor nervioso": [
+      "Nervioso": {
+        "Tumor nervioso": [
           "Reseccion"
         ],
-        "metastasis": [
+        "Metastasis": [
           "Reseccion"
         ]
       }
     }
   },
-  "hombro": {
-    "traumatica": {
-      "oseo": {
+  "Hombro": {
+    "Traumatica": {
+      "Oseo": {
         "Fx de clavícula": [
           "Reducción y yeso",
           "Clavijas",
@@ -79,7 +79,7 @@ export const estructuraJerarquica = {
           "Otro"
         ]
       },
-      "vascular": {
+      "Vascular": {
         "Lesión arteria subclavia": [
           "Sutura",
           "Ligadura",
@@ -96,7 +96,7 @@ export const estructuraJerarquica = {
           "Interposición"
         ]
       },
-      "nervioso": {
+      "Nervioso": {
         "Plexo": [
           "Neurorrafia",
           "Neurolisis",
@@ -134,29 +134,29 @@ export const estructuraJerarquica = {
           "Otros"
         ]
       },
-      "musculo-tendinoso": {
+      "Musculo-tendinoso": {
         "Manguito rotador": [
           "Transferencia",
           "injerto",
           "sutura"
         ],
-        "Bíceps proximal": [
+        "Biceps proximal": [
           "Transferencia",
-          "injerto",
-          "sutura"
+          "Injerto",
+          "Sutura"
         ],
         "Subescapular": [
           "Transferencia",
-          "injerto",
-          "sutura"
+          "Injerto",
+          "Sutura"
         ],
         "Pectoral mayor": [
           "Transferencia",
-          "injerto",
-          "sutura"
+          "Injerto",
+          "Sutura"
         ]
       },
-      "articular": {
+      "Articular": {
         "Acromio-clavicular": [
           "Artroplastia",
           "Reemplazo parcial",
@@ -177,66 +177,66 @@ export const estructuraJerarquica = {
         ]
       }
     },
-    "tumoral": {
-      "oseo": {
+    "Tumoral": {
+      "Oseo": {
         "Tumor primario": [
           "Reseccion",
           "protesis"
         ],
-        "tumor secundario": [
+        "Tumor secundario": [
           "Reseccion",
-          "protesis"
+          "Protesis"
         ]
       },
-      "vascular": {
+      "Vascular": {
         "Tumor primario": [
           "Reseccion",
-          "protesis"
+          "Protesis"
         ],
-        "tumor secundario": [
+        "Tumor secundario": [
           "Reseccion",
-          "protesis"
+          "Protesis"
         ]
       },
-      "nervioso": {
+      "Nervioso": {
         "Tumor primario": [
           "Reseccion",
-          "protesis"
+          "Protesis"
         ],
-        "tumor secundario": [
+        "Tumor secundario": [
           "Reseccion",
-          "protesis"
+          "Protesis"
         ]
       },
-      "musculo-tendinoso": {
+      "Musculo-tendinoso": {
         "Tumor primario": [
           "Reseccion",
           "protesis"
         ],
         "tumor secundario": [
           "Reseccion",
-          "protesis"
+          "Protesis"
         ]
       },
-      "articular": {
+      "Articular": {
         "Tumor primario": [
           "Reseccion",
-          "protesis"
+          "Protesis"
         ],
-        "tumor secundario": [
+        "Tumor secundario": [
           "Reseccion",
-          "protesis"
+          "Protesis"
         ]
       }
     },
-    "degenerativo": {
-      "articular": {
-        "artritis": [
+    "Degenerativo": {
+      "Articular": {
+        "Artritis": [
           "Reconstrucción",
           "Reemplazo protésico",
           "Artrodesis"
         ],
-        "artrosis": [
+        "Artrosis": [
           "Reconstrucción",
           "Reemplazo protésico",
           "Artrodesis"
@@ -248,8 +248,8 @@ export const estructuraJerarquica = {
         ]
       }
     },
-    "infeccioso": {
-      "todos": {
+    "Infeccioso": {
+      "Todos": {
         "Artritis séptica": [
           "Toilette",
           "Resección",
@@ -264,8 +264,8 @@ export const estructuraJerarquica = {
     }
   },
   "Brazo": {
-    "traumatica": {
-      "oseo": {
+    "Traumatica": {
+      "Oseo": {
         "Fx diafisaria de húmero": [
           "Reducción y yeso",
           "Clavijas",
@@ -275,7 +275,7 @@ export const estructuraJerarquica = {
           "Alambre",
           "Otro"
         ],
-        "Fx subtrocantérica distal del húmero": [
+        "Fx-subtrocantérica distal del húmero": [
           "Reducción y yeso",
           "Clavijas",
           "Tutores clásicos",
@@ -284,7 +284,7 @@ export const estructuraJerarquica = {
           "Alambre",
           "Otro"
         ],
-        "Fx patológica en brazo": [
+        "Fx-patológica en brazo": [
           "Reducción y yeso",
           "Clavijas",
           "Tutores clásicos",
@@ -294,7 +294,7 @@ export const estructuraJerarquica = {
           "Otro"
         ]
       },
-      "vascular": {
+      "Vascular": {
         "Lesión arteria braquial": [
           "Sutura",
           "Ligadura",
@@ -306,7 +306,7 @@ export const estructuraJerarquica = {
           "Interposición"
         ]
       },
-      "nervioso": {
+      "Nervioso": {
         "Nervio radial (fractura húmero)": [
           "Neurorrafia",
           "Neurolisis",
@@ -326,7 +326,7 @@ export const estructuraJerarquica = {
           "Otros"
         ]
       },
-      "musculo-tendinoso": {
+      "Musculo-tendinoso": {
         "Bíceps braquial": [
           "Reinserción distal",
           "Injerto tendinoso",
@@ -343,7 +343,7 @@ export const estructuraJerarquica = {
           "Transferencia"
         ]
       },
-      "articular": {
+      "Articular": {
         "Articulación húmero-humeral": [
           "Reconstrucción",
           "Artrodesis",
@@ -351,8 +351,8 @@ export const estructuraJerarquica = {
         ]
       }
     },
-    "tumoral": {
-      "oseo": {
+    "Tumoral": {
+      "Oseo": {
         "Tumor primario": [
           "Resección",
           "Prótesis",
@@ -364,7 +364,7 @@ export const estructuraJerarquica = {
           "Injerto"
         ]
       },
-      "vascular": {
+      "Vascular": {
         "Tumor primario": [
           "Resección",
           "Ligadura"
@@ -374,7 +374,7 @@ export const estructuraJerarquica = {
           "Ligadura"
         ]
       },
-      "nervioso": {
+      "Nervioso": {
         "Tumor primario": [
           "Resección",
           "Neurólisis",
@@ -386,7 +386,7 @@ export const estructuraJerarquica = {
           "Injerto"
         ]
       },
-      "musculo-tendinoso": {
+      "Musculo-tendinoso": {
         "Tumor primario": [
           "Resección",
           "Reparación tendinosa"
@@ -396,7 +396,7 @@ export const estructuraJerarquica = {
           "Reparación tendinosa"
         ]
       },
-      "articular": {
+      "Articular": {
         "Tumor primario": [
           "Resección",
           "Artrodesis"
@@ -407,8 +407,8 @@ export const estructuraJerarquica = {
         ]
       }
     },
-    "degenerativo": {
-      "articular": {
+    "Degenerativo": {
+      "Articular": {
         "Pseudoartrosis diafisaria": [
           "Reconstrucción",
           "Injerto óseo",
@@ -421,8 +421,8 @@ export const estructuraJerarquica = {
         ]
       }
     },
-    "infeccioso": {
-      "todos": {
+    "Infeccioso": {
+      "Todos": {
         "Osteomielitis diafisaria de húmero": [
           "Debridamiento",
           "Resección ósea",
@@ -438,8 +438,8 @@ export const estructuraJerarquica = {
   },
   
   "Codo": {
-    "traumatica": {
-      "oseo": {
+    "Traumatica": {
+      "Oseo": {
         "Fx epitróclea": [
           "Reducción y yeso",
           "Clavijas",
@@ -448,7 +448,7 @@ export const estructuraJerarquica = {
           "Alambre",
           "Otro"
         ],
-        "Fx epicóndilo": [
+        "Fx-epicóndilo": [
           "Reducción y yeso",
           "Clavijas",
           "Placa-tornillo",
@@ -456,7 +456,7 @@ export const estructuraJerarquica = {
           "Alambre",
           "Otro"
         ],
-        "Fx de olecranon": [
+        "Fx-olecranon": [
           "Reducción y yeso",
           "Tornillos canulados",
           "Placa-tornillo",
@@ -478,7 +478,7 @@ export const estructuraJerarquica = {
           "Otro"
         ]
       },
-      "vascular": {
+      "Vascular": {
         "Lesión arteria braquial": [
           "Sutura",
           "Ligadura",
@@ -495,7 +495,7 @@ export const estructuraJerarquica = {
           "Interposición"
         ]
       },
-      "nervioso": {
+      "Nervioso": {
         "Nervio radial": [
           "Neurorrafia",
           "Neurolisis",
@@ -515,7 +515,7 @@ export const estructuraJerarquica = {
           "Otros"
         ]
       },
-      "musculo-tendinoso": {
+      "Musculo-tendinoso": {
         "Tendón distal del bíceps": [
           "Reinserción directa",
           "Injerto tendinoso",
@@ -527,7 +527,7 @@ export const estructuraJerarquica = {
           "Otro"
         ]
       },
-      "articular": {
+      "Articular": {
         "Articulación húmero-radial": [
           "Artroplastia",
           "Reconstrucción",
@@ -545,8 +545,8 @@ export const estructuraJerarquica = {
         ]
       }
     },
-    "tumoral": {
-      "oseo": {
+    "Tumoral": {
+      "Oseo": {
         "Tumor primario": [
           "Resección",
           "Prótesis"
@@ -566,7 +566,7 @@ export const estructuraJerarquica = {
           "Prótesis"
         ]
       },
-      "nervioso": {
+      "Nervioso": {
         "Tumor primario": [
           "Resección",
           "Prótesis"
@@ -576,7 +576,7 @@ export const estructuraJerarquica = {
           "Prótesis"
         ]
       },
-      "musculo-tendinoso": {
+      "Musculo-tendinoso": {
         "Tumor primario": [
           "Resección",
           "Prótesis"
