@@ -1,21 +1,20 @@
-import React, { useEffect, useRef, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import piexif from 'piexifjs';
-import { ArrowLeft } from 'lucide-react';
-import FormularioJerarquico from './FormularioJerarquico';
-
+import React, { useEffect, useRef, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import piexif from "piexifjs";
+import { ArrowLeft } from "lucide-react";
+import FormularioJerarquico from "./FormularioJerarquico";
 
 const TakePhoto = () => {
   const navigate = useNavigate();
-  const [screen, setScreen] = useState('form');
+  const [screen, setScreen] = useState("form");
   const [videoReady, setVideoReady] = useState(false);
-  const [dni, setDni] = useState('');
-  const [region, setRegion] = useState('');
-  const [etiologia, setEtiologia] = useState('');
-  const [tejido, setTejido] = useState('');
-  const [diagnostico, setDiagnostico] = useState('');
-  const [tratamiento, setTratamiento] = useState('');
- const [fase, setFase]=useState('')
+  const [dni, setDni] = useState("");
+  const [region, setRegion] = useState("");
+  const [etiologia, setEtiologia] = useState("");
+  const [tejido, setTejido] = useState("");
+  const [diagnostico, setDiagnostico] = useState("");
+  const [tratamiento, setTratamiento] = useState("");
+  const [fase, setFase] = useState("");
   const [photoData, setPhotoData] = useState(null);
   const [modo, setModo] = useState('foto'); // 'foto' o 'video'
   const videoRef = useRef(null);
@@ -35,7 +34,7 @@ const recordedChunksRef = useRef([]);
   }, []);
 
   useEffect(() => {
-    if (screen === 'camera' && videoRef.current && streamRef.current) {
+    if (screen === "camera" && videoRef.current && streamRef.current) {
       const video = videoRef.current;
       video.srcObject = streamRef.current;
       video.onloadedmetadata = () => setVideoReady(true);
@@ -48,11 +47,13 @@ const recordedChunksRef = useRef([]);
       return;
     }
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: "environment" },
+      });
       streamRef.current = stream;
       setScreen('selectMode');
     } catch (error) {
-      alert('Error al acceder a la cámara: ' + error.message);
+      alert("Error al acceder a la cámara: " + error.message);
     }
   };
 
@@ -62,24 +63,29 @@ const recordedChunksRef = useRef([]);
     const canvas = canvasRef.current;
     canvas.width = video.videoWidth;
     canvas.height = video.videoHeight;
-    const ctx = canvas.getContext('2d');
+    const ctx = canvas.getContext("2d");
     ctx.drawImage(video, 0, 0);
-    const dataURL = canvas.toDataURL('image/jpeg', 0.92);
+    const dataURL = canvas.toDataURL("image/jpeg", 0.92);
     setPhotoData(dataURL);
-    setScreen('photo');
+    setScreen("photo");
   };
 
   const savePhoto = async () => {
     if (!photoData) return;
     try {
       const exifObj = {
-        '0th': {
-          [piexif.ImageIFD.Make]: 'MedPhotoReact',
-          [piexif.ImageIFD.ImageDescription]:  `${region} - ${etiologia} - ${tejido} - ${diagnostico} - ${tratamiento} - Fase: ${fase}`
+        "0th": {
+          [piexif.ImageIFD.Make]: "MedPhotoReact",
+          [piexif.ImageIFD
+            .ImageDescription]: `${region} - ${etiologia} - ${tejido} - ${diagnostico} - ${tratamiento} - Fase: ${fase}`,
         },
         Exif: {
-          [piexif.ExifIFD.DateTimeOriginal]: new Date().toISOString().slice(0, 19).replace(/-/g, ':').replace('T', ' ')
-        }
+          [piexif.ExifIFD.DateTimeOriginal]: new Date()
+            .toISOString()
+            .slice(0, 19)
+            .replace(/-/g, ":")
+            .replace("T", " "),
+        },
       };
       const exifBytes = piexif.dump(exifObj);
       const newDataURL = piexif.insert(exifBytes, photoData);
@@ -88,35 +94,36 @@ const recordedChunksRef = useRef([]);
       const blob = await res.blob();
 
       const formData = new FormData();
-      formData.append('image', blob, 'photo.jpg');
-      formData.append('region', region);
-      formData.append('etiologia', etiologia);
-      formData.append('tejido', tejido);
-      formData.append('diagnostico', diagnostico);
-      formData.append('tratamiento', tratamiento);
-      formData.append('optionalDNI', dni);
-      formData.append('uploadedBy', '60f71889c9d1f814c8a3b123'); // usuario de prueba
+      formData.append("image", blob, "photo.jpg");
+      formData.append("region", region);
+      formData.append("etiologia", etiologia);
+      formData.append("tejido", tejido);
+      formData.append("diagnostico", diagnostico);
+      formData.append("tratamiento", tratamiento);
+      formData.append("fase", fase || "");
+      formData.append("optionalDNI", dni);
+      formData.append("uploadedBy", "60f71889c9d1f814c8a3b123"); // usuario de prueba
 
-      const uploadRes = await fetch('http://localhost:3000/api/images/upload', {
-        method: 'POST',
-        body: formData
+      const uploadRes = await fetch("http://localhost:3000/api/images/upload", {
+        method: "POST",
+        body: formData,
       });
 
       if (!uploadRes.ok) {
         const error = await uploadRes.json();
-        console.error('❌ Error al subir:', error);
-        alert('Error al subir la imagen');
+        console.error("❌ Error al subir:", error);
+        alert("Error al subir la imagen");
         return;
       }
 
       const imageData = await uploadRes.json();
-      console.log('✅ Imagen subida:', imageData);
-      alert('Imagen subida con éxito');
+      console.log("✅ Imagen subida:", imageData);
+      alert("Imagen subida con éxito");
 
-      setScreen('photo');
+      setScreen("photo");
     } catch (error) {
       console.error(error);
-      alert('No se pudo subir la imagen: ' + error.message);
+      alert("No se pudo subir la imagen: " + error.message);
     }
   };
   const startRecording = () => {
@@ -169,26 +176,35 @@ const recordedChunksRef = useRef([]);
 
   return (
     <div>
-      {screen === 'form' && (
+      {screen === "form" && (
         <div id="formulario">
           <input
             type="text"
             value={dni}
-            onChange={e => setDni(e.target.value)}
+            onChange={(e) => setDni(e.target.value)}
             placeholder="DNI del paciente"
           />
           <FormularioJerarquico
-            onChange={({ region, etiologia, tejido, diagnostico, tratamiento }) => {
+            onChange={({
+              region,
+              etiologia,
+              tejido,
+              diagnostico,
+              tratamiento,
+              fase,
+            }) => {
               setRegion(region);
               setEtiologia(etiologia);
               setTejido(tejido);
               setDiagnostico(diagnostico);
               setTratamiento(tratamiento);
-              setFase(fase || '')
+              setFase(fase);
             }}
           />
-         
-          <button id="camera-back-button" onClick={() => navigate(-1)}><ArrowLeft size={32} /></button>
+
+          <button id="camera-back-button" onClick={() => navigate(-1)}>
+            <ArrowLeft size={32} />
+          </button>
           <button onClick={startCamera}>Continuar</button>
         </div>
       )}
@@ -250,7 +266,7 @@ const recordedChunksRef = useRef([]);
   </div>
 )}
 
-      <canvas ref={canvasRef} style={{ display: 'none' }} />
+      <canvas ref={canvasRef} style={{ display: "none" }} />
     </div>
   );
 };
