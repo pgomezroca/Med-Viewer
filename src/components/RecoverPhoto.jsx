@@ -210,14 +210,24 @@ const RecoverPhoto = () => {
             </h3>
             <p>Imágenes:</p>
             <div style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
-              {selectedCase.imagenes.map((img, idx) => (
-                <img
-                  key={idx}
-                  src={img}
-                  alt={`Imagen ${idx}`}
-                  style={{ width: "100px", borderRadius: "8px" }}
-                />
-              ))}
+            {selectedCase.imagenes.map((media, idx) => {
+                const isVideo = media.endsWith(".webm") || media.includes("video");
+                return isVideo ? (
+                  <video
+                    key={idx}
+                    src={media}
+                    controls
+                    style={{ width: "160px", borderRadius: "8px" }}
+                  />
+                ) : (
+                  <img
+                    key={idx}
+                    src={media}
+                    alt={`Imagen ${idx}`}
+                    style={{ width: "100px", borderRadius: "8px" }}
+                  />
+                );
+              })}
             </div>
             {/* BOTONES DE ACCIÓN */}
             <div
