@@ -1,7 +1,7 @@
 // src/components/RecoverPhoto.jsx
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import styles from "../styles/RecoverPhoto.module.css";
+import styles from "../styles/recoverPhoto.module.css";
 import FormularioJerarquico from "./FormularioJerarquico";
 
 const RecoverPhoto = () => {
