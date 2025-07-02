@@ -253,10 +253,11 @@ const TakePhoto = () => {
             }}
           />
 
+         
+          <button onClick={startCamera}>Continuar</button>
           <button id="camera-back-button" onClick={() => navigate(-1)}>
             <ArrowLeft size={32} />
           </button>
-          <button onClick={startCamera}>Continuar</button>
         </div>
       )}
       {screen === "selectMode" && (
@@ -266,7 +267,7 @@ const TakePhoto = () => {
             flexDirection: "column",
             alignItems: "center",
             justifyContent: "center",
-            height: "100vh",
+            
             background: "#000",
             color: "#fff",
             gap: "20px",
@@ -293,32 +294,32 @@ const TakePhoto = () => {
             onClick={() => setScreen("form")}
             style={{ marginTop: "20px" }}
           >
-            <ArrowLeft size={32} />
+            <ArrowLeft size={20} />
           </button>
         </div>
       )}
       {screen === "camera" && (
         <div
-          style={{
-            position: "relative",
-            width: "100%",
-            height: "100vh",
-            background: "#000",
-          }}
+        style={{
+          position: "relative",
+          width: "100%",
+          height: "calc(100vh - 70px)", // deja lugar para la navbar
+          background: "#000",
+        }}
         >
           <video
             ref={videoRef}
             autoPlay
             playsInline
-            style={{ width: "100%", height: "100%", objectFit: "cover" }}
+            style={{ width: "100%",height: "100%",  objectFit: "cover" }}
           />
 
           <div
             style={{
               position: "absolute",
-              bottom: 20,
-              left: 0,
-              right: 0,
+              bottom: 40,
+              left: "50%",
+              transform: "translateX(-50%)",
               display: "flex",
               justifyContent: "center",
               gap: 10,
@@ -348,9 +349,9 @@ const TakePhoto = () => {
           <button
             id="camera-back-button"
             onClick={() => setScreen("form")}
-            style={{ position: "absolute", top: 10, left: 10 }}
+            style={{ position: "absolute", top: 40, left: 10 }}
           >
-            <ArrowLeft size={32} />
+            <ArrowLeft size={30} />
           </button>
         </div>
       )}
