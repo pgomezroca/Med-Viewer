@@ -1,3 +1,14 @@
+:root {
+  --color-bg: #d6f4f4;
+  --color-text: #114c5f;
+  --color-accent: #00d6c6;
+  --color-secondary: #3e5f68;
+  --bs-primary: #114c5f; /* Para compatibilidad con Bootstrap */
+}
+.navbar {
+  background-color: #d6f4f4 !important; /* tu celeste claro */
+  color: #114c5f !important;
+}
 
     html, body {
       margin: 0; 
@@ -332,4 +343,65 @@
 
 #feedback span {
   font-weight: bold;
+}
+body.light-theme {
+  background-color: #f8f9fa;
+  color: #212529;
+}
+
+body.dark-theme {
+  background-color: #121212;
+  color: #f1f1f1;
+}
+
+body.dark-theme .navbar {
+  background-color: #1f1f1f !important;
+  border-bottom: 1px solid #333;
+}
+
+body.dark-theme .btn-outline-primary {
+  color: #f1f1f1;
+  border-color: #ccc;
+}
+
+body.dark-theme .btn-outline-primary:hover {
+  background-color: #333;
+  border-color: #eee;
+}
+
+body.dark-theme input,
+body.dark-theme select,
+body.dark-theme textarea {
+  background-color: #1a1a1a;
+  color: white;
+  border: 1px solid #666;
+}
+
+body.dark-theme #pantallaBienvenida,
+body.dark-theme #pantallaUpload,
+body.dark-theme #pantallaDespedida {
+  background-color: #111;
+  color: #f1f1f1;
+}
+.btn-primary {
+  background-color: var(--bs-primary) !important;
+  border-color: var(--bs-primary) !important;
+  color: #fff !important;
+}
+
+.btn-primary:hover {
+  background-color: #00c1b3 !important;
+  border-color: #00c1b3 !important;
+}
+
+/* Botón contorno */
+.btn-outline-primary {
+  color: var(--bs-primary) !important;
+  border-color: var(--bs-primary) !important;
+}
+
+.btn-outline-primary:hover {
+  background-color: var(--bs-primary) !important;
+  color: white !important;
+  border-color: var(--bs-primary) !important;
 }

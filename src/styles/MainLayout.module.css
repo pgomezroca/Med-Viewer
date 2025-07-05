@@ -1,0 +1,9 @@
+.layoutWrapper {
+  min-height: 100vh;
+  background: linear-gradient(to bottom right, #f8f9fa, #e9ecef);
+  color: #212529;
+}
+
+.mainContent {
+  min-height: calc(100vh - 60px); /* Ajustable según altura de navbar */
+}

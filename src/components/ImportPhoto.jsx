@@ -4,6 +4,7 @@ import React, { useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import styles from "../styles/importPhoto.module.css";
 import FormularioJerarquico from "../components/FormularioJerarquico";
+import { FaArrowLeft } from 'react-icons/fa';
 
 const ImportPhoto = () => {
   const [dni, setDni] = useState("");
@@ -37,7 +38,7 @@ const ImportPhoto = () => {
       );
       return;
     }
-
+    const navigate = useNavigate();
     const files = fileInputRef.current.files;
 
     const uploads = Array.from(files).map(async (file) => {
@@ -75,14 +76,15 @@ const ImportPhoto = () => {
 
   return (
     <div className={styles.pantallaUpload}>
-      <h2>Clasificador de fotos</h2>
-      <h3> Importá una foto para previsualizarla</h3>
-
-      {/* Formulario */}
-      <button className={styles.button} onClick={handleImportClick}>
-        Importar fotos
+     <div className={styles.topButtonRow}>
+      <button className={styles.backButton} onClick={() => navigate(-1)}>
+        <FaArrowLeft /> Atrás
       </button>
 
+     <button className={styles.button} onClick={handleImportClick}>
+        Importar fotos
+      </button>
+     </div>
       {/* Input oculto */}
       <input
         type="file"
@@ -95,19 +97,20 @@ const ImportPhoto = () => {
 
       {/* Previsualización */}
       {previewImages.length > 0 && (
-        <div className={styles.previewContainer}>
-          <p>Previsualización:</p>
-          <div style={{ display: "flex", flexWrap: "wrap" }}>
-            {previewImages.map((src, index) => (
-              <img
-                key={index}
-                src={src}
-                alt={`preview-${index}`}
-                className={styles.previewImg}
-              />
-            ))}
-          </div>
-        </div>
+       <div className={styles.previewContainer}>
+      
+       <div className={styles.previewCarousel}>
+         {previewImages.map((src, index) => (
+           <img
+             key={index}
+             src={src}
+             alt={`preview-${index}`}
+             className={styles.previewImg}
+           />
+         ))}
+       </div>
+     </div>
+     
       )}
 
       {/* dni */}

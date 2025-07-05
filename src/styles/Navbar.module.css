@@ -1,30 +1,126 @@
-.navbar {
-  background-color: #000;
-  padding: 1rem;
-  display: flex;
-  justify-content: center;
-  gap: 2rem;
-  border-bottom: 1px solid #222;
+:root {
+  --color-bg: #d6f4f4;
+  --color-text: #114c5f;
+  --color-accent: #00d6c6;
 }
+
+.navbar {
+  background-color: var(--color-bg);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  font-family: 'Poppins', sans-serif;
+  padding: 0.75rem 1.5rem;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.navContent {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.logo {
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: var(--color-text);
+  text-decoration: none;
+}
+
+.menuToggle {
+  font-size: 1.5rem;
+  background: none;
+  border: none;
+  cursor: pointer;
+  display: none;
+  color: var(--color-text);
+}
+
+.navLinks {
+  display: flex;
+  gap: 1.5rem;
+  list-style: none;
+  justify-content: center;
+  flex: 1;
+}
+.navContent {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
 
 .link {
-  color: white;
   text-decoration: none;
-  font-weight: bold;
-  font-size: 1rem;
-  border: 1px solid #00FFFF;
-  padding: 0.5rem 1rem;
+  font-weight: 500;
+  color: var(--color-text);
+  padding: 8px 12px;
+  border: 2px solid var(--color-text);
   border-radius: 6px;
-  background-color: transparent;
-  transition: background-color 0.3s ease;
+  transition: background-color 0.2s ease;
 }
+.userName {
+  font-weight: 500;
+  color: var(--color-text);
+  margin-left: 8rem;
+}
+
 
 .link:hover {
-  background-color: #111;
+  background-color: rgba(17, 76, 95, 0.1);
 }
 
-.activeLink {
-  composes: link;
-  background-color: #111;
-  color: #00FFFF;
+.active {
+  background-color: rgba(17, 76, 95, 0.15);
+  font-weight: 600;
+}
+
+/* Mobile */
+@media (max-width: 768px) {
+  .menuToggle {
+    display: block;
+  }
+
+  .navLinks {
+    position: absolute;
+    top: 64px;
+    left: 0;
+    right: 0;
+    
+    background-color: var(--color-bg);
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem 0;
+    transform: translateY(-100%);
+    opacity: 0;
+    transition: all 0.3s ease;
+    pointer-events: none;
+  }
+  .link {
+    text-decoration: none;
+    font-weight: 500;
+    color: var(--color-text);
+    padding: 8px 16px;
+    border:2px solid #00d6c6;
+    border-radius: 6px;
+    transition: background-color 0.2s ease, color 0.2s ease;
+    display: inline-block;
+  }
+  .userName {
+    color: #00d6c6;
+    text-align: center;
+    margin-top: 1rem;
+  }
+  @media (min-width: 769px) {
+    .userName {
+      margin-left: auto;
+    }
+  }
+
+  .open {
+    transform: translateY(0);
+    opacity: 1;
+    pointer-events: auto;
+  }
 }
