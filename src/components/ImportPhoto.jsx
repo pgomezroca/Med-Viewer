@@ -38,7 +38,6 @@ const ImportPhoto = () => {
       );
       return;
     }
-    const navigate = useNavigate();
     const files = fileInputRef.current.files;
 
     const uploads = Array.from(files).map(async (file) => {
