@@ -1,3 +1,10 @@
+:root {
+  --color-bg: #d6f4f4;
+  --color-text: #114c5f;
+  --color-accent: #00d6c6;
+  --color-secondary: #3e5f68;
+  --bs-primary: #114c5f; /* Para compatibilidad con Bootstrap */
+} 
 .layoutWrapper {
   min-height: 100vh;
   background: linear-gradient(to bottom right, #f8f9fa, #e9ecef);
@@ -5,5 +12,6 @@
 }
 
 .mainContent {
-  min-height: calc(100vh - 60px); /* Ajustable según altura de navbar */
+  min-height: calc(100vh - 60px); 
+  background-color: #d6f4f4;
 }

@@ -7,8 +7,8 @@ import 'bootstrap/dist/js/bootstrap.bundle.min.js';
 
 const imagenes = [
   "/images/imagen3.jpeg",
-  "/images/imagen3.jpeg",
-  "/images/imagen3.jpeg",
+  "/piel.jpg",
+  "/corazon.jpg",
 ];
 
 const Welcome = () => {
@@ -26,7 +26,7 @@ const Welcome = () => {
                 src={src}
                 className="d-block w-100"
                 alt={`img-${i}`}
-                style={{ height: "400px", objectFit: "cover" }}
+                style={{ height: "200px", objectFit: "cover" }}
               />
             </div>
           ))}
@@ -43,8 +43,8 @@ const Welcome = () => {
       </div>
 
       {/* Contenido centrado */}
-      <div className="container text-center py-5">
-        <h1 className={styles.title}>Bienvenido a MED_viewer</h1>
+      <div className={styles.textContainer}>
+        <h1 className={styles.title}>Bienvenido a MED-VIEWER</h1>
         <p className={styles.subtitle}>Capturá, organizá y almacená tus imágenes clínicas de forma simple y segura.</p>
 
         

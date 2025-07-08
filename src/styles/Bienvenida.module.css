@@ -1,3 +1,12 @@
+
+
+:root {
+  --color-bg: #d6f4f4;
+  --color-text: #114c5f;
+  --color-accent: #00d6c6;
+  --color-secondary: #3e5f68;
+  --bs-primary: #114c5f; /* Para compatibilidad con Bootstrap */
+} 
 .welcomeWrapper {
   background-color: var(--color-bg);
   color: var(--color-text);
@@ -5,7 +14,7 @@
 }
 
 .title {
-  color: var(--color-accent);
+  color: var(--color-text)!important;
 }
 
 .subtitle {
@@ -35,12 +44,13 @@
   text-align: center;
   margin-top: 40px;
   padding: 0 20px;
+  background-color: var(--color-bg); 
 }
 
 .title {
   font-size: 2.5rem;
   font-weight: 600;
-  color: #00d6c6;
+  
 }
 
 .subtitle {
@@ -57,9 +67,12 @@
   align-items: center;
 }
 
-@media (min-width: 768px) {
+@media (min-width: 900px) {
   .buttons {
     flex-direction: row;
     justify-content: center;
+  }
+  .corousel-inner{
+    height: 100px;
   }
 }

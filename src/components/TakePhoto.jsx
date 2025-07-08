@@ -140,7 +140,7 @@ const TakePhoto = () => {
       alert("Foto guardada con éxito");
   
       setPhotoData(null);
-      setScreen("camera");  // Volver a cámara para tomar otra
+      setScreen("camera");  
     } catch (error) {
       console.error(error);
       alert("No se pudo subir la imagen: " + error.message);
@@ -317,7 +317,7 @@ const TakePhoto = () => {
           <div
             style={{
               position: "absolute",
-              bottom: 40,
+              bottom: 90,
               left: "50%",
               transform: "translateX(-50%)",
               display: "flex",
