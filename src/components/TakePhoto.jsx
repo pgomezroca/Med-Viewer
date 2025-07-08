@@ -24,6 +24,7 @@ const TakePhoto = () => {
 
   const [isRecording, setIsRecording] = useState(false);
   const [videoBlobURL, setVideoBlobURL] = useState(null);
+  const [fotosAcumuladas, setFotosAcumuladas] = useState([]);
 
   const mediaRecorderRef = useRef(null);
   const recordedChunksRef = useRef([]);
@@ -86,7 +87,8 @@ const TakePhoto = () => {
     ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
     const dataURL = canvas.toDataURL("image/jpeg", 0.92);
   
-    setPhotoData(dataURL);     // Solo previsualiza
+    setPhotoData(dataURL);
+    setFotosAcumuladas(prev => [...prev, dataURL]);      // Solo previsualiza
     setScreen("photo");
   };
 
@@ -351,29 +353,139 @@ const TakePhoto = () => {
         </div>
       )}
 
-      {screen === 'photo' && photoData && (
-        <div style={{ textAlign: 'center', padding: 20 }}>
-          <h3>Previsualización</h3>
+{screen === 'photo' && (
+  <div style={{ padding: 20 }}>
+    <h3 style={{ textAlign: 'center' }}>Fotos tomadas</h3>
+
+    {/* Carrusel horizontal de fotos acumuladas */}
+    <div
+      style={{
+        display: 'flex',
+        overflowX: 'auto',
+        gap: '10px',
+        padding: '10px',
+      }}
+    >
+      {fotosAcumuladas.map((foto, index) => (
+        <div key={index} style={{ position: 'relative' }}>
           <img
-            src={photoData}
-            alt="captura"
+            src={foto}
+            alt={`foto ${index}`}
             style={{
-              maxWidth: '90%',
+              width: '150px',
               borderRadius: '8px',
-              boxShadow: '0 0 10px #aaa'
+              boxShadow: '0 0 5px #aaa',
             }}
           />
-          <div style={{ marginTop: 20, display: 'flex', justifyContent: 'center', gap: 20 }}>
-            <button onClick={savePhoto}>💾 Guardar esta foto</button>
-            <button onClick={() => { setPhotoData(null); setScreen('camera'); }}>🔄 Tomar otra (descartar)</button>
-            <button onClick={() => {
-              streamRef.current?.getTracks().forEach(track => track.stop());
-              setPhotoData(null);
-              setScreen('form');
-            }}>✅ Finalizar caso</button>
-          </div>
+          <button
+            title="Eliminar esta foto"
+            onClick={() => {
+              const nuevasFotos = fotosAcumuladas.filter((_, i) => i !== index);
+              setFotosAcumuladas(nuevasFotos);
+              if (nuevasFotos.length === 0) {
+                setPhotoData(null);
+                setScreen("camera");
+              }
+            }}
+            style={{
+              position: 'absolute',
+              top: '5px',
+              right: '5px',
+              background: 'rgba(255, 0, 0, 0.7)',
+              border: 'none',
+              borderRadius: '50%',
+              color: '#fff',
+              width: '24px',
+              height: '24px',
+              cursor: 'pointer',
+            }}
+          >
+            ✕
+          </button>
         </div>
-      )}
+      ))}
+    </div>
+
+    {/* Acciones */}
+    <div style={{ display: 'flex', justifyContent: 'center', gap: 20, marginTop: 20 }}>
+      <button onClick={() => setScreen("camera")}>➕ Agregar más</button>
+      <button
+  onClick={async () => {
+    for (let foto of fotosAcumuladas) {
+      try {
+        const exifObj = {
+          "0th": {
+            [piexif.ImageIFD.Make]: "MedPhotoReact",
+            [piexif.ImageIFD.ImageDescription]: `${region} - ${etiologia} - ${tejido} - ${diagnostico} - ${tratamiento} - Fase: ${fase}`,
+          },
+          Exif: {
+            [piexif.ExifIFD.DateTimeOriginal]: new Date()
+              .toISOString()
+              .slice(0, 19)
+              .replace(/-/g, ":")
+              .replace("T", " "),
+          },
+        };
+        const exifBytes = piexif.dump(exifObj);
+        const newDataURL = piexif.insert(exifBytes, foto);
+
+        const res = await fetch(newDataURL);
+        const blob = await res.blob();
+
+        const formData = new FormData();
+        formData.append("image", blob, "photo.jpg");
+        formData.append("region", region);
+        formData.append("etiologia", etiologia);
+        formData.append("tejido", tejido);
+        formData.append("diagnostico", diagnostico);
+        formData.append("tratamiento", tratamiento);
+        formData.append("fase", fase || "");
+        formData.append("optionalDNI", dni);
+        formData.append("uploadedBy", "60f71889c9d1f814c8a3b123");
+
+        const uploadRes = await fetch(`${apiUrl}/api/images/upload`, {
+          method: "POST",
+          body: formData,
+        });
+
+        if (!uploadRes.ok) {
+          const error = await uploadRes.json();
+          console.error("❌ Error al subir:", error);
+          alert("Error al subir una imagen");
+          return;
+        }
+
+        const imageData = await uploadRes.json();
+        console.log("✅ Imagen subida:", imageData);
+      } catch (err) {
+        console.error("Error al subir imagen:", err);
+        alert("No se pudo subir una imagen");
+      }
+    }
+
+    alert("✅ Todas las fotos fueron subidas correctamente");
+    setFotosAcumuladas([]);
+    setPhotoData(null);
+    setScreen("form");
+  }}
+>
+  💾 Guardar todas
+</button>
+
+      <button
+        onClick={() => {
+          streamRef.current?.getTracks().forEach(track => track.stop());
+          setFotosAcumuladas([]);
+          setPhotoData(null);
+          setScreen("form");
+        }}
+      >
+        🏁 Finalizar caso
+      </button>
+    </div>
+  </div>
+)}
+
 
       {screen === 'videoPreview' && videoBlobURL && (
         <div style={{ textAlign: 'center', padding: 20 }}>
