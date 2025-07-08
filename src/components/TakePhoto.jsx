@@ -316,17 +316,12 @@ const TakePhoto = () => {
 
           <div
             style={{
-              position: "absolute",
-              bottom: 90,
-              left: "50%",
-              transform: "translateX(-50%)",
-              display: "flex",
-              justifyContent: "center",
-              gap: 10,
+             
             }}
           >
             {modo === "foto" && (
-              <button onClick={takePhoto} disabled={!videoReady}>
+              <button id="botonFoto"
+              onClick={takePhoto} disabled={!videoReady}>
                 {videoReady ? "Tomar foto" : "Cargando cámara…"}
               </button>
             )}
