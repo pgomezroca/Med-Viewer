@@ -10,11 +10,7 @@ const TakePhoto = () => {
   const [videoReady, setVideoReady] = useState(false);
   const [dni, setDni] = useState("");
   const [region, setRegion] = useState("");
-  const [etiologia, setEtiologia] = useState("");
-  const [tejido, setTejido] = useState("");
   const [diagnostico, setDiagnostico] = useState("");
-  const [tratamiento, setTratamiento] = useState("");
-  const [fase, setFase] = useState("");
   const [photoData, setPhotoData] = useState(null);
   const [modo, setModo] = useState("foto"); // 'foto' o 'video'
   const videoRef = useRef(null);
@@ -56,7 +52,7 @@ const TakePhoto = () => {
   }, [screen, videoRef.current, streamRef.current]);
 
   const startCamera = async () => {
-    if (!dni || !region || !etiologia || !diagnostico || !tratamiento) {
+    if (!dni ||!region|| !diagnostico ) {
       alert("Completa el formulario por favor.");
       return;
     }
@@ -98,7 +94,7 @@ const TakePhoto = () => {
       const exifObj = {
         "0th": {
           [piexif.ImageIFD.Make]: "MedPhotoReact",
-          [piexif.ImageIFD.ImageDescription]: `${region} - ${etiologia} - ${tejido} - ${diagnostico} - ${tratamiento} - Fase: ${fase}`,
+          [piexif.ImageIFD.ImageDescription]: `DNI: ${dni} - Región: ${region} - Dx: ${diagnostico}`,
         },
         Exif: {
           [piexif.ExifIFD.DateTimeOriginal]: new Date()
@@ -117,11 +113,7 @@ const TakePhoto = () => {
       const formData = new FormData();
       formData.append("image", blob, "photo.jpg");
       formData.append("region", region);
-      formData.append("etiologia", etiologia);
-      formData.append("tejido", tejido);
       formData.append("diagnostico", diagnostico);
-      formData.append("tratamiento", tratamiento);
-      formData.append("fase", fase || "");
       formData.append("optionalDNI", dni);
       formData.append("uploadedBy", "60f71889c9d1f814c8a3b123");
   
@@ -195,11 +187,9 @@ const TakePhoto = () => {
       const formData = new FormData();
       formData.append("image", blob, "video.webm");
       formData.append("region", region);
-      formData.append("etiologia", etiologia);
-      formData.append("tejido", tejido);
+      
       formData.append("diagnostico", diagnostico);
-      formData.append("tratamiento", tratamiento);
-      formData.append("fase", fase || "");
+      
       formData.append("optionalDNI", dni);
       formData.append("uploadedBy", "60f71889c9d1f814c8a3b123");
   
@@ -231,27 +221,13 @@ const TakePhoto = () => {
     <div>
       {screen === "form" && (
         <div id="formulario">
-          <input
-            type="text"
-            value={dni}
-            onChange={(e) => setDni(e.target.value)}
-            placeholder="DNI del paciente"
-          />
+          
           <FormularioJerarquico
-            onChange={({
-              region,
-              etiologia,
-              tejido,
-              diagnostico,
-              tratamiento,
-              fase,
-            }) => {
-              setRegion(region);
-              setEtiologia(etiologia);
-              setTejido(tejido);
-              setDiagnostico(diagnostico);
-              setTratamiento(tratamiento);
-              setFase(fase);
+            campos={["dni", "region", "diagnostico"]}
+            onChange={(data) => {
+              setDni(data.dni || "");
+              setRegion(data.region || "");
+              setDiagnostico(data.diagnostico || "");
             }}
           />
 
@@ -435,11 +411,9 @@ const TakePhoto = () => {
         const formData = new FormData();
         formData.append("image", blob, "photo.jpg");
         formData.append("region", region);
-        formData.append("etiologia", etiologia);
-        formData.append("tejido", tejido);
+        
         formData.append("diagnostico", diagnostico);
-        formData.append("tratamiento", tratamiento);
-        formData.append("fase", fase || "");
+        
         formData.append("optionalDNI", dni);
         formData.append("uploadedBy", "60f71889c9d1f814c8a3b123");
 

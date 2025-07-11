@@ -126,30 +126,28 @@ const RecoverPhoto = () => {
     <div className={styles.container}>
       <h2>Recuperar imágenes médicas</h2>
       <div className={styles.form}>
-        <input
-          type="text"
-          className={styles.input}
-          placeholder="DNI del paciente"
-          value={dni}
-          onChange={(e) => setDni(e.target.value)}
-        />
+       
         <FormularioJerarquico
-          onChange={({
-            region,
-            etiologia,
-            tejido,
-            diagnostico,
-            tratamiento,
-            fase,
-          }) => {
-            setRegion(region);
-            setEtiologia(etiologia);
-            setTejido(tejido);
-            setDiagnostico(diagnostico);
-            setTratamiento(tratamiento);
-            setFase(fase);
-          }}
-        />
+  campos={["dni", "region", "etiologia", "tejido", "diagnostico", "tratamiento", "fase"]}
+  onChange={({
+    dni,
+    region,
+    etiologia,
+    tejido,
+    diagnostico,
+    tratamiento,
+    fase,
+  }) => {
+    setDni(dni);
+    setRegion(region);
+    setEtiologia(etiologia);
+    setTejido(tejido);
+    setDiagnostico(diagnostico);
+    setTratamiento(tratamiento);
+    setFase(fase);
+  }}
+/>
+
         <button onClick={handleBuscar}>Buscar</button>
       </div>
 
@@ -243,10 +241,10 @@ const RecoverPhoto = () => {
                 ⭐ Favorito
               </button>
               <button onClick={() => agregarACarpeta(selectedCase)}>
-                📁 Guardar en carpeta
+                 Guardar en carpeta
               </button>
               <button onClick={() => console.log("Click directo")}>
-                📤 Exportar
+                 Exportar
               </button>
             </div>
 

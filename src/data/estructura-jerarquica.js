@@ -49,6 +49,22 @@ export const estructuraJerarquica = {
     }
   },
   "Hombro": {
+    "Congenito":{
+      "Todos":{
+         "Hipoplasia":[
+           "Otros"
+         ],
+         "Hiperplasia":[
+           "Reseccion",
+           "Reconstruccion",
+           "Otros"
+         ],
+         "Agenesia":[
+           "Transferencias",
+           "Otros"
+         ]
+      }
+    },
     "Traumatica": {
       "Oseo": {
         "Fx de clavícula": [
@@ -80,6 +96,10 @@ export const estructuraJerarquica = {
         ]
       },
       "Vascular": {
+        "Amputacion": [
+          "Reimplante",
+          "Muñon",
+        ],
         "Lesión arteria subclavia": [
           "Sutura",
           "Ligadura",
@@ -264,6 +284,22 @@ export const estructuraJerarquica = {
     }
   },
   "Brazo": {
+    "Congenito":{
+      "Todos":{
+         "Hipoplasia":[
+           "Otros"
+         ],
+         "Hiperplasia":[
+           "Reseccion",
+           "Reconstruccion",
+           "Otros"
+         ],
+         "Agenesia":[
+           "Transferencias",
+           "Otros"
+         ]
+      }
+    },
     "Traumatica": {
       "Oseo": {
         "Fx diafisaria de húmero": [
@@ -275,15 +311,7 @@ export const estructuraJerarquica = {
           "Alambre",
           "Otro"
         ],
-        "Fx-subtrocantérica distal del húmero": [
-          "Reducción y yeso",
-          "Clavijas",
-          "Tutores clásicos",
-          "DET",
-          "Placa-tornillo",
-          "Alambre",
-          "Otro"
-        ],
+       
         "Fx-patológica en brazo": [
           "Reducción y yeso",
           "Clavijas",
@@ -295,6 +323,10 @@ export const estructuraJerarquica = {
         ]
       },
       "Vascular": {
+        "Amputacion": [
+          "Reimplante",
+          "Muñon"
+        ],
         "Lesión arteria braquial": [
           "Sutura",
           "Ligadura",
@@ -343,14 +375,9 @@ export const estructuraJerarquica = {
           "Transferencia"
         ]
       },
-      "Articular": {
-        "Articulación húmero-humeral": [
-          "Reconstrucción",
-          "Artrodesis",
-          "Artroscopía"
-        ]
-      }
+      
     },
+   
     "Tumoral": {
       "Oseo": {
         "Tumor primario": [
@@ -396,16 +423,7 @@ export const estructuraJerarquica = {
           "Reparación tendinosa"
         ]
       },
-      "Articular": {
-        "Tumor primario": [
-          "Resección",
-          "Artrodesis"
-        ],
-        "Tumor secundario": [
-          "Resección",
-          "Artrodesis"
-        ]
-      }
+      
     },
     "Degenerativo": {
       "Articular": {
@@ -438,6 +456,22 @@ export const estructuraJerarquica = {
   },
   
   "Codo": {
+    "Congenito":{
+      "Todos":{
+         "Hipoplasia":[
+           "Otros"
+         ],
+         "Hiperplasia":[
+           "Reseccion",
+           "Reconstruccion",
+           "Otros"
+         ],
+         "Agenesia":[
+           "Transferencias",
+           "Otros"
+         ]
+      }
+    },
     "Traumatica": {
       "Oseo": {
         "Fx epitróclea": [
@@ -449,6 +483,22 @@ export const estructuraJerarquica = {
           "Otro"
         ],
         "Fx-epicóndilo": [
+          "Reducción y yeso",
+          "Clavijas",
+          "Placa-tornillo",
+          "DET",
+          "Alambre",
+          "Otro"
+        ],
+        "Fx-cóndilo": [
+          "Reducción y yeso",
+          "Clavijas",
+          "Placa-tornillo",
+          "DET",
+          "Alambre",
+          "Otro"
+        ],
+        "Fx de paleta humeral": [
           "Reducción y yeso",
           "Clavijas",
           "Placa-tornillo",
@@ -479,6 +529,10 @@ export const estructuraJerarquica = {
         ]
       },
       "Vascular": {
+        "Amputacion": [
+          "Reimplante",
+          "Muñon",
+        ],
         "Lesión arteria braquial": [
           "Sutura",
           "Ligadura",
@@ -500,6 +554,11 @@ export const estructuraJerarquica = {
           "Neurorrafia",
           "Neurolisis",
           "Injerto de nervio",
+          "Otros"
+        ],
+        "Neurodoscitis del cubital": [
+          "Neurolisis",
+          "Transposicion",
           "Otros"
         ],
         "Nervio cubital": [
@@ -633,6 +692,22 @@ export const estructuraJerarquica = {
   },
   
   "Antebrazo": {
+    "Congenito":{
+      "Todos":{
+         "Hipoplasia":[
+           "Otros"
+         ],
+         "Hiperplasia":[
+           "Reseccion",
+           "Reconstruccion",
+           "Otros"
+         ],
+         "Agenesia":[
+           "Transferencias",
+           "Otros"
+         ]
+      }
+    },
     "traumatica": {
       "oseo": {
         "Fx de radio": [
@@ -669,6 +744,10 @@ export const estructuraJerarquica = {
         ]
       },
       "vascular": {
+        "Amputacion": [
+          "Reimplante",
+          "Muñon",
+        ],
         "Lesión arteria radial": [
           "Sutura",
           "Ligadura",
@@ -706,12 +785,12 @@ export const estructuraJerarquica = {
           "Injerto",
           "Transferencia"
         ],
-        "Flexores superficiales": [
+        "Flexores ": [
           "Sutura",
           "Injerto",
           "Transferencia"
         ],
-        "Extensores del antebrazo": [
+        "Extensores ": [
           "Sutura",
           "Injerto",
           "Transferencia"
@@ -723,11 +802,7 @@ export const estructuraJerarquica = {
           "Artroplastia",
           "Artrodesis"
         ],
-        "Articulación radiocubital distal": [
-          "Reconstrucción",
-          "Artroplastia",
-          "Artrodesis"
-        ]
+       
       }
     },
     "tumoral": {
@@ -814,14 +889,46 @@ export const estructuraJerarquica = {
     }
   },
   "Muñeca": {
+    "Congenito":{
+      "Todos":{
+         "Hipoplasia":[
+           "Otros"
+         ],
+         "Hiperplasia":[
+           "Reseccion",
+           "Reconstruccion",
+           "Otros"
+         ],
+         "Agenesia":[
+           "Transferencias",
+           "Otros"
+         ]
+      }
+    },
     "traumatica": {
       "oseo": {
-        "Fx de escafoides": [
+        "Fx de radio-distal": [
           "Reducción y yeso",
           "Clavijas",
           "Tutores clásicos",
           "DET",
           "Placa-tornillo",
+          "Alambre",
+          "Otro"
+        ],
+        "Fx de cubito-distal": [
+          "Reducción y yeso",
+          "Clavijas",
+          "Tutores clásicos",
+          "DET",
+          "Placa-tornillo",
+          "Alambre",
+          "Otro"
+        ],
+        "Fx de escafoides": [
+          "Reducción y yeso",
+          "Clavijas",
+          "Tornillo",
           "Alambre",
           "Otro"
         ],
@@ -850,6 +957,10 @@ export const estructuraJerarquica = {
         ]
       },
       "vascular": {
+        "Amputacion": [
+          "Reimplante",
+          "Muñon",
+        ],
         "Lesión arteria radial": [
           "Sutura",
           "Ligadura",
@@ -861,7 +972,19 @@ export const estructuraJerarquica = {
           "Interposición"
         ]
       },
-      "nervioso": {
+      "Nervioso": {
+        "Tunel Carpiano (síndrome compartimental o compresión aguda)": [
+          "Neurólisis",
+          "Descompresión",
+          "Neurorrafia",
+          "Injerto de nervio"
+        ],
+        "Canal de Guyon (síndrome compartimental o compresión aguda)": [
+          "Neurólisis",
+          "Descompresión",
+          "Neurorrafia",
+          "Injerto de nervio"
+        ],
         "Nervio mediano (síndrome compartimental o compresión aguda)": [
           "Neurólisis",
           "Descompresión",
@@ -922,7 +1045,7 @@ export const estructuraJerarquica = {
           "Ligadura"
         ]
       },
-      "nervioso": {
+      "Nervioso": {
         "Tumor primario": [
           "Resección",
           "Neurólisis",
@@ -944,7 +1067,7 @@ export const estructuraJerarquica = {
           "Injerto tendinoso"
         ]
       },
-      "articular": {
+      "Articular": {
         "Tumor primario": [
           "Resección",
           "Artrodesis"
@@ -955,8 +1078,8 @@ export const estructuraJerarquica = {
         ]
       }
     },
-    "degenerativo": {
-      "articular": {
+    "Degenerativo": {
+      "Articular": {
         "Artrosis radio-carpiana": [
           "Artroplastia",
           "Artrodesis",
@@ -971,10 +1094,15 @@ export const estructuraJerarquica = {
           "Artrodesis parcial",
           "Artroplastia",
           "Resección fila proximal"
+        ],
+        "Enfermedad de Kiembock": [
+          "Artrodesis parcial",
+          "Artroplastia",
+          "Resección fila proximal"
         ]
       }
     },
-    "infeccioso": {
+    "Infeccioso": {
       "todos": {
         "Artritis séptica carpiana": [
           "Toilette",
@@ -990,8 +1118,24 @@ export const estructuraJerarquica = {
     }
   },
   "Carpo": {
-    "traumatica": {
-      "oseo": {
+    "Congenito":{
+      "Todos":{
+         "Hipoplasia":[
+           "Otros"
+         ],
+         "Hiperplasia":[
+           "Reseccion",
+           "Reconstruccion",
+           "Otros"
+         ],
+         "Agenesia":[
+           "Transferencias",
+           "Otros"
+         ]
+      }
+    },
+    "Traumatica": {
+      "Oseo": {
         "Fx de escafoides": [
           "Reducción y yeso",
           "Clavijas",
@@ -1027,6 +1171,10 @@ export const estructuraJerarquica = {
         ]
       },
       "vascular": {
+        "Amputacion": [
+          "Reimplante",
+          "Muñon",
+        ],
         "Lesión arterial carpal (colateral radial o cubital profunda)": [
           "Sutura",
           "Ligadura",
@@ -1074,7 +1222,7 @@ export const estructuraJerarquica = {
           "Artrodesis"
         ]
       },
-      "vascular": {
+      "Vascular": {
         "Tumor primario": [
           "Resección",
           "Ligadura"
@@ -1084,7 +1232,7 @@ export const estructuraJerarquica = {
           "Ligadura"
         ]
       },
-      "nervioso": {
+      "Nervioso": {
         "Tumor primario": [
           "Resección",
           "Neurólisis",
@@ -1096,7 +1244,7 @@ export const estructuraJerarquica = {
           "Injerto"
         ]
       },
-      "musculo-tendinoso": {
+      "Musculo-tendinoso": {
         "Tumor primario": [
           "Resección",
           "Injerto tendinoso"
@@ -1106,7 +1254,7 @@ export const estructuraJerarquica = {
           "Injerto tendinoso"
         ]
       },
-      "articular": {
+      "Articular": {
         "Tumor primario": [
           "Resección",
           "Artrodesis"
@@ -1117,12 +1265,17 @@ export const estructuraJerarquica = {
         ]
       }
     },
-    "degenerativo": {
+    "Degenerativo": {
       "articular": {
         "Colapso del escafoides (SNAC wrist)": [
           "Artrodesis parcial",
           "Resección fila proximal",
           "Artroplastia"
+        ],
+        "Pseudoartrosis de escafoides": [
+          "Artrodesis parcial",
+          "Resección fila proximal",
+          "Colgajo oseo vascularizado"
         ],
         "Colapso del semilunar (SLAC wrist)": [
           "Artrodesis parcial",
@@ -1136,7 +1289,7 @@ export const estructuraJerarquica = {
         ]
       }
     },
-    "infeccioso": {
+    "Infeccioso": {
       "todos": {
         "Osteomielitis carpiana": [
           "Debridamiento",
@@ -1152,14 +1305,29 @@ export const estructuraJerarquica = {
     }
   },
   "Metacarpo": {
-    "traumatica": {
-      "oseo": {
-        "Fx cuello de metacarpiano (Boxer)": [
+    "Congenito":{
+      "Todos":{
+         "Hipoplasia":[
+           "Otros"
+         ],
+         "Hiperplasia":[
+           "Reseccion",
+           "Reconstruccion",
+           "Otros"
+         ],
+         "Agenesia":[
+           "Transferencias",
+           "Otros"
+         ]
+      }
+    },
+    "Traumatica": {
+      "Oseo": {
+        "Fx cuello de 5to metacarpiano (Boxer)": [
           "Reducción y yeso",
           "Clavijas",
-          "Tutores clásicos",
-          "DET",
           "Placa-tornillo",
+          "Tornillo canulado",
           "Alambre",
           "Otro"
         ],
@@ -1170,34 +1338,45 @@ export const estructuraJerarquica = {
           "DET",
           "Otro"
         ],
+        "Fx base de primer metacarpiano": [
+          "Yeso",
+          "Osteosíntesis con placa",
+          "Clavijas",
+          "Tornillo",
+          "Otro"
+        ],
         "Fx base de metacarpiano": [
           "Yeso",
           "Clavijas",
           "Placa-tornillo",
           "Otro"
         ],
-        "Fx múltiple metacarpiana": [
+        "Fx múltiples metacarpianos": [
           "Yeso",
           "Fijación externa",
           "Osteosíntesis múltiple",
           "Otro"
         ]
       },
-      "vascular": {
+      "Vascular": {
+        "Amputacion": [
+          "Reimplante",
+          "Muñon",
+        ],
         "Lesión arterial dorsal o palmar metacarpiana": [
           "Sutura",
           "Ligadura",
           "Interposición"
         ]
       },
-      "nervioso": {
+      "Nervioso": {
         "Ramas digitales o metacarpianas": [
           "Neurorrafia",
           "Neurolisis",
           "Injerto de nervio"
         ]
       },
-      "musculo-tendinoso": {
+      "Musculo-tendinoso": {
         "Tendones extensores metacarpianos": [
           "Sutura",
           "Transferencia",
@@ -1209,7 +1388,7 @@ export const estructuraJerarquica = {
           "Injerto"
         ]
       },
-      "articular": {
+      "Articular": {
         "Articulación carpo-metacarpiana": [
           "Reducción",
           "Fijación con clavijas",
@@ -1222,7 +1401,7 @@ export const estructuraJerarquica = {
         ]
       }
     },
-    "tumoral": {
+    "Tumoral": {
       "oseo": {
         "Tumor primario": [
           "Resección",
@@ -1235,7 +1414,7 @@ export const estructuraJerarquica = {
           "Prótesis"
         ]
       },
-      "vascular": {
+      "Vascular": {
         "Tumor primario": [
           "Resección",
           "Ligadura"
@@ -1245,7 +1424,7 @@ export const estructuraJerarquica = {
           "Ligadura"
         ]
       },
-      "nervioso": {
+      "Nervioso": {
         "Tumor primario": [
           "Resección",
           "Neurólisis",
@@ -1257,7 +1436,7 @@ export const estructuraJerarquica = {
           "Injerto"
         ]
       },
-      "musculo-tendinoso": {
+      "Musculo-tendinoso": {
         "Tumor primario": [
           "Resección",
           "Reparación tendinosa"
@@ -1267,7 +1446,7 @@ export const estructuraJerarquica = {
           "Reparación tendinosa"
         ]
       },
-      "articular": {
+      "Articular": {
         "Tumor primario": [
           "Resección",
           "Artrodesis"
@@ -1278,7 +1457,7 @@ export const estructuraJerarquica = {
         ]
       }
     },
-    "degenerativo": {
+    "Degenerativo": {
       "articular": {
         "Artrosis carpo-metacarpiana (CMC)": [
           "Artrodesis",
@@ -1292,7 +1471,7 @@ export const estructuraJerarquica = {
         ]
       }
     },
-    "infeccioso": {
+    "Infeccioso": {
       "todos": {
         "Osteomielitis metacarpiana": [
           "Debridamiento",
@@ -1308,6 +1487,33 @@ export const estructuraJerarquica = {
     }
   },
   "Falanges": {
+    "Congenito":{
+      "Todos":{
+         "Hipoplasia":[
+           "Otros"
+         ],
+         "Sindactilia":[
+          "Z-plastia"
+        ],
+        "Camptodactilia":[
+          "Osteotomia",
+          "Reconstruccion aparato extensor",
+          "Otros"
+        ],
+        "Pulgar en resorte":[
+          "Liberacion"
+        ],
+         "Hiperplasia":[
+           "Reseccion",
+           "Reconstruccion",
+           "Otros"
+         ],
+         "Agenesia":[
+           "Transferencias",
+           "Otros"
+         ]
+      }
+    },
     "traumatica": {
       "oseo": {
         "Fx de falange distal": [
@@ -1330,7 +1536,6 @@ export const estructuraJerarquica = {
           "Yeso",
           "Osteosíntesis con placa",
           "Clavijas",
-          "DET",
           "Otro"
         ],
         "Luxación interfalángica proximal o distal": [
@@ -1340,7 +1545,11 @@ export const estructuraJerarquica = {
           "Otro"
         ]
       },
-      "vascular": {
+      "Vascular": {
+        "Amputacion": [
+          "Reimplante",
+          "Muñon",
+        ],
         "Lesión arterial digital": [
           "Sutura",
           "Ligadura",
@@ -1354,7 +1563,7 @@ export const estructuraJerarquica = {
           "Injerto"
         ]
       },
-      "musculo-tendinoso": {
+      "Musculo-tendinoso": {
         "Lesión tendón extensor (tipo mallet)": [
           "Férula",
           "Sutura",
@@ -1366,7 +1575,7 @@ export const estructuraJerarquica = {
           "Tenolisis"
         ]
       },
-      "articular": {
+      "Articular": {
         "Articulación interfalángica proximal (IFP)": [
           "Reducción",
           "Fijación",
@@ -1379,7 +1588,7 @@ export const estructuraJerarquica = {
         ]
       }
     },
-    "tumoral": {
+    "Tumoral": {
       "oseo": {
         "Tumor primario": [
           "Resección",
@@ -1402,7 +1611,7 @@ export const estructuraJerarquica = {
           "Ligadura"
         ]
       },
-      "nervioso": {
+      "Nervioso": {
         "Tumor de nervio digital": [
           "Resección",
           "Injerto"
@@ -1412,7 +1621,7 @@ export const estructuraJerarquica = {
           "Injerto"
         ]
       },
-      "musculo-tendinoso": {
+      "Musculo-tendinoso": {
         "Tumor tendinoso": [
           "Resección",
           "Reconstrucción tendinosa"
@@ -1422,7 +1631,7 @@ export const estructuraJerarquica = {
           "Reconstrucción tendinosa"
         ]
       },
-      "articular": {
+      "Articular": {
         "Tumor articular interfalángico": [
           "Resección",
           "Artrodesis"
@@ -1433,7 +1642,7 @@ export const estructuraJerarquica = {
         ]
       }
     },
-    "degenerativo": {
+    "Degenerativo": {
       "articular": {
         "Artrosis interfalángica distal (IFD)": [
           "Artrodesis",
@@ -1452,7 +1661,7 @@ export const estructuraJerarquica = {
         ]
       }
     },
-    "infeccioso": {
+    "Infeccioso": {
       "todos": {
         "Panadizo óseo (osteomielitis digital)": [
           "Debridamiento",

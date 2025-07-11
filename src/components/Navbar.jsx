@@ -51,6 +51,7 @@ const Navbar = () => {
             </Link>
           </li>
           <li>
+          <Link to="/complete-labels"> Etiquetar recientes</Link>
           <span className={styles.userName}>Dr. Cliente</span>
 
           </li>

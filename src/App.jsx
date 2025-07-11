@@ -8,6 +8,7 @@ import ImportPhoto from './components/ImportPhoto';
 import RecoverPhoto from './components/RecoverPhoto';
 import Despedida from './components/Despedida';
 import FormularioJerarquico from './components/FormularioJerarquico';
+import CompleteImageLabels from './components/CompleteImageLabels';
 
 function App() {
   return (
@@ -21,6 +22,7 @@ function App() {
           <Route path="recover-photo" element={<RecoverPhoto />} />
           <Route path="formulario" element={<FormularioJerarquico />} />
           <Route path="despedida" element={<Despedida />} />
+          <Route path="complete-labels" element={<CompleteImageLabels />} /> 
           {/* Agregá aquí futuras páginas como login, perfil, etc */}
         </Route>
       </Routes>

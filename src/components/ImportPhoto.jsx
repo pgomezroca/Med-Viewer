@@ -7,8 +7,8 @@ import FormularioJerarquico from "../components/FormularioJerarquico";
 import { FaArrowLeft } from 'react-icons/fa';
 
 const ImportPhoto = () => {
-  const [dni, setDni] = useState("");
-  const [formData, setFormData] = useState("");
+  
+  const [formData, setFormData] = useState({});
   const navigate = useNavigate();
   const fileInputRef = useRef(null);
   const [previewImages, setPreviewImages] = useState([]);
@@ -43,7 +43,7 @@ const ImportPhoto = () => {
     const uploads = Array.from(files).map(async (file) => {
       const data = new FormData();
       data.append("image", file);
-      data.append("optionalDNI", dni);
+      data.append("optionalDNI",formData.dni||"");
       data.append("region", formData.region);
       data.append("diagnostico", formData.diagnostico);
       data.append("tejido", formData.tejido || "");
@@ -113,15 +113,11 @@ const ImportPhoto = () => {
       )}
 
       {/* dni */}
-      <input
-        type="text"
-        placeholder="DNI (opcional)"
-        className={styles.input}
-        value={dni}
-        onChange={(e) => setDni(e.target.value)}
+     
+<FormularioJerarquico
+        campos={["dni", "region", "etiologia", "tejido", "diagnostico", "tratamiento", "fase"]}
+        onChange={setFormData}
       />
-
-      <FormularioJerarquico onChange={setFormData} />
       {/* Botón guardar con etiquetas (por ahora no hace nada) */}
       <button
         className={styles.button}

@@ -6,6 +6,7 @@
 
 
 .selectRow {
+  margin-top:10% ;
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
   gap: 1rem;
@@ -13,7 +14,9 @@
   max-width: 700px;
   margin-top:10px;
 }
-
+.selectRow input{
+  margin-bottom: 10px;background-color: red;
+}
 
 .selectRow select {
   padding: 8px;
