@@ -1,0 +1,15 @@
+
+
+
+.camerabackbutton{
+  background: transparent;
+  border: none;
+  font-size: 1rem;
+  font-weight: 500;
+  color: white;
+  cursor: pointer;
+  z-index: 10;
+}
+.camerabackbutton:focus {
+  outline: none;
+}

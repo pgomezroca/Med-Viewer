@@ -113,9 +113,6 @@
       cursor: pointer;
       z-index: 10;
     }
-    #camera-back-button:focus {
-      outline: none;
-    }
     
 #buttons{
   position: fixed;
@@ -131,7 +128,7 @@
   z-index: 10;
 }
 #buttons button{
-  background-color: #4fd1c5;
+  background-color: red;
   border: 1px solid white;
 }
     #controles {

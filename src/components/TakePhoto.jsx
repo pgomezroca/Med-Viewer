@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import piexif from "piexifjs";
 import { ArrowLeft } from "lucide-react";
 import FormularioJerarquico from "./FormularioJerarquico";
-
+import styles from '../styles/TakePhoto.module.css';
 const TakePhoto = () => {
   const navigate = useNavigate();
   const [screen, setScreen] = useState("form");
@@ -233,7 +233,7 @@ const TakePhoto = () => {
 
          
           <button onClick={startCamera}>Continuar</button>
-          <button id="camera-back-button" onClick={() => navigate(-1)}>
+          <button className={styles.camerabackbutton} onClick={() => navigate(-1)}>
             <ArrowLeft size={32} />
           </button>
         </div>
@@ -258,7 +258,7 @@ const TakePhoto = () => {
               setScreen("camera");
             }}
           >
-            📸 Sacar Foto
+            Sacar Foto
           </button>
           <button
             onClick={() => {
@@ -266,7 +266,7 @@ const TakePhoto = () => {
               setScreen("camera");
             }}
           >
-            🎥 Grabar Video
+             Grabar Video
           </button>
           <button
             onClick={() => setScreen("form")}
@@ -392,7 +392,7 @@ const TakePhoto = () => {
         const exifObj = {
           "0th": {
             [piexif.ImageIFD.Make]: "MedPhotoReact",
-            [piexif.ImageIFD.ImageDescription]: `${region} - ${etiologia} - ${tejido} - ${diagnostico} - ${tratamiento} - Fase: ${fase}`,
+            [piexif.ImageIFD.ImageDescription]: `${region} -  - ${diagnostico} - `,
           },
           Exif: {
             [piexif.ExifIFD.DateTimeOriginal]: new Date()
@@ -443,7 +443,7 @@ const TakePhoto = () => {
     setScreen("form");
   }}
 >
-  💾 Guardar todas
+   Guardar todas
 </button>
 
       <button
