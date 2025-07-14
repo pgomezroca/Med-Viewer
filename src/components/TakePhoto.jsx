@@ -277,26 +277,17 @@ const TakePhoto = () => {
         </div>
       )}
       {screen === "camera" && (
-        <div
-        style={{
-          position: "relative",
-          width: "100%",
-          height: "calc(100vh - 70px)", // deja lugar para la navbar
-          background: "#000",
-        }}
-        >
-          <video
+        <div className={styles.cameraContainer}>
+        <video
             ref={videoRef}
             autoPlay
             playsInline
-            style={{ width: "100%",height: "100%",  objectFit: "cover" }}
+            
           />
 
-          <div
-            style={{
-             
-            }}
-          >
+          <div>
+          
+          
             {modo === "foto" && (
               <button id="botonFoto"
               onClick={takePhoto} disabled={!videoReady}>
@@ -313,7 +304,7 @@ const TakePhoto = () => {
                   <button onClick={stopRecording}>⏹️ Detener</button>
                 )}
                 {videoBlobURL && (
-                  <button onClick={saveVideo}>💾 Guardar</button>
+                  <button onClick={saveVideo}> Guardar</button>
                 )}
               </>
             )}
@@ -454,7 +445,7 @@ const TakePhoto = () => {
           setScreen("form");
         }}
       >
-        🏁 Finalizar caso
+         Finalizar caso
       </button>
     </div>
   </div>
@@ -462,23 +453,29 @@ const TakePhoto = () => {
 
 
       {screen === 'videoPreview' && videoBlobURL && (
-        <div style={{ textAlign: 'center', padding: 20 }}>
-          <h3>Previsualización del Video</h3>
+        <div className={styles.previewWrapper}>
+          <h3 className={styles.previewTitle}>Previsualización del Video</h3>
           <video
             src={videoBlobURL}
             controls
-            style={{ maxWidth: '90%', borderRadius: '8px', boxShadow: '0 0 10px #aaa' }}
+            className={styles.previewVideo}
           />
-          <div style={{ marginTop: 20, display: 'flex', justifyContent: 'center', gap: 20 }}>
-            <button onClick={saveVideo}>💾 Guardar video</button>
-            <button onClick={() => {
+          <div className={styles.postPreviewControls}>
+            <button 
+            className={styles.controlButton} 
+            onClick={saveVideo}> Guardar video</button>
+            <button
+            className={styles.controlButton}  
+            onClick={() => {
               setVideoBlobURL(null);
               setScreen('camera');
-            }}>🔄 Grabar otro</button>
-            <button onClick={() => {
+            }}> Grabar otro</button>
+            <button
+            className={styles.controlButton}  
+             onClick={() => {
               setVideoBlobURL(null);
               setScreen('form');
-            }}>🏁 Finalizar caso</button>
+            }}> Finalizar caso</button>
           </div>
         </div>
       )}

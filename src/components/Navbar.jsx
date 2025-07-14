@@ -38,7 +38,7 @@ const Navbar = () => {
               className={`${styles.link} ${isActive('/import-photo') ? styles.active : ''}`}
               onClick={() => setMenuOpen(false)}
             >
-              Cargar Imagen
+              Ordena fotos
             </Link>
           </li>
           <li >
@@ -47,11 +47,17 @@ const Navbar = () => {
               className={`${styles.link} ${isActive('/recover-photo') ? styles.active : ''}`}
               onClick={() => setMenuOpen(false)}
             >
-              Mi Archivo
+              Haz un trabajo cientifico
             </Link>
           </li>
           <li>
-          <Link to="/complete-labels"> Etiquetar recientes</Link>
+          <Link 
+          to="/complete-labels"   
+          className={`${styles.link} ${isActive('/recover-photo') ? styles.active : ''}`}
+          > Etiqueta imagenes recientes
+          </Link>
+          </li>
+          <li>
           <span className={styles.userName}>Dr. Cliente</span>
 
           </li>
