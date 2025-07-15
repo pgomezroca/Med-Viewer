@@ -22,7 +22,7 @@ function App() {
           <Route path="recover-photo" element={<RecoverPhoto />} />
           <Route path="formulario" element={<FormularioJerarquico />} />
           <Route path="despedida" element={<Despedida />} />
-          <Route path="complete-labels" element={<CompleteImageLabels />} /> 
+          <Route path="complete-image-labels" element={<CompleteImageLabels />} /> 
           {/* Agregá aquí futuras páginas como login, perfil, etc */}
         </Route>
       </Routes>

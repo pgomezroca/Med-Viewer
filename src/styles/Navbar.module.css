@@ -76,7 +76,7 @@
 }
 
 /* Mobile */
-@media (max-width: 768px) {
+@media (max-width: 1300px) {
   .menuToggle {
     display: block;
   }
@@ -116,6 +116,7 @@
     .userName {
       margin-left: auto;
     }
+    
   }
 
   .open {

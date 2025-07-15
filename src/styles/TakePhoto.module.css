@@ -57,3 +57,32 @@
   cursor: pointer;
   transition: background-color 0.2s ease;
 }
+.videoPreviewContainer {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  max-width: 90%;
+  margin: 0 auto;
+}
+
+.videoPreviewWrapper{
+  position: relative;
+  display: inline-block;
+  max-width: 90%;
+  max-height: 40vh;
+}
+.iconButton{
+  position: absolute;
+  top: 8px;
+  right: 20px;
+  background: rgba(0, 0, 0, 0.6);
+  border: none;
+  font-size: 20px;
+  color: white;
+  cursor: pointer;
+  padding: 6px 10px;
+  border-radius: 50%;
+  transition: background-color 0.2s ease, transform 0.1s ease;
+  z-index: 2;
+}

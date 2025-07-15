@@ -52,8 +52,9 @@ const Navbar = () => {
           </li>
           <li>
           <Link 
-          to="/complete-labels"   
-          className={`${styles.link} ${isActive('/recover-photo') ? styles.active : ''}`}
+          to="/complete-image-labels"   
+          className={`${styles.link} ${isActive('/complete-image-labels') ? styles.active : ''}`}
+          onClick={() => setMenuOpen(false)}
           > Etiqueta imagenes recientes
           </Link>
           </li>

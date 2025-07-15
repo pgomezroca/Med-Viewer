@@ -451,15 +451,28 @@ const TakePhoto = () => {
   </div>
 )}
 
-
-      {screen === 'videoPreview' && videoBlobURL && (
-        <div className={styles.previewWrapper}>
-          <h3 className={styles.previewTitle}>Previsualización del Video</h3>
-          <video
-            src={videoBlobURL}
-            controls
-            className={styles.previewVideo}
-          />
+ {screen === 'videoPreview' && videoBlobURL && (
+ <div className={styles.previewWrapper}>
+   <h3 className={styles.previewTitle}>Previsualización del Video</h3>
+    <div className={styles.videoPreviewContainer}>
+    <div className={styles.videoPreviewWrapper}>
+  <video
+    src={videoBlobURL}
+    controls
+    className={styles.previewVideo}
+  />
+  <button
+    className={styles.iconButton}
+    onClick={() => {
+      setVideoBlobURL(null);
+      setScreen('camera');
+    }}
+    title="Eliminar este video y grabar otro"
+  >
+    ❌
+  </button>
+</div>
+</div>
           <div className={styles.postPreviewControls}>
             <button 
             className={styles.controlButton} 
