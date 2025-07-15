@@ -231,12 +231,14 @@ const TakePhoto = () => {
               setDiagnostico(data.diagnostico || "");
             }}
           />
-
-         
-          <button onClick={startCamera}>Continuar</button>
-          <button className={styles.camerabackbutton} onClick={() => navigate(-1)}>
-            <ArrowLeft size={32} />
+           <div className={styles.botonesCentrados}>
+             <button className={styles.ContinuarButton} onClick={startCamera}>Continuar</button>
+             <button className={styles.VolverButton} onClick={() => navigate(-1)}>
+             <ArrowLeft size={20} /> Volver
           </button>
+          </div>
+         
+         
         </div>
       )}
       {screen === "selectMode" && (
@@ -291,6 +293,7 @@ const TakePhoto = () => {
           
             {modo === "foto" && (
               <button id="botonFoto"
+              className={styles.takePhotoButton}
               onClick={takePhoto} disabled={!videoReady}>
                 {videoReady ? "Tomar foto" : "Cargando cámara…"}
               </button>

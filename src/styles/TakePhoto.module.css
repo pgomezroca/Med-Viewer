@@ -10,7 +10,7 @@
   cursor: pointer;
   z-index: 10;
 }
-#botonFoto {
+.takePhotoButton {
   position: absolute;
   bottom: 100px;
   left: 50%;
@@ -23,8 +23,40 @@
   cursor: pointer;
 
 }
-.camerabackbutton:focus {
-  outline: none;
+.botonesCentrados {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  margin-top: 24px;
+}
+
+/* Reutilizamos la anterior */
+.ContinuarButton {
+  width: 60%;
+  max-width: 400px;
+  padding: 12px 20px;
+  font-size: 16px;
+  border-radius: 8px;
+  border: 1.5px solid var(--color-accent);
+  background-color: white;
+  color: var(--color-text);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+  transition: background-color 0.3s ease;
+  cursor: pointer;
+}
+
+.VolverButton {
+  width: 60%;
+  max-width: 400px;
+  padding: 10px 20px;
+  font-size: 14px;
+  border-radius: 8px;
+  border: 1.5px solid var(--color-accent);
+  background-color: #f0f0f0;
+  color: var(--color-text);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  cursor: pointer;
 }
 .cameraContainer{
   position: relative;

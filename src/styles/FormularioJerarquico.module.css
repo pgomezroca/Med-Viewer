@@ -4,74 +4,33 @@
   --color-accent: #00d6c6;
 }
 
+.formContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 20px;
+  background-color: var(--color-bg);
+}
 
-.selectRow {
-  margin-top:10% ;
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-  gap: 1rem;
+/* Estilo unificado para inputs y selects */
+.formContainer input,
+.formContainer select {
   width: 100%;
-  max-width: 700px;
-  margin-top:10px;
-}
-.selectRow input{
-  margin-bottom: 10px;background-color: red;
-}
-
-.selectRow select {
-  padding: 8px;
-  font-size: 12px;
-  border-radius: 6px;
+  max-width: 400px;
+  padding: 10px 14px;
+  font-size: 14px;
+  border-radius: 8px;
   border: 1.5px solid var(--color-accent);
   background-color: white;
   color: var(--color-text);
-  min-width: 220px;
-  max-width: 100%;
-  flex-grow: 1;
-  box-shadow: 1px 1px 3px rgba(0,0,0,0.05);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
   transition: border-color 0.3s ease;
 }
-/* Solo aplica si están en grid de 2 por fila */
-.selectRow select:nth-child(2n+1):not(:only-child) {
-  border-top-right-radius: 0;
-  border-bottom-right-radius: 0;
-  padding-left:80px;
-}
 
-.selectRow select:nth-child(2n) {
-  border-top-left-radius: 0;
-  border-bottom-left-radius: 0;
-  
-padding-left: 20px;
-}
-
-
-select:focus {
+/* Enfasis al enfocar */
+.formContainer input:focus,
+.formContainer select:focus {
   outline: none;
   border-color: #0bbfb0;
-  box-shadow: 0 0 5px rgba(0, 214, 198, 0.4);
-}
-
-/* Responsive: una columna en pantallas pequeñas */
-@media (max-width: 600px) {
-  .selectRow {
-    flex-direction: column;
-    align-items: stretch;
-  }
-
-  select {
-    max-width: 200px;
-    padding: 2px;
-  font-size: 12px;
-  border-radius:none;
-  border: 1.5px solid var(--color-accent);
-  background-color: white;
-  color: var(--color-text);
-  min-width: 220px;
-  max-width: 100%;
-  flex-grow: 1;
-  box-shadow: 1px 1px 3px rgba(0,0,0,0.05);
-  transition: border-color 0.3s ease;
-
-  }
 }
