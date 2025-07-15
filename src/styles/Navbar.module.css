@@ -76,6 +76,7 @@
 }
 
 /* Mobile */
+/* Mobile */
 @media (max-width: 1300px) {
   .menuToggle {
     display: block;
@@ -86,7 +87,6 @@
     top: 64px;
     left: 0;
     right: 0;
-    
     background-color: var(--color-bg);
     flex-direction: column;
     align-items: center;
@@ -97,31 +97,34 @@
     transition: all 0.3s ease;
     pointer-events: none;
   }
-  .link {
-    text-decoration: none;
-    font-weight: 500;
-    color: var(--color-text);
-    padding: 8px 16px;
-    border:2px solid #00d6c6;
-    border-radius: 6px;
-    transition: background-color 0.2s ease, color 0.2s ease;
-    display: inline-block;
-  }
-  .userName {
-    color: #00d6c6;
-    text-align: center;
-    margin-top: 1rem;
-  }
-  @media (min-width: 769px) {
-    .userName {
-      margin-left: auto;
-    }
-    
-  }
 
   .open {
     transform: translateY(0);
     opacity: 1;
     pointer-events: auto;
+  }
+
+  .link {
+    text-decoration: none;
+    font-weight: 500;
+    color: var(--color-text);
+    padding: 8px 16px;
+    border: 2px solid #00d6c6;
+    border-radius: 6px;
+    transition: background-color 0.2s ease, color 0.2s ease;
+    display: inline-block;
+  }
+
+  .userName {
+    color: #00d6c6;
+    text-align: center;
+    margin-top: 1rem;
+  }
+}
+
+/* Pantallas grandes (desktop o tablet landscape) */
+@media (min-width: 769px) {
+  .userName {
+    margin-left: auto;
   }
 }
