@@ -4,6 +4,7 @@ import piexif from "piexifjs";
 import { ArrowLeft } from "lucide-react";
 import FormularioJerarquico from "./FormularioJerarquico";
 import styles from '../styles/TakePhoto.module.css';
+
 const TakePhoto = () => {
   const navigate = useNavigate();
   const [screen, setScreen] = useState("form");
@@ -17,7 +18,7 @@ const TakePhoto = () => {
   const canvasRef = useRef(null);
   const streamRef = useRef(null);
   const apiUrl = import.meta.env.VITE_API_URL;
-
+  const [isSaving, setIsSaving] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
   const [videoBlobURL, setVideoBlobURL] = useState(null);
   const [fotosAcumuladas, setFotosAcumuladas] = useState([]);
@@ -322,7 +323,7 @@ const TakePhoto = () => {
 
 {screen === 'photo' && (
   <div style={{ padding: 20 }}>
-    <h3 style={{ textAlign: 'center' }}>Fotos tomadas</h3>
+    <h3 style={{ textAlign: 'center' }}>Pre-visualizacion</h3>
 
     {/* Carrusel horizontal de fotos acumuladas */}
     <div
@@ -379,6 +380,7 @@ const TakePhoto = () => {
       <button
   onClick={async () => {
     for (let foto of fotosAcumuladas) {
+      setIsSaving(true); 
       try {
         const exifObj = {
           "0th": {
@@ -417,6 +419,7 @@ const TakePhoto = () => {
           const error = await uploadRes.json();
           console.error("❌ Error al subir:", error);
           alert("Error al subir una imagen");
+          setIsSaving(false);
           return;
         }
 
@@ -424,6 +427,7 @@ const TakePhoto = () => {
         console.log("✅ Imagen subida:", imageData);
       } catch (err) {
         console.error("Error al subir imagen:", err);
+        setIsSaving(false);
         alert("No se pudo subir una imagen");
       }
     }
@@ -431,10 +435,13 @@ const TakePhoto = () => {
     alert("✅ Todas las fotos fueron subidas correctamente");
     setFotosAcumuladas([]);
     setPhotoData(null);
+    setIsSaving(false);
     setScreen("form");
   }}
+  disabled={isSaving}
 >
-   Guardar todas
+   
+   {isSaving ? "Guardando..." : "Guardar todas"}
 </button>
 
       <button

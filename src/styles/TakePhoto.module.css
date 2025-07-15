@@ -10,6 +10,19 @@
   cursor: pointer;
   z-index: 10;
 }
+#botonFoto {
+  position: absolute;
+  bottom: 100px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 80px; height: 80px;
+  background:#4fd1c5;
+  border: 5px solid white;
+  border-radius: 50%;
+  z-index: 2;
+  cursor: pointer;
+
+}
 .camerabackbutton:focus {
   outline: none;
 }
@@ -75,7 +88,7 @@
 .iconButton{
   position: absolute;
   top: 8px;
-  right: 20px;
+  right: 15px;
   background: rgba(0, 0, 0, 0.6);
   border: none;
   font-size: 20px;
