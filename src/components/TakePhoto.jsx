@@ -22,6 +22,7 @@ const TakePhoto = () => {
   const [isRecording, setIsRecording] = useState(false);
   const [videoBlobURL, setVideoBlobURL] = useState(null);
   const [fotosAcumuladas, setFotosAcumuladas] = useState([]);
+  const [fase, setFase] = useState("");
 
   const mediaRecorderRef = useRef(null);
   const recordedChunksRef = useRef([]);
@@ -224,12 +225,14 @@ const TakePhoto = () => {
         <div id="formulario">
           
           <FormularioJerarquico
-            campos={["dni", "region", "diagnostico"]}
+            campos={["dni", "region", "diagnostico","fase"]}
             onChange={(data) => {
               setDni(data.dni || "");
               setRegion(data.region || "");
               setDiagnostico(data.diagnostico || "");
-            }}
+              setFase(data.fase || "");
+         }}
+            
           />
            <div className={styles.botonesCentrados}>
              <button className={styles.ContinuarButton} onClick={startCamera}>Continuar</button>
@@ -388,7 +391,7 @@ const TakePhoto = () => {
         const exifObj = {
           "0th": {
             [piexif.ImageIFD.Make]: "MedPhotoReact",
-            [piexif.ImageIFD.ImageDescription]: `${region} -  - ${diagnostico} - `,
+            [piexif.ImageIFD.ImageDescription]: `${region} -  - ${diagnostico} - ${fase}`,
           },
           Exif: {
             [piexif.ExifIFD.DateTimeOriginal]: new Date()
@@ -409,7 +412,7 @@ const TakePhoto = () => {
         formData.append("region", region);
         
         formData.append("diagnostico", diagnostico);
-        
+        formData.append("fase",fase);
         formData.append("optionalDNI", dni);
         formData.append("uploadedBy", "60f71889c9d1f814c8a3b123");
 
