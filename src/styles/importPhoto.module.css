@@ -29,7 +29,7 @@
 .backButton {
   background: none;
   border: none;
-  color: var(--color-text);
+  color: whitesmoke;
   font-size: 14px;
   display: flex;
   align-items: center;
@@ -43,12 +43,11 @@
 
 .button {
   padding: 12px 24px;
-  font-size: 18px;
+  font-size: 30px;
   background:transparent;
   color:white;
-  border: #4fd1c5;
+  border: #4fd1c5 !important;
   border-radius: 8px;
-  border: none;
   cursor: pointer;
   margin-top: 0px!important;
 }

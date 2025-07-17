@@ -73,15 +73,7 @@
   border-radius: 5px;
   border: none;
 }
- #pantallaUpload button{
-  padding: 12px 24px;
-  font-size: 18px;
-  background: white;
-  color: black;
-  border: none;
-  border-radius: 8px;
-  cursor: pointer;
- }
+ 
     #video, #foto {
       position: absolute;
       top: 0; left: 0;

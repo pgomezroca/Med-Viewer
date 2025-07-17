@@ -121,7 +121,7 @@ const ImportPhoto = () => {
       {/* Botón guardar con etiquetas (por ahora no hace nada) */}
       <button
         className={styles.button}
-        style={{ marginTop: "1rem" }}
+        
         onClick={handleGuardar}
       >
         Guardar con etiquetas
