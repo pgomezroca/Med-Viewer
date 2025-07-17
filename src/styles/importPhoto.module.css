@@ -1,10 +1,13 @@
+h3{
+  color: aliceblue;
+}
 .pantallaUpload {
-  
+  height:100% ;
   background: black;
-  display: flex;
+  display:block;
   flex-direction: column;
   overflow-y: auto;   
-  justify-content: center;
+  
   align-items: center;
   gap: 20px;
   z-index: 3;
@@ -81,4 +84,33 @@
   margin-top: 10px;
   font-size: 14px;
   color: #4fd1c5;
+}
+@media (max-width: 768px) {
+  .pantallaUpload {
+    height: 100%;                /* ⚠️ hereda el alto de mainContent */
+  overflow-y: auto;            /* ✅ acá va el scroll */
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: stretch;
+  padding: 16px;
+  gap: 20px;
+  box-sizing: border-box;
+  background: black;
+  }
+  h3{
+    font-size: 12px;
+    text-align: center;
+  }
+  .backButton{
+    size: 10px;
+  }
+  .previewCarousel {
+    display: flex;
+    overflow-x: auto;
+    gap: 10px;
+    height: 100px;
+    scroll-snap-type: x mandatory;
+    padding: 0 8px;
+  }
 }

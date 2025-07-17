@@ -19,7 +19,7 @@ function Navbar() {
     <nav className={styles.navbar}>
       <div className={styles.navContent}>
         <Link to="/welcome" className={styles.logo}>
-          MED_viewer
+          MED-VIEWER
         </Link>
 
         <button

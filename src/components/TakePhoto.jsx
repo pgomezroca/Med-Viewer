@@ -221,6 +221,7 @@ const TakePhoto = () => {
 
   return (
     <div>
+      <h2>Toma fotos,organizalas y guardalas en una sola operación</h2>
       {screen === "form" && (
         <div id="formulario">
           

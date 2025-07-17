@@ -75,11 +75,10 @@ const ImportPhoto = () => {
 
   return (
     <div className={styles.pantallaUpload}>
-     <div className={styles.topButtonRow}>
-      <button className={styles.backButton} onClick={() => navigate(-1)}>
-        <FaArrowLeft /> Atrás
-      </button>
-
+       
+       <h3>Clasifica tus fotos:Importalas y luego dales etiquetas con el formulario</h3>
+    
+      <div className={styles.topButtonRow}>
      <button className={styles.button} onClick={handleImportClick}>
         Importar fotos
       </button>
@@ -134,7 +133,12 @@ const ImportPhoto = () => {
       >
         Finalizar
       </button>
+      <button className={styles.backButton} onClick={() => navigate(-1)}>
+        <FaArrowLeft /> Atrás
+      </button>
+      <div style={{ height: "300px", background: "red" }}></div>
     </div>
+    
   );
 };
 
