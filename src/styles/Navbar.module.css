@@ -74,9 +74,21 @@
   background-color: rgba(17, 76, 95, 0.15);
   font-weight: 600;
 }
+@media (min-width: 1301px) {
+  .navLinks {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    position: static;
+    transform: none;
+    opacity: 1;
+    pointer-events: auto;
+    gap: 1.5rem;
+    padding: 0;
+  }
+}
 
-/* Mobile */
-/* Mobile */
+/* Mobile y tablets*/
 @media (max-width: 1300px) {
   .menuToggle {
     display: block;

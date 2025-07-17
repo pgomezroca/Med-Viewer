@@ -1,8 +1,10 @@
 .container {
   display: flex;
-  height: 100vh;
+  min-height: 100dvh;
+  flex-direction: column;
   font-family: 'Segoe UI', sans-serif;
 }
+
 
 .left {
   flex: 1;
@@ -60,4 +62,25 @@
   text-decoration: underline;
   cursor: pointer;
   font-size: 0.95rem;
+}
+@media (max-width: 768px) {
+  .container {
+    flex-direction: column;
+    padding-bottom: 2rem;
+  }
+
+  .left, .right {
+    width: 100%;
+    padding: 2rem 1rem;
+    text-align: center;
+  }
+
+  .button {
+    width: 100%;
+    max-width: 300px;
+  }
+
+  .link {
+    margin-bottom: 2rem;
+  }
 }

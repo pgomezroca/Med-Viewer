@@ -20,7 +20,7 @@ function Navbar() {
     <nav className={styles.navbar}>
       <div className={styles.navContent}>
         <Link to="/welcome" className={styles.logo}>
-          MED_viewer
+          MED-VIEWER
         </Link>
 
         <button
@@ -49,7 +49,7 @@ function Navbar() {
                   className={`${styles.link} ${isActive('/welcome/import-photo') ? styles.active : ''}`}
                   onClick={() => setMenuOpen(false)}
                 >
-                  Importar Imágenes
+                  clasificar fotos
                 </Link>
               </li>
               <li>
@@ -58,7 +58,7 @@ function Navbar() {
                   className={`${styles.link} ${isActive('/welcome/recover-photo') ? styles.active : ''}`}
                   onClick={() => setMenuOpen(false)}
                 >
-                  Haz un trabajo científico
+                  Archivo por patologia
                 </Link>
               </li>
               <li>
@@ -67,7 +67,7 @@ function Navbar() {
                   className={`${styles.link} ${isActive('/welcome/complete-image-labels') ? styles.active : ''}`}
                   onClick={() => setMenuOpen(false)}
                 >
-                  Etiquetas Manuales
+                  Completar etiquetas
                 </Link>
               </li>
               <li>

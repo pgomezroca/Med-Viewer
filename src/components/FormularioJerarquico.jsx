@@ -30,7 +30,8 @@ const FormularioJerarquico = ({ campos = [], onChange }) => {
   }, [dni, region, etiologia, tejido, diagnostico, tratamiento, fase]);
 
   return (
-    <div className={styles.formContainer}>
+    <div 
+    className={styles.formContainer}>
       {campos.includes("dni") && (
         <input
           type="text"

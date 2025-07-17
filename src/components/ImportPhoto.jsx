@@ -79,11 +79,10 @@ const ImportPhoto = () => {
 
   return (
     <div className={styles.pantallaUpload}>
-     <div className={styles.topButtonRow}>
-      <button className={styles.backButton} onClick={() => navigate(-1)}>
-        <FaArrowLeft /> Atrás
-      </button>
-
+       <div className={styles.scrollableContent}>
+       <h3>Clasifica tus fotos:Importalas y luego dales etiquetas con el formulario</h3>
+    
+      <div className={styles.topButtonRow}>
      <button className={styles.button} onClick={handleImportClick}>
         Importar fotos
       </button>
@@ -118,14 +117,16 @@ const ImportPhoto = () => {
 
       {/* dni */}
      
-<FormularioJerarquico
+   , <FormularioJerarquico
         campos={["dni", "region", "etiologia", "tejido", "diagnostico", "tratamiento", "fase"]}
         onChange={setFormData}
       />
+      </div> 
+      <div className={styles.finalButtons}>
       {/* Botón guardar con etiquetas (por ahora no hace nada) */}
       <button
         className={styles.button}
-        style={{ marginTop: "1rem" }}
+        
         onClick={handleGuardar}
       >
         Guardar con etiquetas
@@ -138,6 +139,11 @@ const ImportPhoto = () => {
       >
         Finalizar
       </button>
+      <button className={styles.backButton} onClick={() => navigate(-1)}>
+        <FaArrowLeft /> Atrás
+      </button>
+      
+    </div>
     </div>
   );
 };
