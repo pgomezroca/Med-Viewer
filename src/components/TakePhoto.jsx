@@ -22,6 +22,7 @@ const TakePhoto = () => {
   const [isRecording, setIsRecording] = useState(false);
   const [videoBlobURL, setVideoBlobURL] = useState(null);
   const [fotosAcumuladas, setFotosAcumuladas] = useState([]);
+  const token = localStorage.getItem("token");
 
   const mediaRecorderRef = useRef(null);
   const recordedChunksRef = useRef([]);
@@ -120,6 +121,9 @@ const TakePhoto = () => {
   
       const uploadRes = await fetch(`${apiUrl}/api/images/upload`, {
         method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`
+        },
         body: formData,
       });
   
@@ -196,6 +200,9 @@ const TakePhoto = () => {
   
       const uploadRes = await fetch(`${apiUrl}/api/images/upload`, {
         method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`
+        },
         body: formData,
       });
   
@@ -415,6 +422,9 @@ const TakePhoto = () => {
 
         const uploadRes = await fetch(`${apiUrl}/api/images/upload`, {
           method: "POST",
+          headers: {
+            Authorization: `Bearer ${token}`
+          },
           body: formData,
         });
 

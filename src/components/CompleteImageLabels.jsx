@@ -8,6 +8,7 @@ const CompleteImageLabels = () => {
   const [formInitial, setFormInitial] = useState({});
   const [busqueda, setBusqueda] = useState({ region: "", diagnostico: "" });
   const [buscando, setBuscando] = useState(false);
+  const token = localStorage.getItem("token");
 
   const currentImage = imagenesFiltradas[currentIndex];
 
@@ -31,7 +32,7 @@ const CompleteImageLabels = () => {
     try {
       const res = await fetch(`${import.meta.env.VITE_API_URL}/api/images/${currentImage._id}`, {
         method: "PUT",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
         body: JSON.stringify(payload),
       });
 
@@ -93,7 +94,12 @@ const CompleteImageLabels = () => {
             query.append("diagnostico", busqueda.diagnostico);
             if (busqueda.region) query.append("region", busqueda.region);
 
-            const res = await fetch(`${import.meta.env.VITE_API_URL}/api/images/search-incomplete?${query}`);
+            const res = await fetch(`${import.meta.env.VITE_API_URL}/api/images/incomplete?${query}`, {
+              method: "GET",
+              headers: {
+                Authorization: `Bearer ${token}`,
+              },
+            });
             if (!res.ok) {
               const text = await res.text(); // 👈 capturamos lo que devolvió el servidor
               throw new Error(`(${res.status}) ${text}`);

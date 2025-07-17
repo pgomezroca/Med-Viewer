@@ -2,9 +2,11 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import styles from '../styles/Login.module.css';
+import { useAuth } from '../context/AuthContext';
 
 function Login() {
   const navigate = useNavigate();
+  const { login } = useAuth();
 
   const [credentials, setCredentials] = useState({
     email: '',
@@ -19,15 +21,24 @@ function Login() {
     }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Simulación de login exitoso (cuando Nico conecte el backend, acá va fetch/post)
-    console.log('Intentando login con:', credentials);
+    try {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/auth/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(credentials),
+      });
 
-    // Simulamos guardado de token y redireccionamos
-    localStorage.setItem("token", "FAKE-TOKEN");
-    navigate('/welcome');
+      if (!res.ok) throw new Error('Credenciales inválidas');
+
+      const data = await res.json();
+      login(data.token);
+      navigate('/welcome');
+    } catch (err) {
+      alert('Error al iniciar sesión: ' + err.message);
+    }
   };
 
   return (

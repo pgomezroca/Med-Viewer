@@ -13,6 +13,7 @@ const ImportPhoto = () => {
   const fileInputRef = useRef(null);
   const [previewImages, setPreviewImages] = useState([]);
   const apiUrl = import.meta.env.VITE_API_URL;
+  const token = localStorage.getItem("token");
 
   const handleImportClick = () => {
     if (fileInputRef.current) {
@@ -54,6 +55,9 @@ const ImportPhoto = () => {
       try {
         const res = await fetch(`${apiUrl}/api/images/upload`, {
           method: "POST",
+          headers: {
+            Authorization: `Bearer ${token}`
+          },
           body: data,
         });
 

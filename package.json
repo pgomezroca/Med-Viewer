@@ -13,6 +13,7 @@
     "bootstrap": "^5.3.7",
     "dotenv": "^16.5.0",
     "icons": "^1.0.0",
+    "jwt-decode": "^4.0.0",
     "lucide-react": "^0.518.0",
     "piexifjs": "^1.0.6",
     "react": "^19.1.0",
