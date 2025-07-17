@@ -87,8 +87,8 @@ h3{
 }
 @media (max-width: 768px) {
   .pantallaUpload {
-    height: 100%;                /* ⚠️ hereda el alto de mainContent */
-  overflow-y: auto;            /* ✅ acá va el scroll */
+    height: calc(100vh - 60px);
+     
   display: flex;
   flex-direction: column;
   justify-content: flex-start;
@@ -98,6 +98,16 @@ h3{
   box-sizing: border-box;
   background: black;
   }
+  .scrollableContent {
+    flex-grow: 1;
+    overflow-y: auto;
+    padding: 16px;
+  }
+  .finalButtons {
+    padding: 16px;
+    background: black;
+  }
+  
   h3{
     font-size: 12px;
     text-align: center;
