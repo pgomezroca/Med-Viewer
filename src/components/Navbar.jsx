@@ -1,17 +1,18 @@
 import React, { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import styles from '../styles/Navbar.module.css';
+import { useAuth } from '../context/AuthContext';
 
 function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
-  const token = localStorage.getItem("token");
+  const { user, logout } = useAuth();
 
   const isActive = (path) => location.pathname === path;
 
   const handleLogout = () => {
-    localStorage.removeItem("token");
+    logout();
     navigate('/');
   };
 
@@ -30,8 +31,9 @@ function Navbar() {
         </button>
 
         <ul className={`${styles.navLinks} ${menuOpen ? styles.open : ''}`}>
-          {token ? (
+          {user ? (
             <>
+              <li className={styles.greeting}>Hola, {user.nombre}!</li>
               <li>
                 <Link
                   to="/welcome/take-photo"
