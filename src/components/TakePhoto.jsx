@@ -233,16 +233,13 @@ const TakePhoto = () => {
               setDiagnostico(data.diagnostico || "");
               setFase(data.fase || "");
          }}
-            
           />
            <div className={styles.botonesCentrados}>
              <button className={styles.ContinuarButton} onClick={startCamera}>Continuar</button>
-             <button className={styles.VolverButton} onClick={() => navigate(-1)}>
+             <button className={styles.camerabackbutton} onClick={() => navigate(-1)}>
              <ArrowLeft size={20} /> Volver
-          </button>
+            </button>
           </div>
-         
-         
         </div>
       )}
       {screen === "selectMode" && (
@@ -252,7 +249,6 @@ const TakePhoto = () => {
             flexDirection: "column",
             alignItems: "center",
             justifyContent: "center",
-            
             background: "#000",
             color: "#fff",
             gap: "20px",
@@ -287,23 +283,22 @@ const TakePhoto = () => {
         <div className={styles.cameraContainer}>
         <video
             ref={videoRef}
+            className={styles.video}
+            controls
             autoPlay
             playsInline
-            
+            muted
           />
-
-          <div>
-          
-          
-            {modo === "foto" && (
-              <button id="botonFoto"
+            <div className={styles.cameraOverlay}>
+               {modo === "foto" && (
+              <button 
               className={styles.takePhotoButton}
               onClick={takePhoto} disabled={!videoReady}>
                 {videoReady ? "Tomar foto" : "Cargando cámara…"}
               </button>
-            )}
+             )}
 
-            {modo === "video" && (
+             {modo === "video" && (
               <>
                 {!isRecording && (
                   <button onClick={startRecording}>🎥 Empezar</button>
@@ -315,7 +310,7 @@ const TakePhoto = () => {
                   <button onClick={saveVideo}> Guardar</button>
                 )}
               </>
-            )}
+             )}
           </div>
 
           <button

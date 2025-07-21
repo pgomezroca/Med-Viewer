@@ -12,6 +12,8 @@ const ImportPhoto = () => {
   const navigate = useNavigate();
   const fileInputRef = useRef(null);
   const [previewImages, setPreviewImages] = useState([]);
+  const [fileList, setFileList] = useState([]); 
+  const [subiendo, setSubiendo] = useState(false);
   const apiUrl = import.meta.env.VITE_API_URL;
 
   const handleImportClick = () => {
@@ -24,6 +26,7 @@ const ImportPhoto = () => {
     const files = Array.from(event.target.files);
     const urls = files.map((file) => URL.createObjectURL(file));
     setPreviewImages((prev) => [...prev, ...urls]);
+    setFileList((prev) => [...prev, ...files]);
   };
 
   const handleGuardar = async () => {
@@ -38,8 +41,12 @@ const ImportPhoto = () => {
       );
       return;
     }
-    const files = fileInputRef.current.files;
-
+    const files = fileList;
+        if (!files || files.length === 0) {
+         alert("No hay imágenes seleccionadas.");
+       return;
+      }
+      setSubiendo(true);
     const uploads = Array.from(files).map(async (file) => {
       const data = new FormData();
       data.append("image", file);
@@ -57,20 +64,31 @@ const ImportPhoto = () => {
           body: data,
         });
 
-        if (!res.ok) throw new Error("Error en la subida");
+        if (!res.ok) throw new Error(`Respuesta inválida (${res.status})`);
 
         const result = await res.json();
         console.log("✅ Imagen subida:", result);
+        return { success: true };
       } catch (err) {
         console.error("❌ Error subiendo imagen:", err);
-        alert(`Error al subir una imagen: ${err.message}`);
+        return { success: false, message: err.message };
       }
     });
 
-    await Promise.all(uploads);
-    alert("✅ Todas las imágenes fueron subidas correctamente");
-    setPreviewImages([]);
-    fileInputRef.current.value = "";
+    const results=await Promise.all(uploads);
+    setSubiendo(false);
+    const fallidas = results.filter((r) => !r.success);
+    if (fallidas.length > 0) {
+      alert(`❌ ${fallidas.length} imágenes fallaron al subir.`);
+    } else {
+      alert("✅ Todas las imágenes fueron subidas correctamente");
+      setPreviewImages([]);
+      fileInputRef.current.value = "";
+    }
+  };
+  const handleRemoveImage = (indexToRemove) => {
+    setPreviewImages((prev) => prev.filter((_, i) => i !== indexToRemove));
+    setFileList((prev) => prev.filter((_, i) => i !== indexToRemove));
   };
 
   return (
@@ -98,14 +116,23 @@ const ImportPhoto = () => {
        <div className={styles.previewContainer}>
       
        <div className={styles.previewCarousel}>
-         {previewImages.map((src, index) => (
-           <img
-             key={index}
-             src={src}
-             alt={`preview-${index}`}
-             className={styles.previewImg}
-           />
-         ))}
+       {previewImages.map((src, index) => (
+    <div key={index} className={styles.previewWrapper}>
+      <img
+        src={src}
+        alt={`preview-${index}`}
+        className={styles.previewImg}
+      />
+      <button
+        className={styles.removeButton}
+        onClick={() => handleRemoveImage(index)}
+        aria-label="Eliminar imagen"
+      >
+        ✖
+      </button>
+    </div>
+  
+  ))}
        </div>
      </div>
      
@@ -120,12 +147,10 @@ const ImportPhoto = () => {
       </div> 
       <div className={styles.finalButtons}>
       {/* Botón guardar con etiquetas (por ahora no hace nada) */}
-      <button
-        className={styles.button}
-        
-        onClick={handleGuardar}
+      <button className={styles.button}
+              onClick={handleGuardar}
       >
-        Guardar con etiquetas
+       {subiendo ? "Guardando..." : "Guardar con etiquetas"} 
       </button>
 
       <button

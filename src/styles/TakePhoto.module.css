@@ -2,28 +2,58 @@
 h2{
   text-align: center;
 }
+.cameraContainer {
+  position: relative;
+  width: 100%;
+  height: 100dvh; /* usa viewport dinámico real */
+  background: #000;
+  overflow: hidden;
+}
+video {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  z-index: 1;
+}
+.cameraOverlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  justify-content: center; 
+  align-items: flex-end;   
+  padding-bottom: 1.5rem;  
+  pointer-events: none;     
+}
 
 .camerabackbutton{
-  background: transparent;
-  border: none;
-  font-size: 1rem;
-  font-weight: 500;
-  color: white;
+  position: relative;       
+  margin: 0;                
+  pointer-events: auto;    
+  width: 80px;
+  height: 80px;
+  background: #4fd1c5;
+  border: 5px solid white;
+  border-radius: 50%;
   cursor: pointer;
+  font-weight: bold;
   z-index: 10;
 }
 .takePhotoButton {
-  position: absolute;
-  bottom: 100px;
+  pointer-events: auto;
+  position: fixed;
+  bottom: 8rem;
   left: 50%;
   transform: translateX(-50%);
-  width: 80px; height: 80px;
-  background:#4fd1c5;
+  width: 80px;
+  height: 80px;
+  background: #4fd1c5;
   border: 5px solid white;
   border-radius: 50%;
-  z-index: 2;
+  z-index: 10;
   cursor: pointer;
-
 }
 .botonesCentrados {
   display: flex;
@@ -60,12 +90,7 @@ h2{
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
   cursor: pointer;
 }
-.cameraContainer{
-  position: relative;
- width: 100%;
- height: calc(100vh - 70px);
- background: #000
-}
+
 .previewWrapper{
   display: flex;
   flex-direction: column;
@@ -133,3 +158,58 @@ h2{
   transition: background-color 0.2s ease, transform 0.1s ease;
   z-index: 2;
 }
+@media (max-width: 600px) {
+  h2 {
+    font-size: 1.1rem;
+    padding: 0 1rem;
+  }
+
+  .takePhotoButton {
+    margin-top: 2rem; /* más arriba en mobile */
+    width: 64px;
+    height: 64px;
+  }
+
+  .cameraContainer {
+    height: 100dvh; /* aseguramos altura real en mobile también */
+  }
+
+  video {
+    width: 100%;
+    height: auto;
+    object-fit: contain;
+  }
+
+  .ContinuarButton,
+  .VolverButton {
+    width: 80%;
+    font-size: 14px;
+  }
+
+  .previewVideo {
+    max-width: 100%;
+    max-height: 30vh;
+  }
+
+  .videoPreviewWrapper {
+    max-height: 30vh;
+  }
+
+  .controlButton {
+    font-size: 14px;
+    padding: 8px 14px;
+  }
+
+  .selectModeContainer button {
+    font-size: 0.9rem;
+    padding: 0.6rem 1.2rem;
+  }
+
+  .camerabackbutton {
+    top: 0.75rem;
+    left: 0.75rem;
+    font-size: 1rem;
+    padding: 0.25rem;
+  }
+}
+
