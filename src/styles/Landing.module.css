@@ -1,13 +1,15 @@
 .container {
   display: flex;
-  min-height: 100dvh;
-  flex-direction: column;
+  
+  flex-direction: row;
   font-family: 'Segoe UI', sans-serif;
+  
 }
 
 
 .left {
   flex: 1;
+  min-height: 50vh;
   background-color: white;
   display: flex;
   flex-direction: column;
@@ -19,6 +21,7 @@
 
 .right {
   flex: 1;
+  min-height: 50vh;
   background-color: #e0f2fe; /* Tailwind sky-100 */
   display: flex;
   flex-direction: column;
@@ -63,16 +66,21 @@
   cursor: pointer;
   font-size: 0.95rem;
 }
-@media (max-width: 768px) {
+@media (max-width: 1068px) {
   .container {
+    
     flex-direction: column;
-    padding-bottom: 2rem;
+    
+    
   }
 
   .left, .right {
-    width: 100%;
-    padding: 2rem 1rem;
+    min-height: 50vh;
     text-align: center;
+  }
+  .title {
+    font-size: 2rem;
+    margin-bottom: 1rem;
   }
 
   .button {
@@ -81,6 +89,7 @@
   }
 
   .link {
-    margin-bottom: 2rem;
+    margin-bottom:6rem;
+    font-size:0.9rem ;
   }
 }
