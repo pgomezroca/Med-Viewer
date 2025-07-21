@@ -9,6 +9,7 @@ export const useCamera = ({ initialMode = "foto", onSave }) => {
   const [isRecording, setIsRecording] = useState(false);
   const [videoBlobURL, setVideoBlobURL] = useState(null);
   const [cameraError, setCameraError] = useState(null);
+  const [isInitializing, setIsInitializing] = useState(false);
 
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
@@ -30,7 +31,14 @@ export const useCamera = ({ initialMode = "foto", onSave }) => {
 
   const initCamera = useCallback(async () => {
     try {
+      setIsInitializing(true);
       setCameraError(null);
+      setVideoReady(false);
+      
+      if (streamRef.current) {
+        streamRef.current.getTracks().forEach(track => track.stop());
+      }
+      
       const stream = await navigator.mediaDevices.getUserMedia({
         video: { facingMode: "environment" },
       });
@@ -40,13 +48,23 @@ export const useCamera = ({ initialMode = "foto", onSave }) => {
       
       if (video) {
         video.srcObject = stream;
-        await video.play();
+        await new Promise((resolve) => {
+          video.onloadedmetadata = () => {
+            video.play().then(resolve).catch(err => {
+              console.error("Error al reproducir video:", err);
+              setCameraError("Error al iniciar cámara");
+              resolve();
+            });
+          };
+        });
         setVideoReady(true);
       }
     } catch (err) {
       console.error("Error al iniciar cámara:", err);
       setCameraError(err.message);
       setVideoReady(false);
+    } finally {
+      setIsInitializing(false);
     }
   }, []);
 
@@ -246,6 +264,7 @@ export const useCamera = ({ initialMode = "foto", onSave }) => {
     isRecording,
     modo,
     cameraError,
+    isInitializing,
     
     // Setters
     setModo,

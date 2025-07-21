@@ -168,7 +168,8 @@ const RecoverPhoto = () => {
     stopRecording,
     saveVideo,
     initCamera,
-    stopCamera
+    stopCamera,
+    isInitializing
   } = useCamera({
     initialMode: modoCamara,
     onSave: async (blob, filename) => {
@@ -200,8 +201,17 @@ const RecoverPhoto = () => {
   });
 
   useEffect(() => {
-    if (mostrarCamara) initCamera();
-    else stopCamera();
+    if (mostrarCamara) {
+      setPhotoData(null);
+      setVideoBlobURL(null);
+      initCamera();
+    } else {
+      stopCamera();
+    }
+    
+    return () => {
+      stopCamera();
+    };
   }, [mostrarCamara]);
 
   if (mostrarCamara) {
@@ -217,37 +227,62 @@ const RecoverPhoto = () => {
         display: 'flex',
         flexDirection: 'column'
       }}>
+        {/* Canvas oculto */}
         <canvas 
           ref={canvasRef} 
           style={{ display: 'none' }} 
-          width={1280}  // Dimensiones por defecto
+          width={1280}
           height={720}
         />
-        {/* Vista de la cámara o foto capturada */}
-        {!photoData ? (
+        
+        {/* Contenedor de vista previa */}
+        <div style={{ flex: 1, position: 'relative' }}>
+          {/* Vista de la cámara */}
           <video 
             ref={videoRef} 
             autoPlay 
             playsInline 
             style={{ 
-              flex: 1,
+              width: '100%',
+              height: '100%',
               objectFit: 'cover',
-              transform: 'scaleX(-1)'
+              transform: 'scaleX(-1)',
+              display: photoData ? 'none' : 'block'
             }} 
           />
-        ) : (
-          <img 
-            src={photoData} 
-            alt="Preview" 
-            style={{
-              flex: 1,
-              objectFit: 'contain',
-              backgroundColor: 'black'
-            }}
-          />
-        )}
-  
-        {/* Controles */}
+          
+          {/* Foto capturada */}
+          {photoData && (
+            <img 
+              src={photoData} 
+              alt="Preview" 
+              style={{
+                width: '100%',
+                height: '100%',
+                objectFit: 'contain',
+                backgroundColor: 'black'
+              }}
+            />
+          )}
+          
+          {/* Video grabado */}
+          {videoBlobURL && (
+            <video 
+              src={videoBlobURL} 
+              controls 
+              style={{
+                position: 'absolute',
+                top: 20,
+                left: 20,
+                width: '150px',
+                borderRadius: 8,
+                zIndex: 1002
+              }}
+            />
+          )}
+        </div>
+        
+        {/* Controles - siempre visibles pero deshabilitados cuando no está listo */}
         <div style={{
           position: 'absolute',
           bottom: 20,
@@ -256,7 +291,8 @@ const RecoverPhoto = () => {
           display: 'flex',
           justifyContent: 'center',
           gap: 20,
-          padding: '10px'
+          padding: '10px',
+          zIndex: 1001
         }}>
           {modoCamara === 'foto' ? (
             <>
@@ -268,9 +304,9 @@ const RecoverPhoto = () => {
                     width: 60,
                     height: 60,
                     borderRadius: '50%',
-                    background: 'white',
+                    background: videoReady ? 'white' : 'gray',
                     border: 'none',
-                    cursor: 'pointer'
+                    cursor: videoReady ? 'pointer' : 'not-allowed'
                   }}
                 >
                   📸
@@ -278,9 +314,7 @@ const RecoverPhoto = () => {
               ) : (
                 <>
                   <button
-                    onClick={async () => {
-                      await resetCamera();
-                    }}
+                    onClick={resetCamera}
                     style={{
                       padding: '10px 20px',
                       background: '#ff4444',
@@ -321,10 +355,10 @@ const RecoverPhoto = () => {
                     width: 60,
                     height: 60,
                     borderRadius: '50%',
-                    background: 'red',
+                    background: videoReady ? 'red' : 'gray',
                     color: 'white',
                     border: 'none',
-                    cursor: 'pointer'
+                    cursor: videoReady ? 'pointer' : 'not-allowed'
                   }}
                 >
                   ●
@@ -350,21 +384,8 @@ const RecoverPhoto = () => {
               
               {videoBlobURL && (
                 <>
-                  <video 
-                    src={videoBlobURL} 
-                    controls 
-                    style={{
-                      position: 'absolute',
-                      top: 20,
-                      left: 20,
-                      width: '150px',
-                      borderRadius: 8
-                    }}
-                  />
                   <button
-                    onClick={async () => {
-                      await resetCamera();
-                    }}
+                    onClick={resetCamera}
                     style={{
                       padding: '10px 20px',
                       background: '#ff4444',
@@ -399,7 +420,7 @@ const RecoverPhoto = () => {
         </div>
   
         {/* Botón de volver */}
-        <button 
+          <button 
           onClick={() => {
             stopCamera();
             setMostrarCamara(false);
@@ -419,7 +440,10 @@ const RecoverPhoto = () => {
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            cursor: 'pointer'
+            cursor: 'pointer',
+            zIndex: 1002,
+            transition: 'opacity 0.3s',
+            opacity: videoReady ? 1 : 0.8
           }}
         >
           <ArrowLeft size={24} />
