@@ -98,6 +98,7 @@
     text-align: center;
   }
   .formGroup {
+    padding: 0px;
     margin-bottom: 0.1rem;
     text-align: left;
   }

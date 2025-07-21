@@ -71,3 +71,24 @@
   cursor: pointer;
   text-decoration: underline;
 }
+@media(max-width: 800px){
+  .container {
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;   
+    align-items:center;
+    justify-content:space-around;
+    min-height: 100vh;
+    background-color: #e0f2fe; /* sky-100 */
+    padding:0.2rem;
+  }
+  .card {
+    background-color: white;
+    min-height:80vh ;
+    padding:0.5rem;
+    border-radius: 1rem;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    width: 100%;
+    max-width: 400px;
+  }
+}
