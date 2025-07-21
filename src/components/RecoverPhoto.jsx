@@ -420,7 +420,7 @@ const RecoverPhoto = () => {
         </div>
   
         {/* Botón de volver */}
-        <button 
+          <button 
           onClick={() => {
             stopCamera();
             setMostrarCamara(false);
@@ -440,7 +440,10 @@ const RecoverPhoto = () => {
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            cursor: 'pointer'
+            cursor: 'pointer',
+            zIndex: 1002,
+            transition: 'opacity 0.3s',
+            opacity: videoReady ? 1 : 0.8
           }}
         >
           <ArrowLeft size={24} />
