@@ -232,6 +232,7 @@ const TakePhoto = () => {
           
           <FormularioJerarquico
             campos={["dni", "region", "diagnostico","fase"]}
+            valores={{ dni, region, diagnostico, fase }}
             onChange={(data) => {
               setDni(data.dni || "");
               setRegion(data.region || "");
@@ -289,7 +290,6 @@ const TakePhoto = () => {
         <video
             ref={videoRef}
             className={styles.video}
-            controls
             autoPlay
             playsInline
             muted

@@ -3,14 +3,14 @@ import { estructuraJerarquica } from '../data/estructura-jerarquica';
 import { extraerDiagnosticosPorRegion } from '../helpers/extraerDiagnosticosPorRegion';
 import styles from '../styles/FormularioJerarquico.module.css';
 
-const FormularioJerarquico = ({ campos = [], onChange }) => {
-  const [dni, setDni] = useState('');
-  const [region, setRegion] = useState('');
-  const [etiologia, setEtiologia] = useState('');
-  const [tejido, setTejido] = useState('');
-  const [diagnostico, setDiagnostico] = useState('');
-  const [tratamiento, setTratamiento] = useState('');
-  const [fase, setFase] = useState('');
+const FormularioJerarquico = ({ campos = [], onChange, valores = {} }) => {
+  const [dni, setDni] = useState(valores.dni ||'');
+  const [region, setRegion] = useState(valores.region ||'');
+  const [etiologia, setEtiologia] = useState(valores.etiologia ||'');
+  const [tejido, setTejido] = useState(valores.tejido ||'');
+  const [diagnostico, setDiagnostico] = useState(valores.diagnostico ||'');
+  const [tratamiento, setTratamiento] = useState(valores.tratamiento||'');
+  const [fase, setFase] = useState(valores.fase ||'');
 
   // ✅ Detectar automáticamente si estamos en modo "simple"
   const esSimple = campos.includes("region") && campos.includes("diagnostico") &&
