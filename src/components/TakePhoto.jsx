@@ -38,21 +38,31 @@ const TakePhoto = () => {
   );
 
   useEffect(() => {
-    if (screen === "camera" && videoRef.current && streamRef.current) {
+    if (screen === "camera") {
       const video = videoRef.current;
-      video.srcObject = streamRef.current;
-
-      video
-        .play()
-        .then(() => {
+      const stream = streamRef.current;
+  
+      if (video && stream) {
+        video.srcObject = stream;
+  
+        const handleLoadedData = () => {
           setVideoReady(true);
-        })
-        .catch((err) => {
+        };
+  
+        video.addEventListener("loadeddata", handleLoadedData);
+  
+        video.play().catch((err) => {
           console.error("No se pudo iniciar el video:", err);
           alert("Error al iniciar cámara");
         });
+  
+        return () => {
+          video.removeEventListener("loadeddata", handleLoadedData);
+        };
+      }
     }
-  }, [screen, videoRef.current, streamRef.current]);
+  }, [screen]);
+  
 
   const startCamera = async () => {
     if (!dni ||!region|| !diagnostico ) {
