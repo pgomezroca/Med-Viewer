@@ -306,18 +306,32 @@ const TakePhoto = () => {
             playsInline
             muted
           />
+              <div style={{
+      position: "absolute",
+      top: "10px",
+      left: "10px",
+      zIndex: 999,
+      backgroundColor: "rgba(0,0,0,0.7)",
+      color: "#0f0",
+      padding: "8px",
+      fontSize: "12px",
+      borderRadius: "4px"
+    }}>
+      <div><strong>Modo:</strong> {modo}</div>
+      <div><strong>Pantalla:</strong> {screen}</div>
+      <div><strong>Stream:</strong> {streamRef.current ? "🎥 OK" : "❌ SIN STREAM"}</div>
+      <div><strong>VideoReady:</strong> {videoReady ? "✅ LISTO" : "⏳ CARGANDO"}</div>
+    </div>
+
             <div className={styles.cameraOverlay}>
                {modo === "foto" && (
-               <> 
-               <p style={{ color: "white", textAlign: "center", marginBottom: "10px" }}>
-                  Estado cámara: {videoReady ? "✅ Lista" : "⏳ Cargando..."}
-               </p> 
+              
               <button 
               className={styles.takePhotoButton}
               onClick={takePhoto} disabled={!videoReady}>
                 {videoReady ? "Tomar foto" : "Cargando cámara…"}
               </button>
-              </>
+              
              )}
 
              {modo === "video" && (
