@@ -12,7 +12,8 @@ const TakePhoto = () => {
   const [region, setRegion] = useState("");
   const [diagnostico, setDiagnostico] = useState("");
   const [photoData, setPhotoData] = useState(null);
-  const [modo, setModo] = useState("foto"); // 'foto' o 'video'
+  const [modo, setModo] = useState("foto");  
+  const [fase, setFase] = useState("");
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
   const streamRef = useRef(null);
@@ -22,7 +23,7 @@ const TakePhoto = () => {
   const [videoBlobURL, setVideoBlobURL] = useState(null);
   const [fotosAcumuladas, setFotosAcumuladas] = useState([]);
   const token = localStorage.getItem("token");
-  const [fase, setFase] = useState("");
+  
 
   const mediaRecorderRef = useRef(null);
   const recordedChunksRef = useRef([]);
@@ -32,26 +33,23 @@ const TakePhoto = () => {
       if (streamRef.current) {
         streamRef.current.getTracks().forEach((track) => track.stop());
       }
-    },
-    []
-  );
+    }, [] );
 
-  <div style={{
-    position: "absolute",
-    top: "10px",
-    left: "10px",
-    zIndex: 999,
-    backgroundColor: "rgba(0,0,0,0.7)",
-    color: "#0f0",
-    padding: "8px",
-    fontSize: "12px",
-    borderRadius: "4px"
-  }}>
-    <div><strong>Modo:</strong> {modo}</div>
-    <div><strong>Pantalla:</strong> {screen}</div>
-    <div><strong>Stream:</strong> {streamRef.current ? "🎥 OK" : "❌ SIN STREAM"}</div>
-    <div><strong>VideoReady:</strong> {videoReady ? "✅ LISTO" : "⏳ CARGANDO"}</div>
-  </div>
+    useEffect(() => {
+      if (screen === "camera") {
+        const video = videoRef.current;
+        const stream = streamRef.current;
+  
+        if (video && stream) {
+          video.srcObject = stream;
+  
+          video.play().catch((err) => {
+            console.error("No se pudo iniciar el video:", err);
+            alert("Error al iniciar cámara");
+          });
+        }
+      }
+    }, [screen]);  
 
   
   const startCamera = async () => {
