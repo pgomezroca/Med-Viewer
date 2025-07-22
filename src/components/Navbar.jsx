@@ -82,7 +82,19 @@ function Navbar() {
                 </button>
               </li>
             </>
-          ) : null}
+          ) : (
+            <>
+              <li>
+                <Link
+                  to="/login"
+                  className={`${styles.link} ${isActive('/login') ? styles.active : ''}`}
+                  onClick={() => setMenuOpen(false)}
+                >
+                  Iniciar sesión
+                </Link>
+              </li>
+            </>
+          )}
         </ul>
       </div>
     </nav>
