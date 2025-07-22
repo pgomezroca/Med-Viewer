@@ -8,7 +8,6 @@ import styles from '../styles/TakePhoto.module.css';
 const TakePhoto = () => {
   const navigate = useNavigate();
   const [screen, setScreen] = useState("form");
-  const [videoReady, setVideoReady] = useState(false);
   const [dni, setDni] = useState("");
   const [region, setRegion] = useState("");
   const [diagnostico, setDiagnostico] = useState("");
@@ -37,33 +36,24 @@ const TakePhoto = () => {
     []
   );
 
-  useEffect(() => {
-    if (screen === "camera") {
-      const video = videoRef.current;
-      const stream = streamRef.current;
-  
-      if (video && stream) {
-        video.srcObject = stream;
-  
-        const handleLoadedData = () => {
-          setVideoReady(true);
-        };
-  
-        video.addEventListener("loadeddata", handleLoadedData);
-  
-        video.play().catch((err) => {
-          console.error("No se pudo iniciar el video:", err);
-          alert("Error al iniciar cámara");
-        });
-  
-        return () => {
-          video.removeEventListener("loadeddata", handleLoadedData);
-        };
-      }
-    }
-  }, [screen]);
-  
+  <div style={{
+    position: "absolute",
+    top: "10px",
+    left: "10px",
+    zIndex: 999,
+    backgroundColor: "rgba(0,0,0,0.7)",
+    color: "#0f0",
+    padding: "8px",
+    fontSize: "12px",
+    borderRadius: "4px"
+  }}>
+    <div><strong>Modo:</strong> {modo}</div>
+    <div><strong>Pantalla:</strong> {screen}</div>
+    <div><strong>Stream:</strong> {streamRef.current ? "🎥 OK" : "❌ SIN STREAM"}</div>
+    <div><strong>VideoReady:</strong> {videoReady ? "✅ LISTO" : "⏳ CARGANDO"}</div>
+  </div>
 
+  
   const startCamera = async () => {
     if (!dni ||!region|| !diagnostico ) {
       alert("Completa el formulario por favor.");
@@ -306,31 +296,16 @@ const TakePhoto = () => {
             playsInline
             muted
           />
-              <div style={{
-      position: "absolute",
-      top: "10px",
-      left: "10px",
-      zIndex: 999,
-      backgroundColor: "rgba(0,0,0,0.7)",
-      color: "#0f0",
-      padding: "8px",
-      fontSize: "12px",
-      borderRadius: "4px"
-    }}>
-      <div><strong>Modo:</strong> {modo}</div>
-      <div><strong>Pantalla:</strong> {screen}</div>
-      <div><strong>Stream:</strong> {streamRef.current ? "🎥 OK" : "❌ SIN STREAM"}</div>
-      <div><strong>VideoReady:</strong> {videoReady ? "✅ LISTO" : "⏳ CARGANDO"}</div>
-    </div>
+              
 
             <div className={styles.cameraOverlay}>
                {modo === "foto" && (
               
               <button 
               className={styles.takePhotoButton}
-              onClick={takePhoto} disabled={!videoReady}>
-                {videoReady ? "Tomar foto" : "Cargando cámara…"}
-              </button>
+              onClick={takePhoto}>
+              Tomar foto
+            </button>
               
              )}
 
