@@ -308,11 +308,16 @@ const TakePhoto = () => {
           />
             <div className={styles.cameraOverlay}>
                {modo === "foto" && (
+               <> 
+               <p style={{ color: "white", textAlign: "center", marginBottom: "10px" }}>
+                  Estado cámara: {videoReady ? "✅ Lista" : "⏳ Cargando..."}
+               </p> 
               <button 
               className={styles.takePhotoButton}
               onClick={takePhoto} disabled={!videoReady}>
                 {videoReady ? "Tomar foto" : "Cargando cámara…"}
               </button>
+              </>
              )}
 
              {modo === "video" && (
