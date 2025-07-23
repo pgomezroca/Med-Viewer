@@ -11,24 +11,30 @@ const FormularioJerarquico = ({ campos = [], onChange, valores = {} }) => {
   const [diagnostico, setDiagnostico] = useState(valores.diagnostico ||'');
   const [tratamiento, setTratamiento] = useState(valores.tratamiento||'');
   const [fase, setFase] = useState(valores.fase ||'');
+ 
+  useEffect(() => {
+    if (valores.dni !== undefined) setDni(valores.dni);
+    if (valores.region !== undefined) setRegion(valores.region);
+    if (valores.diagnostico !== undefined) setDiagnostico(valores.diagnostico);
+    if (valores.fase !== undefined) setFase(valores.fase);
+  }, [valores]);
+  useEffect(() => {
+    const payload = {};
+    if (campos.includes("dni")) payload.dni = dni;
+    if (campos.includes("region")) payload.region = region;
+    if (campos.includes("diagnostico")) payload.diagnostico = diagnostico;
+    if (campos.includes("fase")) payload.fase = fase;
+  
+    onChange(payload);
+  }, [dni, region, diagnostico, fase]);
+    
+  
 
   // ✅ Detectar automáticamente si estamos en modo "simple"
   const esSimple = campos.includes("region") && campos.includes("diagnostico") &&
                    !campos.includes("etiologia") && !campos.includes("tejido");
 
-  useEffect(() => {
-    const payload = {};
-    if (campos.includes("dni")) payload.dni = dni;
-    if (campos.includes("region")) payload.region = region;
-    if (campos.includes("etiologia")) payload.etiologia = etiologia;
-    if (campos.includes("tejido")) payload.tejido = tejido;
-    if (campos.includes("diagnostico")) payload.diagnostico = diagnostico;
-    if (campos.includes("tratamiento")) payload.tratamiento = tratamiento;
-    if (campos.includes("fase")) payload.fase = fase;
-
-    onChange(payload);
-  }, [dni, region, etiologia, tejido, diagnostico, tratamiento, fase]);
-
+  
   return (
     <div 
     className={styles.formContainer}>
