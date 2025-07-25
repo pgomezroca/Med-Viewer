@@ -22,11 +22,14 @@ const FormularioJerarquico = ({ campos = [], onChange, valores = {} }) => {
     const payload = {};
     if (campos.includes("dni")) payload.dni = dni;
     if (campos.includes("region")) payload.region = region;
+    if (campos.includes("etiologia")) payload.etiologia = etiologia;
+    if (campos.includes("tejido")) payload.tejido = tejido;
     if (campos.includes("diagnostico")) payload.diagnostico = diagnostico;
+    if (campos.includes("tratamiento")) payload.tratamiento = tratamiento;
     if (campos.includes("fase")) payload.fase = fase;
   
     onChange(payload);
-  }, [dni, region, diagnostico, fase]);
+  }, [dni, region, etiologia, tejido, diagnostico, tratamiento, fase]);
     
   
 
