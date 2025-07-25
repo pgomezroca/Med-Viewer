@@ -12,6 +12,7 @@ const CompleteImageLabels = () => {
   const [buscando, setBuscando] = useState(false);
   const token = localStorage.getItem("token");
   const [camposCompletados, setCamposCompletados] = useState({});
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
   const toggleFolder = (key) => {
     setExpanded((prev) => ({ ...prev, [key]: !prev[key] }));
@@ -27,9 +28,7 @@ const CompleteImageLabels = () => {
       "phase",
     ];
     return camposRequeridos.filter((campo) => {
-      return (
-        caso[campo] === null
-      );
+      return caso[campo] === null;
     });
   };
 
@@ -71,12 +70,15 @@ const CompleteImageLabels = () => {
     if (!selectedCase) return;
 
     try {
-      const payload = camposFaltantes.reduce((acc, campo) => {
-        if (camposCompletados[campo] !== undefined) {
-          acc[campo] = camposCompletados[campo];
-        }
-        return acc;
-      }, { _id: selectedCase._id });
+      const payload = camposFaltantes.reduce(
+        (acc, campo) => {
+          if (camposCompletados[campo] !== undefined) {
+            acc[campo] = camposCompletados[campo];
+          }
+          return acc;
+        },
+        { _id: selectedCase._id }
+      );
 
       const res = await fetch(
         `${import.meta.env.VITE_API_URL}/api/images/${selectedCase._id}`,
@@ -130,7 +132,7 @@ const CompleteImageLabels = () => {
 
   return (
     <div className={styles.container}>
-      <h2 className={styles.title}>🔍 Buscar imágenes incompletas</h2>
+      <h2 className={styles.title}>Completar etiquetas</h2>
 
       <FormularioJerarquico
         campos={["region", "diagnostico"]}
@@ -142,7 +144,15 @@ const CompleteImageLabels = () => {
         disabled={buscando}
         className={styles.searchButton}
       >
-        {buscando ? "Buscando..." : "Buscar imágenes"}
+        {buscando ? (
+          <>
+            <i className="bi bi-hourglass-split"></i> Buscando...
+          </>
+        ) : (
+          <>
+            <i className="bi bi-search"></i> Buscar
+          </>
+        )}
       </button>
 
       <hr className={styles.divider} />
@@ -261,7 +271,10 @@ const CompleteImageLabels = () => {
             <div className={styles.modalHeader}>
               <h2>Completar caso: {selectedCase.dni || "Sin DNI"}</h2>
               <button
-                onClick={() => setSelectedCase(null)}
+                onClick={() => {
+                  setSelectedCase(null);
+                  setCurrentImageIndex(0);
+                }}
                 className={styles.modalCloseButton}
               >
                 ×
@@ -269,10 +282,16 @@ const CompleteImageLabels = () => {
             </div>
 
             <div>
-              <h3>Archivos del caso</h3>
+              <h3>Archivos del caso ({selectedCase.imagenes.length})</h3>
               <div className={styles.mediaGrid}>
                 {selectedCase.imagenes.map((media, idx) => (
-                  <div key={idx} className={styles.mediaItem}>
+                  <div
+                    key={idx}
+                    className={`${styles.mediaContainer} ${
+                      idx === currentImageIndex ? styles.active : ""
+                    }`}
+                    onClick={() => setCurrentImageIndex(idx)}
+                  >
                     {media.endsWith(".webm") || media.endsWith(".mp4") ? (
                       <video src={media} controls className={styles.media} />
                     ) : (
@@ -282,40 +301,51 @@ const CompleteImageLabels = () => {
                         className={styles.media}
                       />
                     )}
+                    {/* <div
+                      className={`${styles.phaseBadge} ${
+                        styles[selectedCase.phase]
+                      }`}
+                    >
+                      {selectedCase.phase || "Sin fase"}
+                    </div> */}
+                    {/* {idx === currentImageIndex && (
+                      <div className={styles.currentIndicator}>Actual</div>
+                    )} */}
                   </div>
                 ))}
               </div>
             </div>
 
             <div>
-              <h3>Completar información faltante</h3>
+              <h3>Completar etiquetas faltantes</h3>
               <FormularioJerarquico
                 campos={camposFaltantes}
                 onChange={(data) => {
                   const nuevosCampos = {};
-                  camposFaltantes.forEach(campo => {
+                  camposFaltantes.forEach((campo) => {
                     if (data[campo] !== undefined) {
                       nuevosCampos[campo] = data[campo];
                     }
                   });
-                  setCamposCompletados(prev => ({ ...prev, ...nuevosCampos }));
-                  setSelectedCase(prev => ({ ...prev, ...nuevosCampos }));
+                  setCamposCompletados((prev) => ({
+                    ...prev,
+                    ...nuevosCampos,
+                  }));
+                  setSelectedCase((prev) => ({ ...prev, ...nuevosCampos }));
                 }}
                 valores={{
                   ...selectedCase,
                   ...Object.fromEntries(
-                    Object.entries(selectedCase)
-                      .filter(([_, value]) => value !== null)
-                  )
+                    Object.entries(selectedCase).filter(
+                      ([_, value]) => value !== null
+                    )
+                  ),
                 }}
               />
             </div>
 
             <div className={styles.actionButtons}>
-              <button
-                onClick={() => handleSaveLabels(selectedCase)}
-                className={styles.saveButton}
-              >
+              <button onClick={handleSaveLabels} className={styles.saveButton}>
                 💾 Guardar cambios
               </button>
               <button onClick={handleDelete} className={styles.deleteButton}>
