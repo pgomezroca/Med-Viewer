@@ -1,163 +1,357 @@
 import React, { useState, useEffect } from "react";
 import FormularioJerarquico from "../components/FormularioJerarquico";
+import { agruparPorJerarquia } from "../utils/agruparCasos";
+import styles from "../styles/completeImageLabels.module.css";
 
 const CompleteImageLabels = () => {
-  const [imagenesFiltradas, setImagenesFiltradas] = useState([]);
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const [extraLabels, setExtraLabels] = useState({});
-  const [formInitial, setFormInitial] = useState({});
+  const [casosAgrupados, setCasosAgrupados] = useState([]);
+  const [selectedCase, setSelectedCase] = useState(null);
+  const [expanded, setExpanded] = useState({});
+  const [camposFaltantes, setCamposFaltantes] = useState([]);
   const [busqueda, setBusqueda] = useState({ region: "", diagnostico: "" });
   const [buscando, setBuscando] = useState(false);
   const token = localStorage.getItem("token");
+  const [camposCompletados, setCamposCompletados] = useState({});
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
-  const currentImage = imagenesFiltradas[currentIndex];
+  const toggleFolder = (key) => {
+    setExpanded((prev) => ({ ...prev, [key]: !prev[key] }));
+  };
 
-  useEffect(() => {
-    if (currentImage) {
-      setFormInitial({
-        region: currentImage.region,
-        diagnostico: currentImage.diagnostico,
-        dni: currentImage.optionalDNI,
-      });
+  const determinarCamposFaltantes = (caso) => {
+    const camposRequeridos = [
+      "region",
+      "diagnostico",
+      "etiologia",
+      "tejido",
+      "tratamiento",
+      "phase",
+    ];
+    return camposRequeridos.filter((campo) => {
+      return caso[campo] === null;
+    });
+  };
+
+  const handleBuscar = async () => {
+    if (!busqueda.diagnostico) {
+      alert("Seleccioná un diagnóstico");
+      return;
     }
-  }, [currentImage]);
 
-  const handleSaveLabels = async () => {
-    if (!currentImage) return;
-
-    const payload = {
-      ...extraLabels,
-    };
+    setBuscando(true);
 
     try {
-      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/images/${currentImage._id}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-        body: JSON.stringify(payload),
-      });
+      const query = new URLSearchParams();
+      query.append("diagnostico", busqueda.diagnostico);
+      if (busqueda.region) query.append("region", busqueda.region);
+
+      const res = await fetch(
+        `${import.meta.env.VITE_API_URL}/api/images/incomplete?${query}`,
+        {
+          method: "GET",
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+
+      if (!res.ok) throw new Error(await res.text());
+
+      const data = await res.json();
+      const estructura = agruparPorJerarquia(data);
+      setCasosAgrupados(estructura);
+    } catch (err) {
+      console.error("Error al buscar imágenes:", err);
+      alert("Error al buscar imágenes");
+    } finally {
+      setBuscando(false);
+    }
+  };
+
+  const handleSaveLabels = async () => {
+    if (!selectedCase) return;
+
+    try {
+      const payload = camposFaltantes.reduce(
+        (acc, campo) => {
+          if (camposCompletados[campo] !== undefined) {
+            acc[campo] = camposCompletados[campo];
+          }
+          return acc;
+        },
+        { _id: selectedCase._id }
+      );
+
+      const res = await fetch(
+        `${import.meta.env.VITE_API_URL}/api/images/${selectedCase._id}`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify(payload),
+        }
+      );
 
       if (!res.ok) throw new Error("No se pudo guardar");
 
       alert("✅ Etiquetas guardadas correctamente");
-      setExtraLabels({});
-      setCurrentIndex((prev) => prev + 1);
+      await handleBuscar();
+      setSelectedCase(null);
+      setCamposCompletados({});
     } catch (error) {
-      console.error("❌ Error al actualizar la imagen:", error);
+      console.error("Error al actualizar la imagen:", error);
       alert("Error al guardar etiquetas");
     }
   };
 
   const handleDelete = async () => {
-    if (!currentImage) return;
+    if (!selectedCase) return;
 
     const confirm = window.confirm("¿Seguro que querés eliminar este caso?");
     if (!confirm) return;
 
     try {
-      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/images/${currentImage._id}`, {
-        method: "DELETE",
-      });
+      const res = await fetch(
+        `${import.meta.env.VITE_API_URL}/api/images/${selectedCase._id}`,
+        {
+          method: "DELETE",
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
 
       if (!res.ok) throw new Error("No se pudo eliminar");
 
       alert("✅ Caso eliminado correctamente");
-      setExtraLabels({});
-      setCurrentIndex((prev) => prev + 1);
+      await handleBuscar();
+      setSelectedCase(null);
     } catch (error) {
-      console.error("❌ Error al eliminar:", error);
+      console.error("Error al eliminar:", error);
       alert("Error al eliminar el caso");
     }
   };
 
   return (
-    <div style={{ padding: 20 }}>
-      <h2>🔍 Buscar imágenes por región y diagnóstico</h2>
+    <div className={styles.container}>
+      <h2 className={styles.title}>Completar etiquetas</h2>
 
       <FormularioJerarquico
         campos={["region", "diagnostico"]}
-        onChange={(data) => {
-          setBusqueda(data);
-        }}
+        onChange={setBusqueda}
       />
 
       <button
-        onClick={async () => {
-          if (!busqueda.diagnostico) {
-            alert("Seleccioná un diagnóstico");
-            return;
-          }
-
-          setBuscando(true);
-
-          try {
-            const query = new URLSearchParams();
-            query.append("diagnostico", busqueda.diagnostico);
-            if (busqueda.region) query.append("region", busqueda.region);
-
-            const res = await fetch(`${import.meta.env.VITE_API_URL}/api/images/incomplete?${query}`, {
-              method: "GET",
-              headers: {
-                Authorization: `Bearer ${token}`,
-              },
-            });
-            if (!res.ok) {
-              const text = await res.text(); // 👈 capturamos lo que devolvió el servidor
-              throw new Error(`(${res.status}) ${text}`);
-            }
-            const data = await res.json();
-
-            setImagenesFiltradas(data);
-            setCurrentIndex(0);
-          } catch (err) {
-            console.error("❌ Error al buscar imágenes:", err);
-            alert("Error al buscar imágenes");
-          } finally {
-            setBuscando(false);
-          }
-        }}
-        style={{ marginTop: "10px" }}
+        onClick={handleBuscar}
+        disabled={buscando}
+        className={styles.searchButton}
       >
-         Buscar imágenes
+        {buscando ? (
+          <>
+            <i className="bi bi-hourglass-split"></i> Buscando...
+          </>
+        ) : (
+          <>
+            <i className="bi bi-search"></i> Buscar
+          </>
+        )}
       </button>
 
-      <hr/>
+      <hr className={styles.divider} />
 
-      {!currentImage ? (
-        <h3>✅ No hay imágenes para completar</h3>
-      ) : (
-        <>
-          <h2>🩺 Completar etiquetas de casos recientes</h2>
+      {casosAgrupados.length > 0 && (
+        <div className={styles.resultsContainer}>
+          <h3>
+            Resultados (
+            {casosAgrupados.reduce(
+              (acc, region) =>
+                acc +
+                region.diagnosticos.reduce(
+                  (a, diag) =>
+                    a +
+                    diag.tratamientos.reduce(
+                      (b, trat) => b + trat.casos.length,
+                      0
+                    ),
+                  0
+                ),
+              0
+            )}{" "}
+            casos)
+          </h3>
 
-          <img
-            src={currentImage.url}
-            alt="Imagen médica"
-            style={{ width: "300px", borderRadius: "8px", marginBottom: "10px" }}
-          />
+          {casosAgrupados.map((regionData, rIndex) => {
+            const regionKey = `region-${rIndex}`;
+            return (
+              <div key={regionKey} className={styles.folder}>
+                <div
+                  onClick={() => toggleFolder(regionKey)}
+                  className={styles.folderHeader}
+                >
+                  {expanded[regionKey] ? "📂" : "📁"}{" "}
+                  {regionData.region || "Sin región"}
+                </div>
 
-          <div style={{ marginBottom: 10 }}>
-            <strong>DNI:</strong> {currentImage.optionalDNI || "N/A"} <br />
-            <strong>Región:</strong> {currentImage.region || "Sin región"} <br />
-            <strong>Diagnóstico:</strong> {currentImage.diagnostico || "Sin diagnóstico"}
+                {expanded[regionKey] &&
+                  regionData.diagnosticos.map((diag, dIndex) => {
+                    const diagKey = `${regionKey}-diag-${dIndex}`;
+                    return (
+                      <div key={diagKey} className={styles.subfolder}>
+                        <div
+                          onClick={() => toggleFolder(diagKey)}
+                          className={styles.subfolderHeader}
+                        >
+                          {expanded[diagKey] ? "📂" : "📁"}{" "}
+                          {diag.nombre || "Sin diagnóstico"}
+                        </div>
+
+                        {expanded[diagKey] &&
+                          diag.tratamientos.map((trat, tIndex) => {
+                            const tratKey = `${diagKey}-trat-${tIndex}`;
+                            return (
+                              <div
+                                key={tratKey}
+                                className={styles.subsubfolder}
+                              >
+                                <div
+                                  onClick={() => toggleFolder(tratKey)}
+                                  className={styles.subsubfolderHeader}
+                                >
+                                  {expanded[tratKey] ? "📂" : "📁"}{" "}
+                                  {trat.nombre || "Sin tratamiento"}
+                                </div>
+
+                                {expanded[tratKey] &&
+                                  trat.casos.map((caso, cIndex) => (
+                                    <div
+                                      key={`${tratKey}-caso-${cIndex}`}
+                                      onClick={() => {
+                                        setSelectedCase(caso);
+                                        setCamposFaltantes(
+                                          determinarCamposFaltantes(caso)
+                                        );
+                                      }}
+                                      className={styles.caseItem}
+                                    >
+                                      🗂 Caso {caso.dni || "Sin DNI"} -{" "}
+                                      {caso.fecha || "Sin fecha"}
+                                      <div className={styles.missingFields}>
+                                        Faltan:{" "}
+                                        {determinarCamposFaltantes(caso)
+                                          .map((campo) => {
+                                            const nombresLegibles = {
+                                              region: "Región",
+                                              diagnostico: "Diagnóstico",
+                                              etiologia: "Etiología",
+                                              tejido: "Tejido",
+                                              tratamiento: "Tratamiento",
+                                              phase: "Fase",
+                                            };
+                                            return (
+                                              nombresLegibles[campo] || campo
+                                            );
+                                          })
+                                          .join(", ") || "Ninguno"}
+                                      </div>
+                                    </div>
+                                  ))}
+                              </div>
+                            );
+                          })}
+                      </div>
+                    );
+                  })}
+              </div>
+            );
+          })}
+        </div>
+      )}
+
+      {selectedCase && (
+        <div className={styles.modalOverlay}>
+          <div className={styles.modalContent}>
+            <div className={styles.modalHeader}>
+              <h2>Completar caso: {selectedCase.dni || "Sin DNI"}</h2>
+              <button
+                onClick={() => {
+                  setSelectedCase(null);
+                  setCurrentImageIndex(0);
+                }}
+                className={styles.modalCloseButton}
+              >
+                ×
+              </button>
+            </div>
+
+            <div>
+              <h3>Archivos del caso ({selectedCase.imagenes.length})</h3>
+              <div className={styles.mediaGrid}>
+              {selectedCase.imagenes.map((media, idx) => {
+                const src = typeof media === "string" ? media : media?.url;
+                const isVideo = typeof src === "string" && (src.endsWith(".webm") || src.endsWith(".mp4"));
+
+                return (
+                  <div
+                    key={idx}
+                    className={`${styles.mediaContainer} ${
+                      idx === currentImageIndex ? styles.active : ""
+                    }`}
+                    onClick={() => setCurrentImageIndex(idx)}
+                  >
+                     <div
+                      className={`${styles.phaseBadge} ${
+                        styles[selectedCase.phase]
+                      }`}
+                    >
+                      {selectedCase.phase || "Sin fase"}
+                    </div>
+                    {isVideo ? (
+                      <video src={src} controls className={styles.media} />
+                    ) : (
+                      <img src={src} alt={`Imagen ${idx}`} className={styles.media} />
+                    )}
+                  </div>
+                );
+              })}
+              </div>
+            </div>
+
+            <div>
+              <h3>Completar etiquetas faltantes</h3>
+              <FormularioJerarquico
+                campos={camposFaltantes}
+                onChange={(data) => {
+                  const nuevosCampos = {};
+                  camposFaltantes.forEach((campo) => {
+                    if (data[campo] !== undefined) {
+                      nuevosCampos[campo] = data[campo];
+                    }
+                  });
+                  setCamposCompletados((prev) => ({
+                    ...prev,
+                    ...nuevosCampos,
+                  }));
+                  setSelectedCase((prev) => ({ ...prev, ...nuevosCampos }));
+                }}
+                valores={{
+                  ...selectedCase,
+                  ...Object.fromEntries(
+                    Object.entries(selectedCase).filter(
+                      ([_, value]) => value !== null
+                    )
+                  ),
+                }}
+              />
+            </div>
+
+            <div className={styles.actionButtons}>
+              <button onClick={handleSaveLabels} className={styles.saveButton}>
+                💾 Guardar cambios
+              </button>
+              <button onClick={handleDelete} className={styles.deleteButton}>
+                🗑️ Eliminar caso
+              </button>
+            </div>
           </div>
-
-          <FormularioJerarquico
-            campos={["region", "diagnostico", "etiologia", "tejido", "tratamiento", "fase"]}
-            onChange={(data) => {
-              setExtraLabels({
-                ...data,
-                optionalDNI: currentImage.optionalDNI,
-              });
-            }}
-            valoresIniciales={formInitial}
-          />
-
-          <div style={{ marginTop: 20, display: "flex", gap: "10px" }}>
-            <button onClick={handleSaveLabels}>💾 Guardar etiquetas</button>
-            <button onClick={handleDelete} style={{ color: "red" }}>
-              🗑️ Eliminar caso
-            </button>
-          </div>
-        </>
+        </div>
       )}
     </div>
   );
