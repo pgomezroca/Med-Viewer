@@ -284,7 +284,11 @@ const CompleteImageLabels = () => {
             <div>
               <h3>Archivos del caso ({selectedCase.imagenes.length})</h3>
               <div className={styles.mediaGrid}>
-                {selectedCase.imagenes.map((media, idx) => (
+              {selectedCase.imagenes.map((media, idx) => {
+                const src = typeof media === "string" ? media : media?.url;
+                const isVideo = typeof src === "string" && (src.endsWith(".webm") || src.endsWith(".mp4"));
+
+                return (
                   <div
                     key={idx}
                     className={`${styles.mediaContainer} ${
@@ -292,27 +296,21 @@ const CompleteImageLabels = () => {
                     }`}
                     onClick={() => setCurrentImageIndex(idx)}
                   >
-                    {media.endsWith(".webm") || media.endsWith(".mp4") ? (
-                      <video src={media} controls className={styles.media} />
-                    ) : (
-                      <img
-                        src={media}
-                        alt={`Imagen ${idx}`}
-                        className={styles.media}
-                      />
-                    )}
-                    {/* <div
+                     <div
                       className={`${styles.phaseBadge} ${
                         styles[selectedCase.phase]
                       }`}
                     >
                       {selectedCase.phase || "Sin fase"}
-                    </div> */}
-                    {/* {idx === currentImageIndex && (
-                      <div className={styles.currentIndicator}>Actual</div>
-                    )} */}
+                    </div>
+                    {isVideo ? (
+                      <video src={src} controls className={styles.media} />
+                    ) : (
+                      <img src={src} alt={`Imagen ${idx}`} className={styles.media} />
+                    )}
                   </div>
-                ))}
+                );
+              })}
               </div>
             </div>
 
