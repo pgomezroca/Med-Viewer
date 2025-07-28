@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import FormularioJerarquico from "../components/FormularioJerarquico";
 import { agruparPorJerarquia } from "../utils/agruparCasos";
-import styles from "../styles/completeImageLabels.module.css";
+import styles from "../styles/CompleteImageLabels.module.css";
 
 const CompleteImageLabels = () => {
   const [casosAgrupados, setCasosAgrupados] = useState([]);
