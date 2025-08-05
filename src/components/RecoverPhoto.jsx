@@ -93,6 +93,7 @@ const RecoverPhoto = () => {
         },
       });
       const images = await res.json();
+      console.log(images);
       setResultados(agruparPorJerarquia(images));
       setMostrarResultados(true);
     } catch (err) {
@@ -104,7 +105,7 @@ const RecoverPhoto = () => {
   const agruparPorJerarquia = (imagenes) => {
     const estructura = [];
     imagenes.forEach(img => {
-      const { region, diagnostico, tratamiento, optionalDNI, uploadedAt, url } = img;
+      const { region, diagnostico, tratamiento, optionalDNI, uploadedAt, images } = img;
       let nodoRegion = estructura.find(r => r.region === region);
       if (!nodoRegion) {
         nodoRegion = { region, diagnosticos: [] };
@@ -133,7 +134,7 @@ const RecoverPhoto = () => {
         };
         nodoTrat.casos.push(nodoCaso);
       }
-      nodoCaso.imagenes.push(url);
+      nodoCaso.imagenes.push(images);
     });
     return estructura;
   };
@@ -672,7 +673,7 @@ const RecoverPhoto = () => {
                 gap: '10px',
                 marginBottom: '20px'
               }}>
-                {selectedCase.imagenes.map((media, idx) => (
+                {selectedCase.imagenes.flat().map((media, idx) => (
                   media.endsWith('.webm') || media.endsWith('.mp4') ? (
                     <div key={idx} style={{
                       width: '150px',

@@ -245,7 +245,7 @@ const TakePhoto = () => {
         const res = await fetch(url);
         const blob = await res.blob();
       const formData = new FormData();
-      formData.append("image", blob, "video.webm");
+      formData.append("images", blob, "video.webm");
       formData.append("region", region);
       
       formData.append("diagnostico", diagnostico);
@@ -283,7 +283,7 @@ const TakePhoto = () => {
   
     // 1) Construís un FormData único
     const formData = new FormData();
-    formData.append("dni", dni);
+    formData.append("optionalDNI", dni);
     formData.append("region", region);
     formData.append("diagnostico", diagnostico);
     formData.append("fase", fase);
