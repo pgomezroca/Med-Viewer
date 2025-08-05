@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import FormularioJerarquico from "./FormularioJerarquico";
 import { ArrowLeft } from "lucide-react";
 import { useCamera } from "../hooks/useCamera";
+import styles from '../styles/recoverPhoto.module.css';
 
 const RecoverPhoto = () => {
   const navigate = useNavigate();
@@ -493,7 +494,7 @@ const RecoverPhoto = () => {
         >
           <ArrowLeft size={24} />
         </button>
-        <h1 style={{ margin: 0 }}>Recuperar Casos Médicos</h1>
+        <h2 style={{ margin: 0 }}>Encontrar mis casos</h2>
       </div>
 
       <div style={{
