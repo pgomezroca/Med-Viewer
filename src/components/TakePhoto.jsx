@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import piexif from "piexifjs";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Columns } from "lucide-react";
 import FormularioJerarquico from "./FormularioJerarquico";
 import styles from '../styles/TakePhoto.module.css';
 
@@ -21,7 +21,8 @@ const TakePhoto = () => {
   const apiUrl = import.meta.env.VITE_API_URL;
   const [isSaving, setIsSaving] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
-  const [videoBlobURL, setVideoBlobURL] = useState(null);
+  const [videosAcumulados, setVideosAcumulados] = useState([]);
+  const [grabacionFinalizada, setGrabacionFinalizada] = useState(false);
   const [fotosAcumuladas, setFotosAcumuladas] = useState([]);
   const token = localStorage.getItem("token");
   
@@ -109,7 +110,21 @@ const TakePhoto = () => {
   
       if (!res.ok) throw new Error("Error al buscar casos");
       const data = await res.json();
-      setCasosDelDni(data); 
+      const options = { day: "2-digit", month: "short", year: "numeric" };
+    const gruposObj = data.reduce((acc, img) => {
+      const fecha = new Date(img.uploadedAt)
+        .toLocaleDateString("es-AR", options);
+      if (!acc[fecha]) acc[fecha] = [];
+      acc[fecha].push(img);
+      return acc;
+    }, {});
+
+    // Paso a un array [{ fecha, items: [img,...] }, ...]
+    const grupos = Object.entries(gruposObj).map(
+      ([fecha, items]) => ({ fecha, items })
+    );
+
+    setCasosDelDni(grupos);
     } catch (err) {
       console.error(err);
       alert("No se pudieron buscar los casos.");
@@ -187,10 +202,11 @@ const TakePhoto = () => {
     };
 
     mediaRecorder.onstop = () => {
+      console.log("🎬 onstop ejecutado");
       const blob = new Blob(recordedChunksRef.current, { type: "video/webm" });
       const url = URL.createObjectURL(blob);
-      setVideoBlobURL(url);
-      setScreen('videoPreview');
+      setVideosAcumulados((prev) => [...prev, url]);
+      setGrabacionFinalizada(true);
     };
 
     mediaRecorderRef.current = mediaRecorder;
@@ -199,6 +215,7 @@ const TakePhoto = () => {
   };
 
   const stopRecording = () => {
+    console.log("🟥 stopRecording fue llamado");
     if (
       mediaRecorderRef.current &&
       mediaRecorderRef.current.state === "recording"
@@ -207,14 +224,26 @@ const TakePhoto = () => {
       setIsRecording(false);
     }
   };
+  useEffect(() => {
+    if (grabacionFinalizada) {
+      setScreen("videoPreview");
+      setGrabacionFinalizada(false); // reseteamos para la próxima
+    }
+  }, [grabacionFinalizada]);
+    
+  
 
   const saveVideo = async () => {
-    if (!videoBlobURL) return;
-  
+    if (videosAcumulados.length === 0) {
+      alert("No hay videos para guardar");
+      return;}
+
+      setIsSaving(true);
     try {
-      const res = await fetch(videoBlobURL);
-      const blob = await res.blob();
-  
+      for (const url of videosAcumulados) {
+        // descargamos el blob del video
+        const res = await fetch(url);
+        const blob = await res.blob();
       const formData = new FormData();
       formData.append("image", blob, "video.webm");
       formData.append("region", region);
@@ -236,151 +265,115 @@ const TakePhoto = () => {
         const error = await uploadRes.json();
         console.error("❌ Error al subir video:", error);
         alert("Error al subir el video");
-        return;
+        }
       }
-  
-      const videoData = await uploadRes.json();
-      console.log("✅ Video subido:", videoData);
-      alert("Video subido con éxito");
-  
-      setVideoBlobURL(null);
-      setScreen("camera");
+      alert("✅ Todos los videos fueron subidos con éxito");
+      setVideosAcumulados([]);    // limpiamos el carrusel
+      setScreen("form");    
+      
     } catch (error) {
       console.error("Error en saveVideo:", error);
       alert("No se pudo subir el video: " + error.message);
-    }
+    }finally {
+      setIsSaving(false);}
   };
 
-  const guardarFotosAcumuladas = async () => {
-    for (let foto of fotosAcumuladas) {
-      setIsSaving(true);
-      try {
-        const exifObj = {
-          "0th": {
-            [piexif.ImageIFD.Make]: "MedPhotoReact",
-            [piexif.ImageIFD.ImageDescription]: `${region} - ${diagnostico} - ${fase}`,
-          },
-          Exif: {
-            [piexif.ExifIFD.DateTimeOriginal]: new Date()
-              .toISOString()
-              .slice(0, 19)
-              .replace(/-/g, ":")
-              .replace("T", " "),
-          },
-        };
-        const exifBytes = piexif.dump(exifObj);
-        const newDataURL = piexif.insert(exifBytes, foto);
+  const guardarCaso = async () => {
+    if (fotosAcumuladas.length === 0) return;
   
-        const res = await fetch(newDataURL);
-        const blob = await res.blob();
+    // 1) Construís un FormData único
+    const formData = new FormData();
+    formData.append("dni", dni);
+    formData.append("region", region);
+    formData.append("diagnostico", diagnostico);
+    formData.append("fase", fase);
   
-        const formData = new FormData();
-        formData.append("image", blob, "photo.jpg");
-        formData.append("region", region);
-        formData.append("diagnostico", diagnostico);
-        formData.append("fase", fase);
-        formData.append("optionalDNI", dni);
-        formData.append("uploadedBy", "60f71889c9d1f814c8a3b123");
+    // 2) Agregás cada blob con el mismo campo 'images'
+    await Promise.all(
+      fotosAcumuladas.map(async (foto, idx) => {
+        const blob = await fetch(foto).then((r) => r.blob());
+        formData.append("images", blob, `photo${idx}.jpg`);
+      })
+    );
   
-        const uploadRes = await fetch(`${apiUrl}/api/images/upload`, {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-          body: formData,
-        });
+    // 3) Enviás TODO en un solo POST a un endpoint 'casos'
+    const res = await fetch(`${apiUrl}/api/images/upload`, {
+      method: "POST",
+      headers: { Authorization: `Bearer ${token}` },
+      body: formData,
+    });
+    if (!res.ok) throw new Error("Error al guardar el caso");
+    alert("Caso guardado con todas las fotos");
   
-        if (!uploadRes.ok) {
-          const error = await uploadRes.json();
-          console.error("❌ Error al subir:", error);
-          alert("Error al subir una imagen");
-          setIsSaving(false);
-          return;
-        }
-  
-        const imageData = await uploadRes.json();
-        console.log("✅ Imagen subida:", imageData);
-      } catch (err) {
-        console.error("Error al subir imagen:", err);
-        setIsSaving(false);
-        alert("No se pudo subir una imagen");
-      }
-    }
-  
-    alert("✅ Todas las fotos fueron subidas correctamente");
+    // 4) Limpiás estado y volvés al formulario
     setFotosAcumuladas([]);
-    setPhotoData(null);
-    setIsSaving(false);
     setScreen("form");
   };
+  
   
   return (
     <>
       {/* FORMULARIO PRINCIPAL */}
       {screen === "form" && (
-        <div id="formulario" ref={formularioRef}>
-          <FormularioJerarquico
-            campos={["dni", "region", "diagnostico", "fase"]}
-            valores={{ dni, region, diagnostico, fase }}
-            onChange={(data) => {
-              setDni(data.dni || "");
-              setRegion(data.region || "");
-              setDiagnostico(data.diagnostico || "");
-              setFase(data.fase || "");
-            }}
-          />
-  
-          {dni && (
-            <div style={{ marginTop: 20 }}>
-              {casosDelDni.length > 0 ? (
-                <>
-                  <h4>Casos previos para DNI {dni}:</h4>
-                  {casosDelDni.map((caso, i) => (
-                    <button
-                      key={i}
-                      onClick={() => {
-                        setRegion(caso.region || "");
-                        setDiagnostico(caso.diagnostico || "");
-                        setFase("");
-                        formularioRef.current?.scrollIntoView({ behavior: "smooth" });
-                      }}
-                      style={{
-                        display: "block",
-                        margin: "5px 0",
-                        padding: "8px",
-                        background: "#eee",
-                        borderRadius: "6px",
-                        cursor: "pointer",
-                      }}
-                    >
-                      📁 {caso.uploadedAt
-                        ? new Date(caso.uploadedAt).toLocaleDateString("es-AR", {
-                            day: "2-digit",
-                            month: "short",
-                            year: "numeric",
-                          })
-                        : "Caso sin fecha"}
-                    </button>
-                  ))}
-                </>
-              ) : (
-                <p style={{ color: "#666", marginTop: 10 }}>
-                  No hay datos del paciente con DNI {dni}
-                </p>
-              )}
-            </div>
-          )}
-  
-          <div className={styles.botonesCentrados}>
+  <>
+    {/* FORMULARIO PRINCIPAL */}
+    <div id="formulario" ref={formularioRef} className={styles.formularioContainer}>
+        <FormularioJerarquico
+          campos={["dni", "region", "diagnostico", "fase"]}
+          valores={{ dni, region, diagnostico, fase }}
+          onChange={(data) => {
+            setDni(data.dni || "");
+            setRegion(data.region || "");
+            setDiagnostico(data.diagnostico || "");
+            setFase(data.fase || "");
+           }}
+        />
+
+         <div className={styles.botonesCentrados}>
             <button className={styles.ContinuarButton} onClick={startCamera}>
               Continuar
             </button>
             <button className={styles.camerabackbutton} onClick={() => navigate(-1)}>
-              <ArrowLeft size={20} /> Volver
+             <ArrowLeft size={20} /> Volver
             </button>
-          </div>
-        </div>
-      )}
+         </div>
+     </div>
+
+        {/* LISTA DE CASOS (SCROLLABLE) */}
+       {dni && (
+         <div className={styles.casosContainer}>
+           {casosDelDni.length > 0 ? (
+           <>
+             <h4>Casos previos para DNI {dni}:</h4>
+              <div className={styles.listaCasos}>
+               {casosDelDni.map((grupo, idx) => (
+                <button
+                  key={idx}
+                  className={styles.casoButton}
+                  onClick={() => {
+                    const ultimo = grupo.items[grupo.items.length - 1];
+                   setRegion(ultimo.region || "");
+                   setDiagnostico(ultimo.diagnostico || "");
+                   setFase(ultimo.fase || "");
+                   formularioRef.current?.scrollIntoView({ behavior: "smooth" });
+                 }}
+                 >
+                  📁{grupo.fecha} ({grupo.items.length})
+                  
+                </button>
+              ))}
+            </div>
+          </>
+        ) : (
+          <p className={styles.sinCasos}>
+            No hay datos del paciente con DNI {dni}
+          </p>
+        )}
+      </div>
+    )}
+  </>
+)}
+
   
       {/* SELECCIÓN DE MODO */}
       {screen === "selectMode" && (
@@ -438,20 +431,20 @@ const TakePhoto = () => {
                 Tomar foto
               </button>
             )}
-  
+            
             {modo === "video" && (
-              <>
-                {!isRecording && (
-                  <button onClick={startRecording}>🎥 Empezar</button>
-                )}
-                {isRecording && (
-                  <button onClick={stopRecording}>⏹️ Detener</button>
-                )}
-                {videoBlobURL && (
-                  <button onClick={saveVideo}> Guardar</button>
-                )}
-              </>
+               <div
+               className={`${styles.recordButtonWrapper} ${isRecording ? styles.recording : ""}`}
+               onClick={() => {
+                console.log(isRecording ? "🟥 Deteniendo..." : "🔴 Grabando...");
+                isRecording ? stopRecording() : startRecording();
+              }}
+               title={isRecording ? "Detener grabación" : "Iniciar grabación"}
+             >
+               <div className={styles.recordButtonInner}></div>
+             </div>
             )}
+            
           </div>
   
           <button
@@ -522,7 +515,7 @@ const TakePhoto = () => {
           >
             <button onClick={() => setScreen("camera")}>➕ Agregar más</button>
             <button
-              onClick={guardarFotosAcumuladas}
+              onClick={guardarCaso}
               disabled={isSaving}
             >
               {isSaving ? "Guardando..." : "Guardar todas"}
@@ -542,50 +535,49 @@ const TakePhoto = () => {
       )}
   
       {/* PREVISUALIZACIÓN DE VIDEO */}
-      {screen === "videoPreview" && videoBlobURL && (
-        <div className={styles.previewWrapper}>
-          <h3 className={styles.previewTitle}>Previsualización del Video</h3>
-          <div className={styles.videoPreviewContainer}>
-            <div className={styles.videoPreviewWrapper}>
-              <video src={videoBlobURL} controls className={styles.previewVideo} />
-              <button
-                className={styles.iconButton}
-                onClick={() => {
-                  setVideoBlobURL(null);
-                  setScreen("camera");
-                }}
-                title="Eliminar este video y grabar otro"
-              >
-                ❌
-              </button>
-            </div>
-          </div>
-  
-          <div className={styles.postPreviewControls}>
-            <button className={styles.controlButton} onClick={saveVideo}>
-              Guardar video
-            </button>
-            <button
-              className={styles.controlButton}
-              onClick={() => {
-                setVideoBlobURL(null);
+      {screen === "videoPreview" && videosAcumulados.length > 0 && (
+      <div className={styles.previewWrapper}>
+        <h3 className={styles.previewTitle}>Previsualización de Videos</h3>
+
+       <div className={styles.videoCarrusel}>
+        {videosAcumulados.map((videoURL, index) => (
+         <div key={index} className={styles.videoPreviewWrapper}>
+          <video src={videoURL} controls className={styles.previewVideo}/>
+          <button
+            className={styles.iconButton}
+            title="Eliminar este video"
+            onClick={() => {
+              const nuevosVideos = videosAcumulados.filter((_, i) => i !== index);
+              setVideosAcumulados(nuevosVideos);
+              if (nuevosVideos.length === 0) {
                 setScreen("camera");
-              }}
-            >
-              Grabar otro
-            </button>
-            <button
-              className={styles.controlButton}
-              onClick={() => {
-                setVideoBlobURL(null);
-                setScreen("form");
-              }}
-            >
-              Finalizar caso
-            </button>
+              }
+            }}
+           >
+            ✕
+           </button>
           </div>
-        </div>
-      )}
+        ))}
+      </div>
+
+      <div className={styles.postPreviewControls}>
+       <button className={styles.controlButton} onClick={saveVideo}>
+        Guardar videos
+       </button>
+       <button className={styles.controlButton} onClick={() => setScreen("camera")}>
+         Grabar otro
+       </button>
+       <button className={styles.controlButton}
+               onClick={() => {
+                setVideosAcumulados([]);
+                setScreen("form");
+                }}
+       >
+        Finalizar caso
+       </button>
+     </div>
+    </div>
+   )}
   
       {/* CANVAS OCULTO */}
       <canvas ref={canvasRef} style={{ display: "none" }} />
