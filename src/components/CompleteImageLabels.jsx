@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import FormularioJerarquico from "../components/FormularioJerarquico";
 import { agruparPorJerarquia } from "../utils/agruparCasos";
 import styles from "../styles/CompleteImageLabels.module.css";
+import { formatFecha } from "../utils/formatFecha";
 
 const CompleteImageLabels = () => {
   const [casosAgrupados, setCasosAgrupados] = useState([]);
@@ -81,7 +82,7 @@ const CompleteImageLabels = () => {
       );
 
       const res = await fetch(
-        `${import.meta.env.VITE_API_URL}/api/images/${selectedCase._id}`,
+        `${import.meta.env.VITE_API_URL}/api/images/${selectedCase.id}`,
         {
           method: "PUT",
           headers: {
@@ -112,7 +113,7 @@ const CompleteImageLabels = () => {
 
     try {
       const res = await fetch(
-        `${import.meta.env.VITE_API_URL}/api/images/${selectedCase._id}`,
+        `${import.meta.env.VITE_API_URL}/api/images/${selectedCase.id}`,
         {
           method: "DELETE",
           headers: { Authorization: `Bearer ${token}` },
@@ -232,7 +233,8 @@ const CompleteImageLabels = () => {
                                       className={styles.caseItem}
                                     >
                                       🗂 Caso {caso.dni || "Sin DNI"} -{" "}
-                                      {caso.fecha || "Sin fecha"}
+                                      {formatFecha(caso.createdAt) ||
+                                        "Sin fecha"}
                                       <div className={styles.missingFields}>
                                         Faltan:{" "}
                                         {determinarCamposFaltantes(caso)
@@ -282,35 +284,47 @@ const CompleteImageLabels = () => {
             </div>
 
             <div>
-              <h3>Archivos del caso ({selectedCase.imagenes.length})</h3>
+              <h3>Archivos del caso ({selectedCase.images.length})</h3>
               <div className={styles.mediaGrid}>
-              {selectedCase.imagenes.map((media, idx) => {
-                const src = typeof media === "string" ? media : media?.url;
-                const isVideo = typeof src === "string" && (src.endsWith(".webm") || src.endsWith(".mp4"));
+                {selectedCase.images.flat().map((imageUrl, idx) => {
+                  const isVideo =
+                    imageUrl.endsWith(".webm") || imageUrl.endsWith(".mp4");
 
-                return (
-                  <div
-                    key={idx}
-                    className={`${styles.mediaContainer} ${
-                      idx === currentImageIndex ? styles.active : ""
-                    }`}
-                    onClick={() => setCurrentImageIndex(idx)}
-                  >
-                     <div
-                      className={`${styles.phaseBadge} ${
-                        styles[selectedCase.phase]
+                  return (
+                    <div
+                      key={idx}
+                      className={`${styles.mediaContainer} ${
+                        idx === currentImageIndex ? styles.active : ""
                       }`}
+                      onClick={() => setCurrentImageIndex(idx)}
                     >
-                      {selectedCase.phase || "Sin fase"}
+                      <div
+                        className={`${styles.phaseBadge} ${
+                          styles[selectedCase.phase]
+                        }`}
+                      >
+                        {selectedCase.phase || "Sin fase"}
+                      </div>
+                      {isVideo ? (
+                        <video
+                          src={imageUrl}
+                          controls
+                          className={styles.media}
+                        />
+                      ) : (
+                        <img
+                          src={imageUrl}
+                          alt={`Imagen ${idx + 1} del caso`}
+                          className={styles.media}
+                          onError={(e) => {
+                            e.target.onerror = null;
+                            e.target.src = "ruta/a/imagen/por/defecto.jpg";
+                          }}
+                        />
+                      )}
                     </div>
-                    {isVideo ? (
-                      <video src={src} controls className={styles.media} />
-                    ) : (
-                      <img src={src} alt={`Imagen ${idx}`} className={styles.media} />
-                    )}
-                  </div>
-                );
-              })}
+                  );
+                })}
               </div>
             </div>
 
