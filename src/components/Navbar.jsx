@@ -49,7 +49,7 @@ function Navbar() {
                   className={`${styles.link} ${isActive('/welcome/import-photo') ? styles.active : ''}`}
                   onClick={() => setMenuOpen(false)}
                 >
-                  clasificar fotos
+                  Clasificar fotos
                 </Link>
               </li>
               <li>

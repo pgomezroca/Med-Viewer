@@ -112,7 +112,7 @@ const TakePhoto = () => {
       const data = await res.json();
       const options = { day: "2-digit", month: "short", year: "numeric" };
     const gruposObj = data.reduce((acc, img) => {
-      const fecha = new Date(img.uploadedAt)
+      const fecha = new Date(img.createdAt)
         .toLocaleDateString("es-AR", options);
       if (!acc[fecha]) acc[fecha] = [];
       acc[fecha].push(img);
