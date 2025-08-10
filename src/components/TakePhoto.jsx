@@ -96,35 +96,57 @@ const TakePhoto = () => {
     setFotosAcumuladas(prev => [...prev, dataURL]);      // Solo previsualiza
     setScreen("photo");
   };
+  
   const buscarCasosPorDNI = async () => {
-     if (!dni) {
-       alert("Ingresá un DNI para buscar.");
+    if (!dni) {
+      alert("Ingresá un DNI para buscar.");
       return;
-     }
+    }
     try {
       const res = await fetch(`${apiUrl}/api/images/search?dni=${dni}`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+        headers: { Authorization: `Bearer ${token}` },
       });
   
       if (!res.ok) throw new Error("Error al buscar casos");
-      const data = await res.json();
+      const data = await res.json(); // array de fotos del DNI
+  
       const options = { day: "2-digit", month: "short", year: "numeric" };
-    const gruposObj = data.reduce((acc, img) => {
-      const fecha = new Date(img.uploadedAt)
-        .toLocaleDateString("es-AR", options);
-      if (!acc[fecha]) acc[fecha] = [];
-      acc[fecha].push(img);
-      return acc;
-    }, {});
-
-    // Paso a un array [{ fecha, items: [img,...] }, ...]
-    const grupos = Object.entries(gruposObj).map(
-      ([fecha, items]) => ({ fecha, items })
-    );
-
-    setCasosDelDni(grupos);
+  
+      // Agrupar por fecha (crea un timestamp 'ts' para ordenar)
+      const gruposObj = data.reduce((acc, img) => {
+        const raw = img.createdAt ?? img.uploadedAt ?? null;
+        let d = null;
+  
+        if (typeof raw === "string") {
+          // MySQL: "YYYY-MM-DD HH:mm:ss" -> "YYYY-MM-DDTHH:mm:ss"
+          d = new Date(raw.replace(" ", "T"));
+        } else if (raw) {
+          d = new Date(raw);
+        }
+  
+        
+        const fecha=  d && !Number.isNaN(d.getTime())
+            ? d.toLocaleDateString("es-AR", options)
+            : "Sin fecha";
+       const dx = img.diagnostico || "Sin diagnóstico";
+       const clave = `${fecha}__${dx}`;
+  
+       if (!acc[clave]) acc[clave] = { fecha, diagnostico: dx, items: [], ts: d ? d.getTime() : 0 };
+        acc[clave].items.push(img);
+  
+        // si varias fotos comparten la misma 'clave', dejamos el ts más reciente
+        if (d && d.getTime() > acc[clave].ts) acc[clave].ts = d.getTime();
+  
+        return acc;
+      }, {});
+  
+      // A array y ORDEN DESC por ts, luego quitamos ts
+      const grupos = Object.values(gruposObj)
+      .sort((a, b) => b.ts - a.ts)
+      .map(({ fecha, diagnostico, items }) => ({ fecha, diagnostico, items }));
+ 
+  
+      setCasosDelDni(grupos);
     } catch (err) {
       console.error(err);
       alert("No se pudieron buscar los casos.");
@@ -358,7 +380,7 @@ const TakePhoto = () => {
                    formularioRef.current?.scrollIntoView({ behavior: "smooth" });
                  }}
                  >
-                  📁{grupo.fecha} ({grupo.items.length})
+                  📁 {grupo.fecha} — Dx: {grupo.diagnostico} ({grupo.items.length})
                   
                 </button>
               ))}
