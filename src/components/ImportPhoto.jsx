@@ -31,63 +31,54 @@ const ImportPhoto = () => {
   };
 
   const handleGuardar = async () => {
-    if (
-      !formData.region ||
-      !formData.diagnostico ||
-      !formData.fase ||
-      previewImages.length === 0
-    ) {
-      alert(
-        "Faltan datos obligatorios (mínimo: región, diagnóstico, fase e imagen)"
-      );
+    if (!formData.region || !formData.diagnostico || !formData.fase || fileList.length === 0) {
+      alert("Faltan datos obligatorios (mínimo: región, diagnóstico, fase e imagen)");
       return;
     }
-    const files = fileList;
-        if (!files || files.length === 0) {
-         alert("No hay imágenes seleccionadas.");
-       return;
-      }
-      setSubiendo(true);
-    const uploads = Array.from(files).map(async (file) => {
+
+    setSubiendo(true);
+
+    try {
       const data = new FormData();
-      data.append("image", file);
-      data.append("optionalDNI",formData.dni||"");
+      
+      fileList.forEach((file, index) => {
+        data.append(`images`, file);
+      });
+
+      data.append("optionalDNI", formData.dni || "");
       data.append("region", formData.region);
       data.append("diagnostico", formData.diagnostico);
       data.append("tejido", formData.tejido || "");
       data.append("etiologia", formData.etiologia || "");
       data.append("tratamiento", formData.tratamiento || "");
-      data.append("fase", formData.fase || "");
+      data.append("phase", formData.fase || "");
 
-      try {
-        const res = await fetch(`${apiUrl}/api/images/upload`, {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${token}`
-          },
-          body: data,
-        });
+      const res = await fetch(`${apiUrl}/api/images/upload`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`
+        },
+        body: data,
+      });
 
-        if (!res.ok) throw new Error(`Respuesta inválida (${res.status})`);
-
-        const result = await res.json();
-        console.log("✅ Imagen subida:", result);
-        return { success: true };
-      } catch (err) {
-        console.error("❌ Error subiendo imagen:", err);
-        return { success: false, message: err.message };
+      if (!res.ok) {
+        const errorData = await res.json();
+        throw new Error(errorData.message || `Error en la respuesta (${res.status})`);
       }
-    });
 
-    const results=await Promise.all(uploads);
-    setSubiendo(false);
-    const fallidas = results.filter((r) => !r.success);
-    if (fallidas.length > 0) {
-      alert(`❌ ${fallidas.length} imágenes fallaron al subir.`);
-    } else {
-      alert("✅ Todas las imágenes fueron subidas correctamente");
+      const result = await res.json();
+      console.log("✅ Caso creado con imágenes:", result);
+      alert("✅ Caso creado correctamente con todas las imágenes");
+      
       setPreviewImages([]);
-      fileInputRef.current.value = "";
+      setFileList([]);
+      if (fileInputRef.current) fileInputRef.current.value = "";
+      
+    } catch (err) {
+      console.error("❌ Error al crear el caso:", err);
+      alert(`❌ Error al crear el caso: ${err.message}`);
+    } finally {
+      setSubiendo(false);
     }
   };
   const handleRemoveImage = (indexToRemove) => {
