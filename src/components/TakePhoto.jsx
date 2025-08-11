@@ -4,6 +4,7 @@ import piexif from "piexifjs";
 import { ArrowLeft, Columns } from "lucide-react";
 import FormularioJerarquico from "./FormularioJerarquico";
 import styles from '../styles/TakePhoto.module.css';
+import "sweetalert2/dist/sweetalert2.min.css";
 
 const TakePhoto = () => {
   const navigate = useNavigate();
@@ -252,9 +253,7 @@ const TakePhoto = () => {
       setGrabacionFinalizada(false); // reseteamos para la próxima
     }
   }, [grabacionFinalizada]);
-    
-  
-
+   
   const saveVideo = async () => {
     if (videosAcumulados.length === 0) {
       alert("No hay videos para guardar");
@@ -324,12 +323,36 @@ const TakePhoto = () => {
       headers: { Authorization: `Bearer ${token}` },
       body: formData,
     });
-    if (!res.ok) throw new Error("Error al guardar el caso");
-    alert("Caso guardado con todas las fotos");
+    
+    await (await import("sweetalert2")).default.fire({
+      icon: "success",
+      title: fotosAcumuladas.length === 1 ? "¡Imagen guardada!" : "¡Imágenes guardadas!",
+  text: fotosAcumuladas.length === 1
+    ? "La imagen se guardó con éxito."
+    : `Se guardaron ${fotosAcumuladas.length} imágenes con éxito.`,
+      text: "Las imágenes se guardaron con éxito.",
+      confirmButtonText: "Seguir en este caso",
+     showDenyButton: true,
+     denyButtonText: "Cerrar caso",
+    allowOutsideClick: false,
+    });
+    
   
     // 4) Limpiás estado y volvés al formulario
     setFotosAcumuladas([]);
-    setScreen("form");
+    setPhotoData("null");
+    if (isDenied) {
+      // CERRAR CASO: limpiar para iniciar uno nuevo
+      setDni("");
+      setRegion("");
+      setDiagnostico("");
+      setFase("");
+      setCasosDelDni([]);
+      setScreen("form");
+    } else if (isConfirmed) {
+      // SEGUIR EN ESTE CASO: volver al form con los datos cargados
+      setScreen("form");
+    }
   };
   
   
