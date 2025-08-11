@@ -191,14 +191,22 @@ const RecoverPhoto = () => {
     isInitializing,
   } = useCamera({
     initialMode: modoCamara,
-    onSave: async (blob, filename) => {
+    onSave: async (blob, filename,metaData) => {
       const formData = new FormData();
-      formData.append("image", blob, filename);
-      Object.entries(selectedCase).forEach(([key, val]) => {
-        if (val) formData.append(key, val);
+      formData.append("images", blob, filename);
+      Object.entries(metaData).forEach(([key, val]) => {
+        if (val !== undefined && val !== null) {
+          formData.append(key, val);
+        }
       });
 
       try {
+        console.log("Enviando a backend:", {
+          filename,
+          keys: Object.keys(metaData),
+          metaData,
+          blobSize: blob.size,
+        });
         const res = await fetch(`${apiUrl}/api/images/upload`, {
           method: "POST",
           headers: {
@@ -206,11 +214,15 @@ const RecoverPhoto = () => {
           },
           body: formData,
         });
-
-        if (!res.ok) throw new Error("Error al subir");
-
+      if (!res.ok) {
+        const errorText = await res.text();
+        console.error("Respuesta del backend:", res.status, errorText);
+        throw new Error("Error al subir");
+      }
+    
         await handleBuscar();
-        actualizarSelectedCase(selectedCase.dni);
+        actualizarSelectedCase(metaData.dni);
+        return true;
       } catch (err) {
         console.error("Error al guardar:", err);
         return false;
@@ -234,19 +246,7 @@ const RecoverPhoto = () => {
 
   if (mostrarCamara) {
     return (
-      <div
-        style={{
-          position: "fixed",
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          backgroundColor: "black",
-          zIndex: 1000,
-          display: "flex",
-          flexDirection: "column",
-        }}
-      >
+      <div className={styles.mostrarCamara}>
         {/* Canvas oculto */}
         <canvas
           ref={canvasRef}
@@ -256,95 +256,51 @@ const RecoverPhoto = () => {
         />
 
         {/* Contenedor de vista previa */}
-        <div style={{ flex: 1, position: "relative" }}>
+        <div className={styles.vistaPrevia}>
           {/* Vista de la cámara */}
-          <video
-            ref={videoRef}
-            autoPlay
-            playsInline
-            style={{
-              width: "100%",
-              height: "100%",
-              objectFit: "cover",
-              transform: "scaleX(-1)",
-              display: photoData ? "none" : "block",
-            }}
+          <video 
+            ref={videoRef} 
+            autoPlay 
+            playsInline 
+            className={`${styles.videoRef} ${photoData ? styles.oculto : ''}`}
           />
 
           {/* Foto capturada */}
           {photoData && (
-            <img
-              src={photoData}
-              alt="Preview"
-              style={{
-                width: "100%",
-                height: "100%",
-                objectFit: "contain",
-                backgroundColor: "black",
-              }}
+            <img 
+              src={photoData} 
+              alt="Preview" 
+              className={styles.imagenCapturada} 
             />
           )}
 
           {/* Video grabado */}
           {videoBlobURL && (
-            <video
-              src={videoBlobURL}
-              controls
-              style={{
-                position: "absolute",
-                top: 20,
-                left: 20,
-                width: "150px",
-                borderRadius: 8,
-                zIndex: 1002,
-              }}
+            <video 
+              src={videoBlobURL} 
+              controls 
+              className={styles.videoCapturado}
             />
           )}
         </div>
 
         {/* Controles - siempre visibles pero deshabilitados cuando no está listo */}
-        <div
-          style={{
-            position: "absolute",
-            bottom: 20,
-            left: 0,
-            right: 0,
-            display: "flex",
-            justifyContent: "center",
-            gap: 20,
-            padding: "10px",
-            zIndex: 1001,
-          }}
-        >
-          {modoCamara === "foto" ? (
+        <div className={styles.controlesVideo}>
+          {modoCamara === 'foto' ? (
             <>
               {!photoData ? (
                 <button
                   onClick={takePhoto}
                   disabled={!videoReady}
-                  style={{
-                    width: 60,
-                    height: 60,
-                    borderRadius: "50%",
-                    background: videoReady ? "white" : "gray",
-                    border: "none",
-                    cursor: videoReady ? "pointer" : "not-allowed",
-                  }}
+                  className={styles.takePhotoButton}
                 >
-                  📸
+                Tomar foto
                 </button>
               ) : (
                 <>
                   <button
                     onClick={resetCamera}
-                    style={{
-                      padding: "10px 20px",
-                      background: "#ff4444",
-                      color: "white",
-                      border: "none",
-                      borderRadius: 20,
-                      cursor: "pointer",
-                    }}
+                    className={styles.reintentarButton}
                   >
                     Reintentar
                   </button>
@@ -353,14 +309,7 @@ const RecoverPhoto = () => {
                       const success = await savePhoto(selectedCase);
                       if (success) setMostrarCamara(false);
                     }}
-                    style={{
-                      padding: "10px 20px",
-                      background: "#4CAF50",
-                      color: "white",
-                      border: "none",
-                      borderRadius: 20,
-                      cursor: "pointer",
-                    }}
+                    className={styles.guardarFotoButton}
                   >
                     Guardar Foto
                   </button>
@@ -373,15 +322,7 @@ const RecoverPhoto = () => {
                 <button
                   onClick={startRecording}
                   disabled={!videoReady}
-                  style={{
-                    width: 60,
-                    height: 60,
-                    borderRadius: "50%",
-                    background: videoReady ? "red" : "gray",
-                    color: "white",
-                    border: "none",
-                    cursor: videoReady ? "pointer" : "not-allowed",
-                  }}
+                  className={styles.recorderButton}
                 >
                   ●
                 </button>
@@ -390,15 +331,7 @@ const RecoverPhoto = () => {
               {isRecording && (
                 <button
                   onClick={stopRecording}
-                  style={{
-                    width: 60,
-                    height: 60,
-                    borderRadius: "50%",
-                    background: "red",
-                    color: "white",
-                    border: "4px solid white",
-                    cursor: "pointer",
-                  }}
+                  className={styles.stopRecordingButton}
                 >
                   ■
                 </button>
@@ -408,14 +341,7 @@ const RecoverPhoto = () => {
                 <>
                   <button
                     onClick={resetCamera}
-                    style={{
-                      padding: "10px 20px",
-                      background: "#ff4444",
-                      color: "white",
-                      border: "none",
-                      borderRadius: 20,
-                      cursor: "pointer",
-                    }}
+                    className={styles.reintentarButton}
                   >
                     Reintentar
                   </button>
@@ -424,14 +350,8 @@ const RecoverPhoto = () => {
                       const success = await saveVideo();
                       if (success) setMostrarCamara(false);
                     }}
-                    style={{
-                      padding: "10px 20px",
-                      background: "#4CAF50",
-                      color: "white",
-                      border: "none",
-                      borderRadius: 20,
-                      cursor: "pointer",
-                    }}
+                    className={styles.guardarvideoButton
+                    }
                   >
                     Guardar Video
                   </button>
@@ -449,42 +369,15 @@ const RecoverPhoto = () => {
             setPhotoData(null);
             setVideoBlobURL(null);
           }}
-          style={{
-            position: "absolute",
-            top: 20,
-            left: 20,
-            background: "rgba(0,0,0,0.5)",
-            color: "white",
-            border: "none",
-            borderRadius: "50%",
-            width: 40,
-            height: 40,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            cursor: "pointer",
-            zIndex: 1002,
-            transition: "opacity 0.3s",
-            opacity: videoReady ? 1 : 0.8,
-          }}
+          className={styles.backbutton}
         >
           <ArrowLeft size={24} />
         </button>
 
         {/* Mensaje de estado */}
         {cameraError && (
-          <div
-            style={{
-              position: "absolute",
-              top: "50%",
-              left: "50%",
-              transform: "translate(-50%, -50%)",
-              background: "rgba(255,0,0,0.7)",
-              color: "white",
-              padding: "10px 20px",
-              borderRadius: 20,
-            }}
-          >
+          <div className={styles.cameraError}
+        >
             {cameraError}
           </div>
         )}
@@ -493,23 +386,15 @@ const RecoverPhoto = () => {
   }
 
   return (
-    <div
-      style={{
-        maxWidth: "1200px",
-        margin: "0 auto",
-        padding: "20px",
-        fontFamily: "Arial, sans-serif",
-      }}
+    <div className={styles.recoverPhotoContainer}
     >
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          marginBottom: "20px",
-          gap: "10px",
-        }}
-      >
-        <button
+      <div style={{
+        display: 'flex',
+        alignItems: 'center',
+        marginBottom: '20px',
+        gap: '10px'
+      }}>
+        <button 
           onClick={() => navigate(-1)}
           style={{
             background: "none",

@@ -4,6 +4,7 @@ import piexif from "piexifjs";
 import { ArrowLeft, Columns } from "lucide-react";
 import FormularioJerarquico from "./FormularioJerarquico";
 import styles from '../styles/TakePhoto.module.css';
+import "sweetalert2/dist/sweetalert2.min.css";
 
 const TakePhoto = () => {
   const navigate = useNavigate();
@@ -96,35 +97,57 @@ const TakePhoto = () => {
     setFotosAcumuladas(prev => [...prev, dataURL]);      // Solo previsualiza
     setScreen("photo");
   };
+  
   const buscarCasosPorDNI = async () => {
-     if (!dni) {
-       alert("Ingresá un DNI para buscar.");
+    if (!dni) {
+      alert("Ingresá un DNI para buscar.");
       return;
-     }
+    }
     try {
       const res = await fetch(`${apiUrl}/api/images/search?dni=${dni}`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+        headers: { Authorization: `Bearer ${token}` },
       });
   
       if (!res.ok) throw new Error("Error al buscar casos");
-      const data = await res.json();
+      const data = await res.json(); // array de fotos del DNI
+  
       const options = { day: "2-digit", month: "short", year: "numeric" };
-    const gruposObj = data.reduce((acc, img) => {
-      const fecha = new Date(img.createdAt)
-        .toLocaleDateString("es-AR", options);
-      if (!acc[fecha]) acc[fecha] = [];
-      acc[fecha].push(img);
-      return acc;
-    }, {});
-
-    // Paso a un array [{ fecha, items: [img,...] }, ...]
-    const grupos = Object.entries(gruposObj).map(
-      ([fecha, items]) => ({ fecha, items })
-    );
-
-    setCasosDelDni(grupos);
+  
+      // Agrupar por fecha (crea un timestamp 'ts' para ordenar)
+      const gruposObj = data.reduce((acc, img) => {
+        const raw = img.createdAt ?? img.uploadedAt ?? null;
+        let d = null;
+  
+        if (typeof raw === "string") {
+          // MySQL: "YYYY-MM-DD HH:mm:ss" -> "YYYY-MM-DDTHH:mm:ss"
+          d = new Date(raw.replace(" ", "T"));
+        } else if (raw) {
+          d = new Date(raw);
+        }
+  
+        
+        const fecha=  d && !Number.isNaN(d.getTime())
+            ? d.toLocaleDateString("es-AR", options)
+            : "Sin fecha";
+       const dx = img.diagnostico || "Sin diagnóstico";
+       const clave = `${fecha}__${dx}`;
+  
+       if (!acc[clave]) acc[clave] = { fecha, diagnostico: dx, items: [], ts: d ? d.getTime() : 0 };
+        acc[clave].items.push(img);
+  
+        // si varias fotos comparten la misma 'clave', dejamos el ts más reciente
+        if (d && d.getTime() > acc[clave].ts) acc[clave].ts = d.getTime();
+  
+        return acc;
+      }, {});
+  
+      // A array y ORDEN DESC por ts, luego quitamos ts
+      const grupos = Object.values(gruposObj)
+      .sort((a, b) => b.ts - a.ts)
+      .map(({ fecha, diagnostico, items }) => ({ fecha, diagnostico, items }));
+ 
+  
+      setCasosDelDni(grupos);
     } catch (err) {
       console.error(err);
       alert("No se pudieron buscar los casos.");
@@ -230,9 +253,7 @@ const TakePhoto = () => {
       setGrabacionFinalizada(false); // reseteamos para la próxima
     }
   }, [grabacionFinalizada]);
-    
-  
-
+   
   const saveVideo = async () => {
     if (videosAcumulados.length === 0) {
       alert("No hay videos para guardar");
@@ -302,12 +323,36 @@ const TakePhoto = () => {
       headers: { Authorization: `Bearer ${token}` },
       body: formData,
     });
-    if (!res.ok) throw new Error("Error al guardar el caso");
-    alert("Caso guardado con todas las fotos");
+    
+    await (await import("sweetalert2")).default.fire({
+      icon: "success",
+      title: fotosAcumuladas.length === 1 ? "¡Imagen guardada!" : "¡Imágenes guardadas!",
+  text: fotosAcumuladas.length === 1
+    ? "La imagen se guardó con éxito."
+    : `Se guardaron ${fotosAcumuladas.length} imágenes con éxito.`,
+      text: "Las imágenes se guardaron con éxito.",
+      confirmButtonText: "Seguir en este caso",
+     showDenyButton: true,
+     denyButtonText: "Cerrar caso",
+    allowOutsideClick: false,
+    });
+    
   
     // 4) Limpiás estado y volvés al formulario
     setFotosAcumuladas([]);
-    setScreen("form");
+    setPhotoData("null");
+    if (isDenied) {
+      // CERRAR CASO: limpiar para iniciar uno nuevo
+      setDni("");
+      setRegion("");
+      setDiagnostico("");
+      setFase("");
+      setCasosDelDni([]);
+      setScreen("form");
+    } else if (isConfirmed) {
+      // SEGUIR EN ESTE CASO: volver al form con los datos cargados
+      setScreen("form");
+    }
   };
   
   
@@ -358,7 +403,7 @@ const TakePhoto = () => {
                    formularioRef.current?.scrollIntoView({ behavior: "smooth" });
                  }}
                  >
-                  📁{grupo.fecha} ({grupo.items.length})
+                  📁 {grupo.fecha} — Dx: {grupo.diagnostico} ({grupo.items.length})
                   
                 </button>
               ))}

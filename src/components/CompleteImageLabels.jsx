@@ -32,15 +32,14 @@ const CompleteImageLabels = () => {
       return caso[campo] === null;
     });
   };
-
+  
+  
   const handleBuscar = async () => {
     if (!busqueda.diagnostico) {
       alert("Seleccioná un diagnóstico");
       return;
     }
-
     setBuscando(true);
-
     try {
       const query = new URLSearchParams();
       query.append("diagnostico", busqueda.diagnostico);
@@ -58,6 +57,7 @@ const CompleteImageLabels = () => {
 
       const data = await res.json();
       const estructura = agruparPorJerarquia(data);
+     
       setCasosAgrupados(estructura);
     } catch (err) {
       console.error("Error al buscar imágenes:", err);
@@ -69,7 +69,6 @@ const CompleteImageLabels = () => {
 
   const handleSaveLabels = async () => {
     if (!selectedCase) return;
-
     try {
       const payload = camposFaltantes.reduce(
         (acc, campo) => {
@@ -80,7 +79,6 @@ const CompleteImageLabels = () => {
         },
         { _id: selectedCase._id }
       );
-
       const res = await fetch(
         `${import.meta.env.VITE_API_URL}/api/images/${selectedCase.id}`,
         {
@@ -134,7 +132,6 @@ const CompleteImageLabels = () => {
   return (
     <div className={styles.container}>
       <h2 className={styles.title}>Completar etiquetas</h2>
-
       <FormularioJerarquico
         campos={["region", "diagnostico"]}
         onChange={setBusqueda}
@@ -155,41 +152,32 @@ const CompleteImageLabels = () => {
           </>
         )}
       </button>
-
       <hr className={styles.divider} />
-
       {casosAgrupados.length > 0 && (
-        <div className={styles.resultsContainer}>
-          <h3>
-            Resultados (
-            {casosAgrupados.reduce(
-              (acc, region) =>
-                acc +
-                region.diagnosticos.reduce(
-                  (a, diag) =>
-                    a +
-                    diag.tratamientos.reduce(
-                      (b, trat) => b + trat.casos.length,
-                      0
-                    ),
-                  0
-                ),
-              0
-            )}{" "}
+      <div className={styles.resultsContainer}>
+        <h3> Resultados (
+          {casosAgrupados.reduce(
+            (acc, region) =>
+              acc +
+              region.diagnosticos.reduce(
+                (a, diag) =>
+                 a +
+                diag.tratamientos.reduce(
+                 (b, trat) => b + trat.casos.length,
+                 0),
+                0 ),
+              0 )}{" "}
             casos)
           </h3>
-
           {casosAgrupados.map((regionData, rIndex) => {
             const regionKey = `region-${rIndex}`;
             return (
               <div key={regionKey} className={styles.folder}>
-                <div
-                  onClick={() => toggleFolder(regionKey)}
-                  className={styles.folderHeader}
-                >
-                  {expanded[regionKey] ? "📂" : "📁"}{" "}
-                  {regionData.region || "Sin región"}
-                </div>
+                <div onClick={() => toggleFolder(regionKey)}
+                  className={styles.folderHeader} >
+                 {expanded[regionKey] ? "📂" : "📁"}{" "}
+                 {regionData.region || "Sin región"}
+                 </div>
 
                 {expanded[regionKey] &&
                   regionData.diagnosticos.map((diag, dIndex) => {
@@ -200,41 +188,45 @@ const CompleteImageLabels = () => {
                           onClick={() => toggleFolder(diagKey)}
                           className={styles.subfolderHeader}
                         >
-                          {expanded[diagKey] ? "📂" : "📁"}{" "}
-                          {diag.nombre || "Sin diagnóstico"}
-                        </div>
+                        {expanded[diagKey] ? "📂" : "📁"}{" "}
+                        {diag.nombre || "Sin diagnóstico"}
+                      </div>
 
-                        {expanded[diagKey] &&
-                          diag.tratamientos.map((trat, tIndex) => {
-                            const tratKey = `${diagKey}-trat-${tIndex}`;
-                            return (
+                      {expanded[diagKey] &&
+                        diag.tratamientos.map((trat, tIndex) => {
+                          const tratKey = `${diagKey}-trat-${tIndex}`;
+                          return (
                               <div
                                 key={tratKey}
                                 className={styles.subsubfolder}
                               >
-                                <div
-                                  onClick={() => toggleFolder(tratKey)}
-                                  className={styles.subsubfolderHeader}
-                                >
-                                  {expanded[tratKey] ? "📂" : "📁"}{" "}
-                                  {trat.nombre || "Sin tratamiento"}
-                                </div>
+                              <div  onClick={() => toggleFolder(tratKey)}
+                                    className={styles.subsubfolderHeader}
+                              >
+                               {expanded[tratKey] ? "📂" : "📁"}{" "}
+                                {trat.nombre || "Sin tratamiento"}
+                              </div>
 
-                                {expanded[tratKey] &&
-                                  trat.casos.map((caso, cIndex) => (
-                                    <div
-                                      key={`${tratKey}-caso-${cIndex}`}
-                                      onClick={() => {
-                                        setSelectedCase(caso);
-                                        setCamposFaltantes(
-                                          determinarCamposFaltantes(caso)
-                                        );
+                              {expanded[tratKey] &&
+                                trat.casos.map((caso, cIndex) => (
+                                  <div
+                                    key={`${tratKey}-caso-${cIndex}`}
+                                    onClick={() => {
+                                      setSelectedCase(caso);
+                                      setCamposFaltantes();
+                                       
                                       }}
                                       className={styles.caseItem}
                                     >
-                                      🗂 Caso {caso.dni || "Sin DNI"} -{" "}
-                                      {formatFecha(caso.createdAt) ||
-                                        "Sin fecha"}
+                                      🗂 Caso {caso.dni || "Sin DNI"} - {
+                                     caso.createdAt
+                                         ? new Date(
+                                         typeof caso.createdAt === "string"
+                                         ? caso.createdAt.replace(" ", "T")
+                                        : caso.createdAt
+                                  ).toLocaleDateString("es-AR", { day: "2-digit", month: "short", year: "numeric" })
+                                  : "Sin fecha"
+                                  }
                                       <div className={styles.missingFields}>
                                         Faltan:{" "}
                                         {determinarCamposFaltantes(caso)
@@ -274,6 +266,7 @@ const CompleteImageLabels = () => {
               <h2>Completar caso: {selectedCase.dni || "Sin DNI"}</h2>
               <button
                 onClick={() => {
+                  console.log("Click caso:", caso);
                   setSelectedCase(null);
                   setCurrentImageIndex(0);
                 }}

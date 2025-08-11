@@ -222,7 +222,7 @@ export const useCamera = ({ initialMode = "foto", onSave }) => {
       const res = await fetch(newDataURL);
       const blob = await res.blob();
 
-      await onSave(blob, `photo_${Date.now()}.jpg`);
+      await onSave(blob, `photo_${Date.now()}.jpg`,metaData);
       setPhotoData(null);
       return true;
     } catch (err) {
