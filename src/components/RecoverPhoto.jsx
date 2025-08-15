@@ -116,7 +116,7 @@ const RecoverPhoto = () => {
         diagnostico,
         tratamiento,
         optionalDNI,
-        uploadedAt,
+        createdAt,
         images,
       } = img;
       let nodoRegion = estructura.find((r) => r.region === region);
@@ -142,7 +142,7 @@ const RecoverPhoto = () => {
       if (!nodoCaso) {
         nodoCaso = {
           dni: optionalDNI,
-          fecha: uploadedAt?.slice(0, 10),
+          fecha: createdAt?.slice(0, 10),
           imagenes: [],
           diagnostico,
           tratamiento,

@@ -1,101 +1,95 @@
-import React, { useState } from 'react';
-import { Link, useLocation, useNavigate } from 'react-router-dom';
+// src/components/Navbar.jsx
+import React, { useState, useRef, useEffect } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import styles from '../styles/Navbar.module.css';
 import { useAuth } from '../context/AuthContext';
+import { User } from 'lucide-react'; // ícono genérico
 
 function Navbar() {
-  const [menuOpen, setMenuOpen] = useState(false);
-  const location = useLocation();
+  const [open, setOpen] = useState(false);
+  const menuRef = useRef(null);
   const navigate = useNavigate();
   const { user, logout } = useAuth();
-
-  const isActive = (path) => location.pathname === path;
 
   const handleLogout = () => {
     logout();
     navigate('/');
   };
 
+  // Cerrar el dropdown al hacer click fuera
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (menuRef.current && !menuRef.current.contains(e.target)) {
+        setOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
   return (
     <nav className={styles.navbar}>
       <div className={styles.navContent}>
+        {/* Logo que siempre vuelve a Home */}
         <Link to="/welcome" className={styles.logo}>
-          MED-VIEWER
+          MED‑VIEWER
         </Link>
 
-        <button
-          className={styles.menuToggle}
-          onClick={() => setMenuOpen(!menuOpen)}
-        >
-          ☰
-        </button>
+        {/* Avatar + menú de usuario */}
+        <div className={styles.userArea} ref={menuRef}>
+          <button
+            className={styles.avatarBtn}
+            onClick={() => setOpen((v) => !v)}
+            aria-haspopup="menu"
+            aria-expanded={open}
+            title={user?.nombre || 'Cuenta'}
+          >
+            <User size={22} />
+          </button>
 
-        <ul className={`${styles.navLinks} ${menuOpen ? styles.open : ''}`}>
-          {user ? (
-            <>
-              <li className={styles.greeting}>Hola, {user.nombre}!</li>
-              <li>
-                <Link
-                  to="/welcome/take-photo"
-                  className={`${styles.link} ${isActive('/welcome/take-photo') ? styles.active : ''}`}
-                  onClick={() => setMenuOpen(false)}
-                >
-                  Tomar Foto
-                </Link>
-              </li>
-              <li>
-                <Link
-                  to="/welcome/import-photo"
-                  className={`${styles.link} ${isActive('/welcome/import-photo') ? styles.active : ''}`}
-                  onClick={() => setMenuOpen(false)}
-                >
-                  Clasificar fotos
-                </Link>
-              </li>
-              <li>
-                <Link
-                  to="/welcome/recover-photo"
-                  className={`${styles.link} ${isActive('/welcome/recover-photo') ? styles.active : ''}`}
-                  onClick={() => setMenuOpen(false)}
-                >
-                  Archivo por patologia
-                </Link>
-              </li>
-              <li>
-                <Link
-                  to="/welcome/complete-image-labels"
-                  className={`${styles.link} ${isActive('/welcome/complete-image-labels') ? styles.active : ''}`}
-                  onClick={() => setMenuOpen(false)}
-                >
-                  Completar etiquetas
-                </Link>
-              </li>
-              <li>
-                <button
-                  onClick={() => {
-                    handleLogout();
-                    setMenuOpen(false);
-                  }}
-                  className={styles.link}
-                >
-                  Cerrar sesión
-                </button>
-              </li>
-            </>
-          ) : (
-            <>
-              <li>
-                <Link
-                  to="/login"
-                  className={`${styles.link} ${isActive('/login') ? styles.active : ''}`}
-                  onClick={() => setMenuOpen(false)}
-                >
-                  Iniciar sesión
-                </Link>
-              </li>
-            </>
+          {open && (
+            <div className={styles.dropdown} role="menu">
+              <div className={styles.dropdownHeader}>
+                <div className={styles.userName}>{user?.nombre || 'Usuario'}</div>
+                <div className={styles.userRole}>Profesional</div>
+              </div>
+
+              <button
+                className={styles.dropdownItem}
+                onClick={() => { setOpen(false); navigate('/profile'); }}
+                role="menuitem"
+              >
+                Perfil
+              </button>
+
+              <button
+                className={styles.dropdownItem}
+                onClick={() => { setOpen(false); navigate('/settings'); }}
+                role="menuitem"
+              >
+                Configuración
+              </button>
+
+              <button
+                className={styles.dropdownItem}
+                onClick={() => { setOpen(false); navigate('/help'); }}
+                role="menuitem"
+              >
+                Centro de ayuda
+              </button>
+
+              <div className={styles.divider} />
+
+              <button
+                className={`${styles.dropdownItem} ${styles.logout}`}
+                onClick={handleLogout}
+                role="menuitem"
+              >
+                Cerrar sesión
+              </button>
+            </div>
           )}
-        </ul>
+        </div>
       </div>
     </nav>
   );

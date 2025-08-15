@@ -330,7 +330,7 @@ const TakePhoto = () => {
   text: fotosAcumuladas.length === 1
     ? "La imagen se guardó con éxito."
     : `Se guardaron ${fotosAcumuladas.length} imágenes con éxito.`,
-      text: "Las imágenes se guardaron con éxito.",
+      
       confirmButtonText: "Seguir en este caso",
      showDenyButton: true,
      denyButtonText: "Cerrar caso",

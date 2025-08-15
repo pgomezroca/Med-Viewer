@@ -1,78 +1,250 @@
-
-
-:root {
-  --color-bg: #d6f4f4;
-  --color-text: #114c5f;
-  --color-accent: #00d6c6;
-  --color-secondary: #3e5f68;
-  --bs-primary: #114c5f; /* Para compatibilidad con Bootstrap */
-} 
-.welcomeWrapper {
-  background-color: var(--color-bg);
-  color: var(--color-text);
-  min-height: 100vh;
+/* Contenedor general */
+.container {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 16px 18px;
 }
 
-.title {
-  color: var(--color-text)!important;
+/* Saludo */
+.greeting {
+  margin-bottom: 12px;
+  color: #0b4c6a;
 }
-
-.subtitle {
-  color: var(--color-text);
-}
-
-.welcomeWrapper {
-  min-height: calc(100vh - 60px);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding-bottom: 3rem;
-  transition: background-color 0.3s ease, color 0.3s ease;
-}
-
-.dark {
-  background-color: #121212;
-  color: #f1f1f1;
-}
-
-.light {
-  background-color: #f8f9fa;
-  color: #212529;
-}
-
-.textContainer {
-  text-align: center;
-  margin-top: 40px;
-  padding: 0 20px;
-  background-color: var(--color-bg); 
-}
-
-.title {
-  font-size: 2.5rem;
-  font-weight: 600;
-  
-}
-
-.subtitle {
-  font-size: 1.2rem;
-  margin-top: 10px;
-  margin-bottom: 30px;
+.greeting p {
+  margin: 0 0 2px 0;
+  font-size: 14px;
   opacity: 0.9;
 }
-
-.buttons {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-  align-items: center;
+.greeting h2 {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 800;
 }
 
-@media (min-width: 900px) {
-  .buttons {
-    flex-direction: row;
-    justify-content: center;
-  }
-  .corousel-inner{
-    height: 100px;
-  }
+/* Fila DNI + botón */
+.patientRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin: 12px 0 6px;
+}
+.input {
+  flex: 1 1 260px;
+  min-width: 220px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid #cfe8f7;
+  background: #fff;
+  font-size: 14px;
+  outline: none;
+}
+.input:focus {
+  border-color: #0ea5e9;
+  box-shadow: 0 0 0 3px rgba(14,165,233,.15);
+}
+.newPatientBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  border: none;
+  border-radius: 10px;
+  background: #0ea5e9;
+  color: #fff;
+  font-weight: 700;
+  cursor: pointer;
+}
+.newPatientBtn:hover { opacity: .95; }
+
+/* Caja de resultados / feedback */
+.casosBox {
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 12px;
+  margin: 12px 0;
+}
+.casosBoxError {
+  background: #fee2e2;
+  border: 1px solid #fecaca;
+  color: #7f1d1d;
+  border-radius: 10px;
+  padding: 10px 12px;
+  margin: 12px 0;
+}
+.emptyNote {
+  background: #f1f5f9;
+  color: #0b4c6a;
+  border: 1px dashed #cbd5e1;
+  border-radius: 10px;
+  padding: 10px 12px;
+}
+
+/* --- Lista de casos --- */
+.caseRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 8px 0;
+  border-bottom: 1px solid #eef6fd;
+}
+.caseRow:last-child {
+  border-bottom: none;
+}
+.caseInfo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #0b4c6a;
+  flex: 1;
+}
+.badge {
+  margin-left: 4px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+  border: 1px solid;
+  white-space: nowrap;
+}
+.badgeOpen {
+  background: #dcfce7;
+  color: #14532d;
+  border-color: #bbf7d0;
+}
+.badgeClosed {
+  background: #fee2e2;
+  color: #7f1d1d;
+  border-color: #fecaca;
+}
+.caseActions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Botón pequeño (Abrir) */
+.smallBtn {
+  background: #0ea5e9;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 6px 10px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+}
+.smallBtn:hover { opacity: .95; }
+.smallBtn:focus {
+  outline: 2px solid #0ea5e9;
+  outline-offset: 2px;
+}
+
+/* --- Tarjetas de acción --- */
+.actionsGrid {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  margin-top: 18px;
+}
+.actionCard {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 12px;
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+  cursor: pointer;
+  transition: box-shadow .15s ease, transform .05s ease;
+}
+.actionCard:hover {
+  box-shadow: 0 8px 24px rgba(2, 6, 23, 0.08);
+  transform: translateY(-1px);
+}
+.icon {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+}
+.actionLabel {
+  font-weight: 700;
+  color: #0b4c6a;
+}
+.newCaseBox {
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 14px;
+  margin: 12px 0;
+}
+.newCaseBox h4 {
+  margin: 0 0 10px;
+  color: #0b4c6a;
+  font-size: 16px;
+}
+
+.formRow {
+  display: grid;
+  grid-template-columns: 120px 1fr;
+  gap: 10px;
+  align-items: center;
+  margin-bottom: 10px;
+}
+.label {
+  color: #0b4c6a;
+  font-weight: 600;
+}
+.field {
+  border: 1px solid #cfe8f7;
+  border-radius: 10px;
+  padding: 10px 12px;
+  background: #fff;
+  font-size: 14px;
+  outline: none;
+}
+.field:focus {
+  border-color: #0ea5e9;
+  box-shadow: 0 0 0 3px rgba(14,165,233,.15);
+}
+
+.formActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 12px;
+}
+.primaryBtn {
+  background: #0ea5e9;
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  padding: 10px 14px;
+  font-weight: 700;
+  cursor: pointer;
+}
+.primaryBtn:hover { opacity: .95; }
+.secondaryBtn {
+  background: #e2e8f0;
+  color: #0b4c6a;
+  border: none;
+  border-radius: 10px;
+  padding: 10px 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.secondaryBtn:hover { background: #cbd5e1; }
+
+@media (max-width: 600px) {
+  .formRow { grid-template-columns: 1fr; }
+}
+
+
+/* Responsive */
+@media (max-width: 600px) {
+  .greeting h2 { font-size: 20px; }
+  .input { flex: 1 1 100%; }
 }
