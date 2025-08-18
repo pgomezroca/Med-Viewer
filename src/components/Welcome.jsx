@@ -1,9 +1,11 @@
-import React, { useState,useEffect } from 'react';
+import React, { useState,useEffect,useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import styles from '../styles/Bienvenida.module.css';
 import { Camera, FolderOpen, Tags, Upload, UserPlus } from 'lucide-react';
 import FormularioJerarquico from "./FormularioJerarquico";
+import SplitButton from "./SplitButton";
+import { useSearchParams } from 'react-router-dom';
 /* Helpers (asegurate de tenerlos definidos) */
 
 
@@ -32,6 +34,9 @@ const Welcome = () => {
   const [showNewCaseForm, setShowNewCaseForm] = useState(false);
   const [ncRegion, setNcRegion] = useState('');
   const [ncDx, setNcDx] = useState('');
+  const [searchParams] = useSearchParams();
+  const autoStartedRef = useRef(false);
+  
   const buscarCasosPorDNI = async () => {  
     if (!dni) {
       alert('Ingresá un DNI para buscar.');
@@ -182,6 +187,39 @@ const createNewCase = (e) => {
     setShowNewForm(false);
     setNewDx('');
   };
+  //acciones de los botones
+  useEffect(() => {
+    // 1) Leer query params
+    const qMode   = searchParams.get('mode');        // 'foto' | 'video'
+    const qAuto   = searchParams.get('autostart') === '1';
+    const qDni    = searchParams.get('dni') || '';
+    const qRegion = searchParams.get('region') || '';
+    const qDx     = searchParams.get('dx') || '';
+  
+    // 2) Pre-cargar estados si vienen
+    if (qDni)    setDni(qDni);
+    if (qRegion) setRegion(qRegion);
+    if (qDx)     setDiagnostico(qDx);
+    if (qMode === 'foto' || qMode === 'video') setModo(qMode);
+  
+    // 3) Autostart a cámara SI y solo SI hay datos mínimos
+    const ready = (qDni || dni) && (qRegion || region) && (qDx || diagnostico);
+    if (qAuto && ready && !autoStartedRef.current) {
+      autoStartedRef.current = true;
+      (async () => {
+        try {
+          // si tu startCamera valida campos, ya estamos cubiertos
+          await startCamera();
+          // forzar cámara (saltar selectMode)
+          setScreen('camera');
+        } catch (e) {
+          console.error('autostart camera error:', e);
+        }
+      })();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParams]);
+  const showHeroCTA = !showNewForm && !(queried && !loading);
   return (
     <div className={styles.container}>
       {/* Saludo */}
@@ -192,23 +230,20 @@ const createNewCase = (e) => {
   
       {/* DNI + Nuevo paciente */}
       <div className={styles.patientRow}>
-        <input
-          type="text"
-          inputMode="numeric"
-          pattern="[0-9]*"
-          placeholder="DNI del paciente"
-          value={dni}
-          onChange={(e) =>
-            setDni((e.target.value || '').replace(/\D/g, '').slice(0, 8))
-          }
-          className={styles.input}
-          aria-label="DNI del paciente"
-          maxLength={8}
-        />
-        <button className={styles.newPatientBtn} onClick={handleNuevoPaciente}>
-          <UserPlus size={18} /> Nuevo paciente
-        </button>
-      </div>
+        <input  type="text" className={styles.input}
+                inputMode="numeric"
+                pattern="[0-9]*"
+                placeholder="DNI del paciente"
+                value={dni}
+                onChange={(e) =>
+                  setDni((e.target.value || '').replace(/\D/g, '').slice(0, 8))  }
+                aria-label="DNI del paciente"
+                maxLength={8}
+            />
+           <button className={styles.newPatientBtn} onClick={handleNuevoPaciente}>
+              <UserPlus size={18} /> Nuevo paciente
+           </button>
+        </div>
   
       {/* Formulario inline: Nuevo paciente */}
       {showNewForm && (
@@ -338,6 +373,10 @@ const createNewCase = (e) => {
 
               <div>
                 {casos.map((c, i) => {
+                   const regionParam =
+                   c.region ||
+                   (c.items?.length ? c.items[c.items.length - 1]?.region : '') ||
+                   '';
                   // calcular estado (6 meses)
                   const six = new Date();
                   six.setMonth(six.getMonth() - 6);
@@ -364,23 +403,50 @@ const createNewCase = (e) => {
                           {estado}
                         </span>
                       </div>
-  
                       <div className={styles.caseActions}>
-                        <button
-                          className={styles.smallBtn}
-                          onClick={() =>
-                            navigate(
-                              `/welcome/recover-photo?dni=${encodeURIComponent(
-                                dni
-                              )}&fecha=${encodeURIComponent(
-                                c.fecha
-                              )}&dx=${encodeURIComponent(c.diagnostico)}`
-                            )
-                          }
-                        >
-                          Abrir
-                        </button>
-                      </div>
+  <SplitButton
+    label="Continuar caso"
+    classNameBtn={styles.smallBtn}
+    items={[
+      {
+        label: 'Tomar Foto',
+        onClick: () => {
+          const qs = new URLSearchParams({
+            dni,
+            dx: c.diagnostico,
+            fecha: c.fecha,
+            mode: 'foto',
+            autostart: '1',
+            ...(regionParam ? { region: regionParam } : {}),
+          }).toString();
+          navigate(`/welcome/take-photo?${qs}`);
+        },
+      },
+      {
+        label: 'Grabar',
+        onClick: () =>
+          navigate(
+            `/welcome/take-photo?dni=${encodeURIComponent(dni)}&dx=${encodeURIComponent(c.diagnostico)}&fecha=${encodeURIComponent(c.fecha)}&mode=video`
+          ),
+      },
+      {
+        label: 'Importar',
+        onClick: () =>
+          navigate(
+            `/welcome/import-photo?dni=${encodeURIComponent(dni)}&dx=${encodeURIComponent(c.diagnostico)}&fecha=${encodeURIComponent(c.fecha)}`
+          ),
+      },
+      {
+        label: 'Ver',
+        onClick: () =>
+          navigate(
+            `/welcome/recover-photo?dni=${encodeURIComponent(dni)}&fecha=${encodeURIComponent(c.fecha)}&dx=${encodeURIComponent(c.diagnostico)}`
+          ),
+      },
+    ]}
+  />
+</div>
+                     
                     </div>
                   );
                 })}
@@ -391,7 +457,10 @@ const createNewCase = (e) => {
       )}
   
       {/* Tarjetas de acción */}
-      <div className={styles.actionsGrid}>
+      <div
+       className={`${styles.actionsGrid} ${showHeroCTA ? styles.actionsHero : styles.actionsCompact}`}
+        role="navigation"
+        >
         {actions.map((a) => (
           <button
             key={a.path}

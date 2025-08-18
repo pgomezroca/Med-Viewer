@@ -5,6 +5,7 @@ import { ArrowLeft, Columns } from "lucide-react";
 import FormularioJerarquico from "./FormularioJerarquico";
 import styles from '../styles/TakePhoto.module.css';
 import "sweetalert2/dist/sweetalert2.min.css";
+import { useSearchParams } from 'react-router-dom';
 
 const TakePhoto = () => {
   const navigate = useNavigate();
@@ -30,6 +31,35 @@ const TakePhoto = () => {
    const mediaRecorderRef = useRef(null);
    const recordedChunksRef = useRef([]);
    const formularioRef = useRef(null);
+   const [searchParams] = useSearchParams();
+const autoStartedRef = useRef(false);
+
+useEffect(() => {
+  const qMode   = searchParams.get('mode');            // 'foto' | 'video'
+  const qAuto   = searchParams.get('autostart') === '1';
+  const qDni    = searchParams.get('dni')    || '';
+  const qRegion = searchParams.get('region') || '';
+  const qDx     = searchParams.get('dx')     || '';
+
+  // precargar estados visibles en el
+  if (qDni)    setDni(qDni);
+  if (qRegion) setRegion(qRegion);
+  if (qDx)     setDiagnostico(qDx);
+  if (qMode === 'foto' || qMode === 'video') setModo(qMode);
+
+  // si vienen los 3 y se pidió autostart, abrir cámara directo (una sola vez)
+  const ready = qDni && qRegion && qDx;
+  if (qAuto && ready && !autoStartedRef.current) {
+    autoStartedRef.current = true;
+    startCamera({
+      dniVal: qDni,
+      regionVal: qRegion,
+      diagnosticoVal: qDx,
+      modeVal: qMode,
+    });
+  }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+}, [searchParams]);
 
     useEffect(
       () => () => {
@@ -61,21 +91,33 @@ const TakePhoto = () => {
       }
      }, [dni]);
     
-   const startCamera = async () => {
-     if (!dni ||!region|| !diagnostico ) {
-      alert("Completa el formulario por favor.");
-      return;
-    }
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: "environment" },
-      });
-      streamRef.current = stream;
-      setScreen("selectMode");
-    } catch (error) {
-      alert("Error al acceder a la cámara: " + error.message);
-    }
-   };
+     const startCamera = async ({ dniVal, regionVal, diagnosticoVal, modeVal } = {}) => {
+      const d  = dniVal ?? dni;
+      const r  = regionVal ?? region;
+      const dx = diagnosticoVal ?? diagnostico;
+    
+      if (!d || !r || !dx) {
+        alert("Completa el formulario por favor.");
+        return;
+      }
+    
+      try {
+        // setear modo si viene por URL
+        if (modeVal === 'foto' || modeVal === 'video') setModo(modeVal);
+    
+        const stream = await navigator.mediaDevices.getUserMedia({
+          video: { facingMode: "environment" },
+        });
+        streamRef.current = stream;
+    
+        // ir DIRECTO a cámara (no pasar por selectMode)
+        setScreen("camera");
+      } catch (error) {
+        console.error("Error al acceder a la cámara:", error);
+        alert("Error al acceder a la cámara: " + error.message);
+      }
+    };
+    
 
    const takePhoto = () => {
     const video = videoRef.current;
@@ -323,44 +365,50 @@ const TakePhoto = () => {
       headers: { Authorization: `Bearer ${token}` },
       body: formData,
     });
-    
-    await (await import("sweetalert2")).default.fire({
-      icon: "success",
-      title: fotosAcumuladas.length === 1 ? "¡Imagen guardada!" : "¡Imágenes guardadas!",
-  text: fotosAcumuladas.length === 1
-    ? "La imagen se guardó con éxito."
-    : `Se guardaron ${fotosAcumuladas.length} imágenes con éxito.`,
-      
-      confirmButtonText: "Seguir en este caso",
-     showDenyButton: true,
-     denyButtonText: "Cerrar caso",
-    allowOutsideClick: false,
-    });
-    
-  
-    // 4) Limpiás estado y volvés al formulario
-    setFotosAcumuladas([]);
-    setPhotoData("null");
-    if (isDenied) {
-      // CERRAR CASO: limpiar para iniciar uno nuevo
-      setDni("");
-      setRegion("");
-      setDiagnostico("");
-      setFase("");
-      setCasosDelDni([]);
-      setScreen("form");
-    } else if (isConfirmed) {
-      // SEGUIR EN ESTE CASO: volver al form con los datos cargados
-      setScreen("form");
-    }
+    const { default: Swal } = await import("sweetalert2");
+
+      // cantidad para singular/plural
+const n = fotosAcumuladas.length;
+
+// 1) esperar al SweetAlert
+const { isConfirmed, isDenied } = await Swal.fire({
+  icon: "success",
+  title: n === 1 ? "¡Imagen guardada!" : "¡Imágenes guardadas!",
+  text:
+    n === 1
+      ? "¿Querés cerrar el caso o seguir trabajando?"
+      : `Se guardaron ${n} imágenes. ¿Querés cerrar el caso o seguir trabajando?`,
+  confirmButtonText: "Seguir en este caso",
+  showDenyButton: true,
+  denyButtonText: "Cerrar caso",
+  allowOutsideClick: false,
+});
+
+// 2) si eligió cerrar el caso, limpiar campos del formulario
+if (isDenied) {
+  setDni("");
+  setRegion("");
+  setDiagnostico("");
+  setFase("");
+  setCasosDelDni([]);
+}
+
+// 3) (opcional pero recomendado) limpiar la previsualización para no re-subir lo mismo
+setFotosAcumuladas([]);
+setPhotoData(null);
+
+// 4) ir SIEMPRE al formulario y cortar la función
+setScreen("form");
+return;
+
+   
   };
-  
   
   return (
     <>
       {/* FORMULARIO PRINCIPAL */}
       {screen === "form" && (
-  <>
+    <>
     {/* FORMULARIO PRINCIPAL */}
     <div id="formulario" ref={formularioRef} className={styles.formularioContainer}>
         <FormularioJerarquico
@@ -372,7 +420,7 @@ const TakePhoto = () => {
             setDiagnostico(data.diagnostico || "");
             setFase(data.fase || "");
            }}
-        />
+         />
 
          <div className={styles.botonesCentrados}>
             <button className={styles.ContinuarButton} onClick={startCamera}>
@@ -384,14 +432,14 @@ const TakePhoto = () => {
          </div>
      </div>
 
-        {/* LISTA DE CASOS (SCROLLABLE) */}
-       {dni && (
-         <div className={styles.casosContainer}>
-           {casosDelDni.length > 0 ? (
-           <>
-             <h4>Casos previos para DNI {dni}:</h4>
-              <div className={styles.listaCasos}>
-               {casosDelDni.map((grupo, idx) => (
+               {/* LISTA DE CASOS (SCROLLABLE) */}
+              {dni && (
+               <div className={styles.casosContainer}>
+                {casosDelDni.length > 0 ? (
+                <>
+               <h4>Casos previos para DNI {dni}:</h4>
+                <div className={styles.listaCasos}>
+                {casosDelDni.map((grupo, idx) => (
                 <button
                   key={idx}
                   className={styles.casoButton}
@@ -406,18 +454,18 @@ const TakePhoto = () => {
                   📁 {grupo.fecha} — Dx: {grupo.diagnostico} ({grupo.items.length})
                   
                 </button>
-              ))}
-            </div>
-          </>
-        ) : (
-          <p className={styles.sinCasos}>
-            No hay datos del paciente con DNI {dni}
-          </p>
-        )}
-      </div>
-    )}
-  </>
-)}
+               ))}
+             </div>
+            </>
+           ) : (
+            <p className={styles.sinCasos}>
+              No hay datos del paciente con DNI {dni}
+            </p>
+           )}
+         </div>
+         )}
+       </>
+      )}
 
   
       {/* SELECCIÓN DE MODO */}
@@ -555,29 +603,25 @@ const TakePhoto = () => {
             ))}
           </div>
   
-          <div
+           <div
             style={{ display: "flex", justifyContent: "center", gap: 20, marginTop: 20 }}
-          >
+           >
             <button onClick={() => setScreen("camera")}>➕ Agregar más</button>
-            <button
-              onClick={guardarCaso}
-              disabled={isSaving}
-            >
+            <button  onClick={guardarCaso} disabled={isSaving}>
               {isSaving ? "Guardando..." : "Guardar todas"}
             </button>
-            <button
-              onClick={() => {
-                streamRef.current?.getTracks().forEach((t) => t.stop());
-                setFotosAcumuladas([]);
-                setPhotoData(null);
-                setScreen("form");
-              }}
-            >
-              Finalizar caso
-            </button>
+            <button  onClick={() => {
+              streamRef.current?.getTracks().forEach((t) => t.stop());
+               setFotosAcumuladas([]);
+               setPhotoData(null);
+               setScreen("form");
+                }} >
+               
+                 Finalizar caso
+              </button>
+            </div>
           </div>
-        </div>
-      )}
+        )}
   
       {/* PREVISUALIZACIÓN DE VIDEO */}
       {screen === "videoPreview" && videosAcumulados.length > 0 && (
