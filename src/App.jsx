@@ -9,7 +9,7 @@ import RecoverPhoto from './components/RecoverPhoto';
 import Despedida from './components/Despedida';
 import FormularioJerarquico from './components/FormularioJerarquico';
 import CompleteImageLabels from './components/CompleteImageLabels';
-
+import SplitButton from './components/SplitButton';
 import Landing from './components/Landing';
 import Login from './components/Login';
 import Register from './components/Register';
@@ -34,6 +34,7 @@ function App() {
           <Route path="formulario" element={<FormularioJerarquico />} />
           <Route path="despedida" element={<Despedida />} />
           <Route path="complete-image-labels" element={<CompleteImageLabels />} />
+          <Route path="SplitButton" element={<SplitButton />} />
         </Route>
       </Routes>
     </Router>

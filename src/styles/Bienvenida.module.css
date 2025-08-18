@@ -237,14 +237,51 @@
   cursor: pointer;
 }
 .secondaryBtn:hover { background: #cbd5e1; }
-
-@media (max-width: 600px) {
-  .formRow { grid-template-columns: 1fr; }
+/* ===== CTA en modo HERO (cuando hay lugar) ===== */
+.actionsHero {
+  /* ocupa buena parte de la pantalla y centra el grid */
+  min-height: 52vh;           /* ajustable: 48–60vh */
+  align-content: center;      /* centra filas dentro del grid */
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 14px;
 }
 
+.actionsHero .actionCard {
+  min-height: 140px;          /* tarjetas grandes */
+  padding: 18px 16px;
+}
+.actionsHero .icon {
+  width: 36px; height: 36px;  /* iconos más visibles */
+}
+.actionsHero .actionLabel {
+  font-size: 16px;            /* texto más grande */
+  font-weight: 800;
+}
 
-/* Responsive */
+/* ===== CTA en modo COMPACT (cuando hay casos o form) ===== */
+.actionsCompact {
+  margin-top: 12px;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 12px;
+}
+
+.actionsCompact .actionCard {
+  min-height: 84px;           /* tarjetas más bajas */
+  padding: 12px 12px;
+}
+.actionsCompact .icon {
+  width: 28px; height: 28px;
+}
+.actionsCompact .actionLabel {
+  font-size: 14px;
+  font-weight: 700;
+}
+
+/* Responsive fino */
 @media (max-width: 600px) {
+  .actionsHero { min-height: 44vh; }
+  .actionsHero .actionCard { min-height: 120px; }
+  .formRow { grid-template-columns: 1fr; }
   .greeting h2 { font-size: 20px; }
   .input { flex: 1 1 100%; }
 }

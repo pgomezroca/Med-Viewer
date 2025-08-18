@@ -1,0 +1,18 @@
+.Btn{
+  color:black;
+  border-radius:5px ;
+  background-color:rgb(58, 163, 224);
+  border:1px solid rgb(58, 163, 224);
+}
+.menu{
+  position: absolute;
+  top: 110%;
+  right: 0;
+  min-width: 180;
+  background: #fff;
+  border:1px solid #e2e8f0;
+ border-radius: 8;
+  box-shadow: 0 10px 30px rgba(2,6,23,.12);
+ padding: 6;
+ z-index: 10;
+}
