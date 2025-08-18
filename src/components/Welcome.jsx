@@ -1,12 +1,11 @@
-
-import React, { useState,useEffect,useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
-import styles from '../styles/Bienvenida.module.css';
-import { Camera, FolderOpen, Tags, Upload, UserPlus } from 'lucide-react';
+import React, { useState, useEffect, useRef } from "react";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
+import styles from "../styles/Bienvenida.module.css";
+import { Camera, FolderOpen, Tags, Upload, UserPlus } from "lucide-react";
 import FormularioJerarquico from "./FormularioJerarquico";
 import SplitButton from "./SplitButton";
-import { useSearchParams } from 'react-router-dom';
+import { useSearchParams } from "react-router-dom";
 /* Helpers (asegurate de tenerlos definidos) */
 
 const actions = [
@@ -40,22 +39,20 @@ const Welcome = () => {
   const token = localStorage.getItem("token");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const [casos, setCasos] = useState([]);
+  const [casos, setCasos] = useState([]); // [{fecha, diagnostico, items: [...]}, ...]
   const [queried, setQueried] = useState(false);
   const [showNewForm, setShowNewForm] = useState(false);
-
-  const [newDx, setNewDx] = useState('');
-  const [newNombre, setNewNombre] = useState('');
-  const [newApellido, setNewApellido] = useState('');
-  const [newRegion, setNewRegion] = useState('');
+  const [newDx, setNewDx] = useState("");
+  const [newNombre, setNewNombre] = useState("");
+  const [newApellido, setNewApellido] = useState("");
+  const [newRegion, setNewRegion] = useState("");
   const [showNewCaseForm, setShowNewCaseForm] = useState(false);
-  const [ncRegion, setNcRegion] = useState('');
-  const [ncDx, setNcDx] = useState('');
+  const [ncRegion, setNcRegion] = useState("");
+  const [ncDx, setNcDx] = useState("");
   const [searchParams] = useSearchParams();
   const autoStartedRef = useRef(false);
-  
-  const buscarCasosPorDNI = async () => {  
 
+  const buscarCasosPorDNI = async () => {
     if (!dni) {
       alert("Ingresá un DNI para buscar.");
       return;
@@ -65,12 +62,15 @@ const Welcome = () => {
       setError("");
       setQueried(true);
 
+      console.log("[Welcome] consultando API");
+
       const res = await fetch(`${apiUrl}/api/images/search?dni=${dni}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       if (!res.ok) throw new Error("Error al buscar casos");
 
-      const data = await res.json();
+      const data = await res.json(); // array de fotos del DNI
+
       const options = { day: "2-digit", month: "short", year: "numeric" };
       const gruposObj = data.reduce((acc, img) => {
         const raw = img.createdAt ?? img.uploadedAt ?? null;
@@ -100,6 +100,8 @@ const Welcome = () => {
 
       const grupos = Object.values(gruposObj).sort((a, b) => b.ts - a.ts);
       setCasos(grupos);
+      console.log("[Welcome] grupos obtenidos", grupos.length);
+      setCasos(grupos);
     } catch (err) {
       console.error("[Welcome] buscarCasosPorDNI error", err);
       setError("No se pudieron buscar los casos.");
@@ -117,129 +119,178 @@ const Welcome = () => {
       setQueried(false);
       setError("");
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [dni]);
 
-  const handleImageChange = (e) => {
-    const files = Array.from(e.target.files);
-    setSelectedImages(files);
+  // abrir el form de “nuevo caso” (con DNI ya cargado)
+  const openNewCaseForm = () => {
+    const v = (dni || "").replace(/\D/g, "").slice(0, 8);
+    if (!v || (v.length !== 7 && v.length !== 8)) {
+      alert("Completá un DNI válido (7 u 8 dígitos) antes de crear un caso.");
+      return;
+    }
+    if (v !== dni) setDni(v);
+    setShowNewCaseForm(true);
   };
 
-  const removeImage = (index) => {
-    setSelectedImages(prev => prev.filter((_, i) => i !== index));
+  const cancelNewCase = () => {
+    setShowNewCaseForm(false);
+    setNcRegion("");
+    setNcDx("");
   };
 
-  const handleCreatePatientWithImages = async (e) => {
+  // crea un caso “provisorio” en UI (hasta tener backend)
+  const createNewCase = (e) => {
     e.preventDefault();
     const v = (dni || "").replace(/\D/g, "");
     if (v.length !== 7 && v.length !== 8) {
       alert("DNI inválido");
       return;
     }
+    if (!ncRegion) {
+      alert("Elegí una región");
+      return;
+    }
+    if (!ncDx) {
+      alert("Elegí un diagnóstico");
+      return;
+    }
+
+    const now = new Date();
+    const fecha = now.toLocaleDateString("es-AR", {
+      day: "2-digit",
+      month: "short",
+      year: "numeric",
+    });
+
+    const nuevo = {
+      fecha,
+      region: ncRegion,
+      diagnostico: ncDx,
+      items: [],
+      ts: now.getTime(),
+      local: true, // ← provisorio (no persistido)
+    };
+
+    setCasos((prev) => [nuevo, ...prev]);
+    setShowNewCaseForm(false);
+    setNcRegion("");
+    setNcDx("");
+  };
+  //nuevo paciente
+  const handleNuevoPaciente = () => {
+    const v = (dni || "").replace(/\D/g, "");
+    if (v !== dni) setDni(v);
+    setShowNewForm(true);
+  };
+
+  // Guardar “provisorio” en UI (sin backend aún)
+  const handleCreateCase = async (e) => {
+    e.preventDefault();
+    
+    // Validación del DNI
+    const v = (dni || "").replace(/\D/g, "");
+    if (v.length !== 7 && v.length !== 8) {
+      alert("DNI inválido");
+      return;
+    }
+    
+    // Validación del diagnóstico
     if (!newDx.trim()) {
       alert("Ingresá un diagnóstico");
       return;
     }
-    if (selectedImages.length === 0) {
-      alert("Debes seleccionar al menos una imagen");
+  
+    // Validación de nombre y apellido (requeridos para nuevo paciente)
+    if (!newNombre.trim() || !newApellido.trim()) {
+      alert("Para crear un nuevo caso, se requieren nombre y apellido del paciente");
       return;
     }
-
+  
     try {
-      setLoading(true);
-      
+      // Crear FormData para enviar tanto datos como imágenes
       const formData = new FormData();
       
-      // Agregar campos del paciente y caso
-      formData.append('dni', dni);
-      formData.append('region', newRegion || '');
+      // Agregar campos al FormData
+      formData.append('dni', v);
       formData.append('diagnostico', newDx.trim());
-      formData.append('etiologia', newEtiologia || '');
-      formData.append('tejido', newTejido || '');
-      formData.append('tratamiento', newTratamiento || '');
-      formData.append('fase', newFase || '');
+      formData.append('nombre', newNombre.trim());
+      formData.append('apellido', newApellido.trim());
       
-      // Agregar campos opcionales
-      if (newNombre.trim()) formData.append('nombre', newNombre.trim());
-      if (newApellido.trim()) formData.append('apellido', newApellido.trim());
-      
-      // Agregar imágenes
-      selectedImages.forEach((file, index) => {
-        formData.append('images', file);
-      });
-
+      // Campos opcionales
+      if (newRegion) formData.append('region', newRegion);
+  
+      // Enviar datos al backend
       const response = await fetch(`${apiUrl}/api/images/cases`, {
         method: 'POST',
         headers: {
-          Authorization: `Bearer ${token}`,
+          'Authorization': `Bearer ${token}`
         },
-        body: formData,
+        body: formData
       });
-
+  
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.error || 'Error al crear el caso');
       }
-
-      const result = await response.json();
+  
+      const caseData = await response.json();
       
-      // Actualizar la UI con el nuevo caso
+      // Actualizar el estado local con el nuevo caso
       const now = new Date();
-      const options = { day: "2-digit", month: "short", year: "numeric" };
-      const fecha = now.toLocaleDateString("es-AR", options);
+      const fecha = now.toLocaleDateString("es-AR", {
+        day: "2-digit",
+        month: "short",
+        year: "numeric",
+      });
       
-      const nuevoCaso = {
+      const nuevo = {
+        id: caseData.id, // ID generado por el backend
         fecha,
-        diagnostico: result.diagnostico || newDx.trim(),
-        region: result.region || newRegion,
-        items: result.images || [],
+        diagnostico: caseData.diagnostico,
+        region: caseData.region || undefined,
+        items: caseData.images || [],
         ts: now.getTime(),
+        nombre: caseData.patient?.nombre || newNombre.trim(),
+        apellido: caseData.patient?.apellido || newApellido.trim(),
+        patientCreated: caseData.patientCreated // Para saber si se creó un nuevo paciente
       };
-
-      setCasos(prev => [nuevoCaso, ...prev]);
+  
+      setCasos((prev) => [nuevo, ...prev]);
       setShowNewForm(false);
-      resetForm();
-      setSelectedImages([]);
-      setUploadProgress(0);
-      
+      setNewDx("");
+      setNewNombre("");
+      setNewApellido("");
+  
+      // Mostrar mensaje de éxito
+      alert("Caso creado exitosamente");
+  
     } catch (err) {
-      console.error('Error al crear paciente con imágenes:', err);
-      setError(err.message || 'Error al crear el paciente');
-    } finally {
-      setLoading(false);
+      console.error('Error al crear caso:', err);
+      alert(err.message || 'Error al crear el caso');
     }
   };
 
-  const resetForm = () => {
-    setNewDx("");
-    setNewNombre("");
-    setNewApellido("");
-    setNewRegion("");
-    setNewEtiologia("");
-    setNewTejido("");
-    setNewTratamiento("");
-    setNewFase("");
-  };
-
+  // Cerrar sin guardar
   const handleCancelNew = () => {
     setShowNewForm(false);
-    resetForm();
-    setSelectedImages([]);
-  }
+    setNewDx("");
+  };
   //acciones de los botones
   useEffect(() => {
     // 1) Leer query params
-    const qMode   = searchParams.get('mode');        // 'foto' | 'video'
-    const qAuto   = searchParams.get('autostart') === '1';
-    const qDni    = searchParams.get('dni') || '';
-    const qRegion = searchParams.get('region') || '';
-    const qDx     = searchParams.get('dx') || '';
-  
+    const qMode = searchParams.get("mode"); // 'foto' | 'video'
+    const qAuto = searchParams.get("autostart") === "1";
+    const qDni = searchParams.get("dni") || "";
+    const qRegion = searchParams.get("region") || "";
+    const qDx = searchParams.get("dx") || "";
+
     // 2) Pre-cargar estados si vienen
-    if (qDni)    setDni(qDni);
+    if (qDni) setDni(qDni);
     if (qRegion) setRegion(qRegion);
-    if (qDx)     setDiagnostico(qDx);
-    if (qMode === 'foto' || qMode === 'video') setModo(qMode);
-  
+    if (qDx) setDiagnostico(qDx);
+    if (qMode === "foto" || qMode === "video") setModo(qMode);
+
     // 3) Autostart a cámara SI y solo SI hay datos mínimos
     const ready = (qDni || dni) && (qRegion || region) && (qDx || diagnostico);
     if (qAuto && ready && !autoStartedRef.current) {
@@ -249,17 +300,15 @@ const Welcome = () => {
           // si tu startCamera valida campos, ya estamos cubiertos
           await startCamera();
           // forzar cámara (saltar selectMode)
-          setScreen('camera');
+          setScreen("camera");
         } catch (e) {
-          console.error('autostart camera error:', e);
+          console.error("autostart camera error:", e);
         }
       })();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchParams]);
   const showHeroCTA = !showNewForm && !(queried && !loading);
-
-
   return (
     <div className={styles.container}>
       {/* Saludo */}
@@ -270,39 +319,43 @@ const Welcome = () => {
 
       {/* DNI + Nuevo paciente */}
       <div className={styles.patientRow}>
+        <input
+          type="text"
+          className={styles.input}
+          inputMode="numeric"
+          pattern="[0-9]*"
+          placeholder="DNI del paciente"
+          value={dni}
+          onChange={(e) =>
+            setDni((e.target.value || "").replace(/\D/g, "").slice(0, 8))
+          }
+          aria-label="DNI del paciente"
+          maxLength={8}
+        />
+        <button className={styles.newPatientBtn} onClick={handleNuevoPaciente}>
+          <UserPlus size={18} /> Nuevo paciente
+        </button>
+      </div>
 
-        <input  type="text" className={styles.input}
-                inputMode="numeric"
-                pattern="[0-9]*"
-                placeholder="DNI del paciente"
-                value={dni}
-                onChange={(e) =>
-                  setDni((e.target.value || '').replace(/\D/g, '').slice(0, 8))  }
-                aria-label="DNI del paciente"
-                maxLength={8}
-            />
-           <button className={styles.newPatientBtn} onClick={handleNuevoPaciente}>
-              <UserPlus size={18} /> Nuevo paciente
-           </button>
-        </div>
-  
       {/* Formulario inline: Nuevo paciente */}
-
       {showNewForm && (
         <div className={styles.newCaseBox}>
-          <h4>Nuevo paciente con imágenes</h4>
-          <form onSubmit={handleCreatePatientWithImages}>
-            {/* DNI */}
+          <h4>Nuevo paciente</h4>
+          <form onSubmit={handleCreateCase}>
+            {/* Un solo FormularioJerarquico (dni + región + diagnóstico) */}
             <div className={styles.formRow}>
-              <label className={styles.label}>DNI</label>
-              <input
-                className={styles.field}
-                type="text"
-                value={dni}
-                onChange={(e) => setDni(e.target.value.replace(/\D/g, ""))}
-                maxLength={8}
-                required
-              />
+              <label className={styles.label}>DNI, Región y Diagnóstico</label>
+              <div style={{ width: "100%" }}>
+                <FormularioJerarquico
+                  campos={["dni", "region", "diagnostico"]}
+                  valores={{ dni, region: newRegion, diagnostico: newDx }}
+                  onChange={(data) => {
+                    setDni(data?.dni || "");
+                    setNewRegion(data?.region || "");
+                    setNewDx(data?.diagnostico || "");
+                  }}
+                />
+              </div>
             </div>
 
             {/* Nombre (opcional) */}
@@ -314,6 +367,7 @@ const Welcome = () => {
                 value={newNombre}
                 onChange={(e) => setNewNombre(e.target.value)}
                 placeholder="(opcional)"
+                aria-label="Nombre"
               />
             </div>
 
@@ -326,106 +380,10 @@ const Welcome = () => {
                 value={newApellido}
                 onChange={(e) => setNewApellido(e.target.value)}
                 placeholder="(opcional)"
+                aria-label="Apellido"
               />
             </div>
 
-            {/* Campos médicos */}
-            <div className={styles.formRow}>
-              <label className={styles.label}>Región y diagnóstico</label>
-              <FormularioJerarquico
-                campos={["region", "diagnostico"]}
-                valores={{ region: newRegion, diagnostico: newDx }}
-                onChange={(data) => {
-                  setNewRegion(data?.region || "");
-                  setNewDx(data?.diagnostico || "");
-                }}
-              />
-            </div>
-
-            <div className={styles.formRow}>
-              <label className={styles.label}>Etiología</label>
-              <input
-                className={styles.field}
-                type="text"
-                value={newEtiologia}
-                onChange={(e) => setNewEtiologia(e.target.value)}
-                placeholder="(opcional)"
-              />
-            </div>
-
-            <div className={styles.formRow}>
-              <label className={styles.label}>Tejido</label>
-              <input
-                className={styles.field}
-                type="text"
-                value={newTejido}
-                onChange={(e) => setNewTejido(e.target.value)}
-                placeholder="(opcional)"
-              />
-            </div>
-
-            <div className={styles.formRow}>
-              <label className={styles.label}>Tratamiento</label>
-              <input
-                className={styles.field}
-                type="text"
-                value={newTratamiento}
-                onChange={(e) => setNewTratamiento(e.target.value)}
-                placeholder="(opcional)"
-              />
-            </div>
-
-            <div className={styles.formRow}>
-              <label className={styles.label}>Fase (pre, intra, post)</label>
-              <input
-                className={styles.field}
-                type="text"
-                value={newFase}
-                onChange={(e) => setNewFase(e.target.value.toLowerCase())}
-                placeholder="(opcional)"
-              />
-            </div>
-
-            {/* Selección de imágenes */}
-            <div className={styles.formRow}>
-              <label className={styles.label}>Imágenes</label>
-              <input
-                type="file"
-                multiple
-                accept="image/*"
-                onChange={handleImageChange}
-                className={styles.fileInput}
-                required
-              />
-              
-              {/* Vista previa de imágenes */}
-              <div className={styles.imagePreviews}>
-                {selectedImages.map((image, index) => (
-                  <div key={index} className={styles.imagePreviewItem}>
-                    <span>{image.name}</span>
-                    <button 
-                      type="button" 
-                      onClick={() => removeImage(index)}
-                      className={styles.removeImageBtn}
-                    >
-                      <X size={16} />
-                    </button>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Barra de progreso */}
-            {uploadProgress > 0 && uploadProgress < 100 && (
-              <div className={styles.progressBar}>
-                <div 
-                  className={styles.progressFill} 
-                  style={{ width: `${uploadProgress}%` }}
-                ></div>
-              </div>
-            )}
-
-            {/* Botones del formulario */}
             <div className={styles.formActions}>
               <button
                 type="button"
@@ -434,12 +392,8 @@ const Welcome = () => {
               >
                 Cancelar
               </button>
-              <button 
-                type="submit" 
-                className={styles.primaryBtn}
-                disabled={loading}
-              >
-                {loading ? 'Guardando...' : 'Guardar paciente e imágenes'}
+              <button type="submit" className={styles.primaryBtn}>
+                Guardar
               </button>
             </div>
           </form>
@@ -447,7 +401,7 @@ const Welcome = () => {
       )}
 
       {/* Resultados de búsqueda */}
-      {loading && !showNewForm && <div className={styles.casosBox}>Buscando casos…</div>}
+      {loading && <div className={styles.casosBox}>Buscando casos…</div>}
 
       {!loading && error && (
         <div className={styles.casosBoxError} role="alert">
@@ -455,7 +409,7 @@ const Welcome = () => {
         </div>
       )}
 
-      {!loading && !error && queried && !showNewForm && (
+      {!loading && !error && queried && (
         <div className={styles.casosBox}>
           {casos.length === 0 ? (
             <div className={styles.emptyNote}>
@@ -466,17 +420,69 @@ const Welcome = () => {
             <>
               <div className={styles.casosHeader}>
                 <h4>Casos previos para DNI {dni}:</h4>
+                <button
+                  type="button"
+                  className={styles.secondaryBtn}
+                  onClick={openNewCaseForm}
+                >
+                  + Nuevo caso
+                </button>
               </div>
+              {showNewCaseForm && (
+                <div className={styles.newCaseBox}>
+                  <form onSubmit={createNewCase}>
+                    <div className={styles.formRow}>
+                      <label className={styles.label}>DNI</label>
+                      <input
+                        className={styles.field}
+                        type="text"
+                        value={dni}
+                        disabled
+                        aria-label="DNI (bloqueado)"
+                      />
+                    </div>
+
+                    <div className={styles.formRow}>
+                      <label className={styles.label}>
+                        Región y diagnóstico
+                      </label>
+                      <div style={{ width: "100%" }}>
+                        <FormularioJerarquico
+                          campos={["region", "diagnostico"]}
+                          valores={{ region: ncRegion, diagnostico: ncDx }}
+                          onChange={(data) => {
+                            setNcRegion(data?.region || "");
+                            setNcDx(data?.diagnostico || "");
+                          }}
+                        />
+                      </div>
+                    </div>
+
+                    <div className={styles.formActions}>
+                      <button
+                        type="button"
+                        className={styles.secondaryBtn}
+                        onClick={cancelNewCase}
+                      >
+                        Cancelar
+                      </button>
+                      <button type="submit" className={styles.primaryBtn}>
+                        Crear
+                      </button>
+                    </div>
+                  </form>
+                </div>
+              )}
+
               <div>
                 {casos.map((c, i) => {
-
-                   const regionParam =
-                   c.region ||
-                   (c.items?.length ? c.items[c.items.length - 1]?.region : '') ||
-                   '';
+                  const regionParam =
+                    c.region ||
+                    (c.items?.length
+                      ? c.items[c.items.length - 1]?.region
+                      : "") ||
+                    "";
                   // calcular estado (6 meses)
-
-
                   const six = new Date();
                   six.setMonth(six.getMonth() - 6);
                   const estado =
@@ -502,51 +508,65 @@ const Welcome = () => {
                           {estado}
                         </span>
                       </div>
-
                       <div className={styles.caseActions}>
-  <SplitButton
-    label="Continuar caso"
-    classNameBtn={styles.smallBtn}
-    items={[
-      {
-        label: 'Tomar Foto',
-        onClick: () => {
-          const qs = new URLSearchParams({
-            dni,
-            dx: c.diagnostico,
-            fecha: c.fecha,
-            mode: 'foto',
-            autostart: '1',
-            ...(regionParam ? { region: regionParam } : {}),
-          }).toString();
-          navigate(`/welcome/take-photo?${qs}`);
-        },
-      },
-      {
-        label: 'Grabar',
-        onClick: () =>
-          navigate(
-            `/welcome/take-photo?dni=${encodeURIComponent(dni)}&dx=${encodeURIComponent(c.diagnostico)}&fecha=${encodeURIComponent(c.fecha)}&mode=video`
-          ),
-      },
-      {
-        label: 'Importar',
-        onClick: () =>
-          navigate(
-            `/welcome/import-photo?dni=${encodeURIComponent(dni)}&dx=${encodeURIComponent(c.diagnostico)}&fecha=${encodeURIComponent(c.fecha)}`
-          ),
-      },
-      {
-        label: 'Ver',
-        onClick: () =>
-          navigate(
-            `/welcome/recover-photo?dni=${encodeURIComponent(dni)}&fecha=${encodeURIComponent(c.fecha)}&dx=${encodeURIComponent(c.diagnostico)}`
-          ),
-      },
-    ]}
-  />
-</div>
-                     
+                        <SplitButton
+                          label="Continuar caso"
+                          classNameBtn={styles.smallBtn}
+                          items={[
+                            {
+                              label: "Tomar Foto",
+                              onClick: () => {
+                                const qs = new URLSearchParams({
+                                  dni,
+                                  dx: c.diagnostico,
+                                  fecha: c.fecha,
+                                  mode: "foto",
+                                  autostart: "1",
+                                  ...(regionParam
+                                    ? { region: regionParam }
+                                    : {}),
+                                }).toString();
+                                navigate(`/welcome/take-photo?${qs}`);
+                              },
+                            },
+                            {
+                              label: "Grabar",
+                              onClick: () =>
+                                navigate(
+                                  `/welcome/take-photo?dni=${encodeURIComponent(
+                                    dni
+                                  )}&dx=${encodeURIComponent(
+                                    c.diagnostico
+                                  )}&fecha=${encodeURIComponent(
+                                    c.fecha
+                                  )}&mode=video`
+                                ),
+                            },
+                            {
+                              label: "Importar",
+                              onClick: () =>
+                                navigate(
+                                  `/welcome/import-photo?dni=${encodeURIComponent(
+                                    dni
+                                  )}&dx=${encodeURIComponent(
+                                    c.diagnostico
+                                  )}&fecha=${encodeURIComponent(c.fecha)}`
+                                ),
+                            },
+                            {
+                              label: "Ver",
+                              onClick: () =>
+                                navigate(
+                                  `/welcome/recover-photo?dni=${encodeURIComponent(
+                                    dni
+                                  )}&fecha=${encodeURIComponent(
+                                    c.fecha
+                                  )}&dx=${encodeURIComponent(c.diagnostico)}`
+                                ),
+                            },
+                          ]}
+                        />
+                      </div>
                     </div>
                   );
                 })}
@@ -557,11 +577,12 @@ const Welcome = () => {
       )}
 
       {/* Tarjetas de acción */}
-
       <div
-       className={`${styles.actionsGrid} ${showHeroCTA ? styles.actionsHero : styles.actionsCompact}`}
+        className={`${styles.actionsGrid} ${
+          showHeroCTA ? styles.actionsHero : styles.actionsCompact
+        }`}
         role="navigation"
-        >
+      >
         {actions.map((a) => (
           <button
             key={a.path}
@@ -574,9 +595,7 @@ const Welcome = () => {
           </button>
         ))}
       </div>
-
     </div>
   );
 };
-
 export default Welcome;
