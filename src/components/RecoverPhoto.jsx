@@ -52,13 +52,13 @@ const RecoverPhoto = () => {
 
     setIsUploading(true);
     const formDataUpload = new FormData();
-    filesToAdd.forEach((file) => formDataUpload.append("image", file));
+    filesToAdd.forEach((file) => formDataUpload.append("images", file));
     Object.entries(selectedCase).forEach(([key, value]) => {
       if (value) formDataUpload.append(key, value);
     });
 
     try {
-      const res = await fetch(`${apiUrl}/api/images/upload`, {
+      const res = await fetch(`${apiUrl}/api/images/cases/${selectedCase.id}/images`, {
         method: "POST",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -207,7 +207,7 @@ const RecoverPhoto = () => {
           metaData,
           blobSize: blob.size,
         });
-        const res = await fetch(`${apiUrl}/api/images/upload`, {
+        const res = await fetch(`${apiUrl}/api/images/cases/${selectedCase.id}/images`, {
           method: "POST",
           headers: {
             Authorization: `Bearer ${token}`,
@@ -620,8 +620,8 @@ const RecoverPhoto = () => {
                   marginBottom: "20px",
                 }}
               >
-                {selectedCase.imagenes.flat().map((media, idx) =>
-                  media.endsWith(".webm") || media.endsWith(".mp4") ? (
+                {selectedCase.images.map((media, idx) =>
+                  media.url.endsWith(".webm") || media.url.endsWith(".mp4") ? (
                     <div
                       key={idx}
                       style={{
@@ -631,7 +631,7 @@ const RecoverPhoto = () => {
                       }}
                     >
                       <video
-                        src={media}
+                        src={media.url}
                         controls
                         style={{
                           width: "100%",
@@ -651,7 +651,7 @@ const RecoverPhoto = () => {
                       }}
                     >
                       <img
-                        src={media}
+                        src={media.url}
                         alt={`Imagen ${idx}`}
                         style={{
                           width: "100%",
