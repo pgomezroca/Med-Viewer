@@ -45,15 +45,15 @@ const ImportPhoto = () => {
         data.append(`images`, file);
       });
 
-      data.append("optionalDNI", formData.dni || "");
+      data.append("dni", formData.dni || "");
       data.append("region", formData.region);
       data.append("diagnostico", formData.diagnostico);
       data.append("tejido", formData.tejido || "");
       data.append("etiologia", formData.etiologia || "");
       data.append("tratamiento", formData.tratamiento || "");
-      data.append("phase", formData.fase || "");
+      data.append("fase", formData.fase || "");
 
-      const res = await fetch(`${apiUrl}/api/images/upload`, {
+      const res = await fetch(`${apiUrl}/api/images/cases/take-photo-or-import`, {
         method: "POST",
         headers: {
           Authorization: `Bearer ${token}`

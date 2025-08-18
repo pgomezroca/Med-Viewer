@@ -26,7 +26,7 @@ const CompleteImageLabels = () => {
       "etiologia",
       "tejido",
       "tratamiento",
-      "phase",
+      "fase",
     ];
     return camposRequeridos.filter((campo) => {
       return caso[campo] === null;
@@ -106,12 +106,12 @@ const CompleteImageLabels = () => {
   const handleDelete = async () => {
     if (!selectedCase) return;
 
-    const confirm = window.confirm("¿Seguro que querés eliminar este caso?");
+    const confirm = window.confirm("¿Seguro que querés eliminar este caso? Esta accion también eliminará todas las imágenes asociadas.");
     if (!confirm) return;
 
     try {
       const res = await fetch(
-        `${import.meta.env.VITE_API_URL}/api/images/${selectedCase.id}`,
+        `${import.meta.env.VITE_API_URL}/api/images/delete-case/${selectedCase.id}`,
         {
           method: "DELETE",
           headers: { Authorization: `Bearer ${token}` },
@@ -128,6 +128,34 @@ const CompleteImageLabels = () => {
       alert("Error al eliminar el caso");
     }
   };
+
+  const handleDeleteImage = async (imageId) => {
+    if (!selectedCase) return;
+
+    const confirm = window.confirm("¿Seguro que querés eliminar esta imagen?");
+    if (!confirm) return;
+
+    try {
+      const res = await fetch(
+        `${import.meta.env.VITE_API_URL}/api/images/delete-image/${imageId}`,
+        {
+          method: "DELETE",
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+
+      if (!res.ok) throw new Error("No se pudo eliminar la imagen");
+
+      alert("✅ Imagen eliminada correctamente");
+      setSelectedCase((prev) => ({
+        ...prev,
+        images: prev.images.filter((img) => img.id !== imageId),
+      }));
+    } catch (error) {
+      console.error("Error al eliminar la imagen:", error);
+      alert("Error al eliminar la imagen");
+    }
+  }
 
   return (
     <div className={styles.container}>
@@ -213,9 +241,8 @@ const CompleteImageLabels = () => {
                                     key={`${tratKey}-caso-${cIndex}`}
                                     onClick={() => {
                                       setSelectedCase(caso);
-                                      setCamposFaltantes();
-                                       
-                                      }}
+                                      setCamposFaltantes(determinarCamposFaltantes(caso));
+                                    }}
                                       className={styles.caseItem}
                                     >
                                       🗂 Caso {caso.dni || "Sin DNI"} - {
@@ -237,7 +264,6 @@ const CompleteImageLabels = () => {
                                               etiologia: "Etiología",
                                               tejido: "Tejido",
                                               tratamiento: "Tratamiento",
-                                              phase: "Fase",
                                             };
                                             return (
                                               nombresLegibles[campo] || campo
@@ -266,7 +292,6 @@ const CompleteImageLabels = () => {
               <h2>Completar caso: {selectedCase.dni || "Sin DNI"}</h2>
               <button
                 onClick={() => {
-                  console.log("Click caso:", caso);
                   setSelectedCase(null);
                   setCurrentImageIndex(0);
                 }}
@@ -279,45 +304,50 @@ const CompleteImageLabels = () => {
             <div>
               <h3>Archivos del caso ({selectedCase.images.length})</h3>
               <div className={styles.mediaGrid}>
-                {selectedCase.images.flat().map((imageUrl, idx) => {
-                  const isVideo =
-                    imageUrl.endsWith(".webm") || imageUrl.endsWith(".mp4");
+              {selectedCase.images.map((image, idx) => {
+                const isVideo = 
+                  image.url.endsWith(".webm") || 
+                  image.url.endsWith(".mp4") ||
+                  image.url.endsWith(".mov");
 
-                  return (
+                return (
+                  <div
+                    key={image.id}
+                    className={`${styles.mediaContainer} ${
+                      idx === currentImageIndex ? styles.active : ""
+                    }`}
+                    onClick={() => setCurrentImageIndex(idx)}
+                  >
                     <div
-                      key={idx}
-                      className={`${styles.mediaContainer} ${
-                        idx === currentImageIndex ? styles.active : ""
+                      className={`${styles.phaseBadge} ${
+                        styles[image.fase]
                       }`}
-                      onClick={() => setCurrentImageIndex(idx)}
                     >
-                      <div
-                        className={`${styles.phaseBadge} ${
-                          styles[selectedCase.phase]
-                        }`}
-                      >
-                        {selectedCase.phase || "Sin fase"}
-                      </div>
-                      {isVideo ? (
-                        <video
-                          src={imageUrl}
-                          controls
-                          className={styles.media}
-                        />
-                      ) : (
-                        <img
-                          src={imageUrl}
-                          alt={`Imagen ${idx + 1} del caso`}
-                          className={styles.media}
-                          onError={(e) => {
-                            e.target.onerror = null;
-                            e.target.src = "ruta/a/imagen/por/defecto.jpg";
-                          }}
-                        />
-                      )}
+                      {image.fase || "Sin fase"}
                     </div>
-                  );
-                })}
+                    <div className={`${styles.trashButtonBadge}`}>
+                      <button className="btn" onClick={()=> handleDeleteImage(image.id)}><i class="bi bi-trash3-fill"></i></button>
+                    </div>
+                    {isVideo ? (
+                      <video
+                        src={image.url}
+                        controls
+                        className={styles.media}
+                      />
+                    ) : (
+                      <img
+                        src={image.url}
+                        alt={`Imagen ${idx + 1} del caso`}
+                        className={styles.media}
+                        onError={(e) => {
+                          e.target.onerror = null;
+                          e.target.src = "ruta/a/imagen/por/defecto.jpg";
+                        }}
+                      />
+                    )}
+                  </div>
+                );
+              })}
               </div>
             </div>
 

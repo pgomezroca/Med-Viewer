@@ -314,9 +314,9 @@ useEffect(() => {
       formData.append("diagnostico", diagnostico);
       
       formData.append("optionalDNI", dni);
-      formData.append("uploadedBy", "60f71889c9d1f814c8a3b123");
+      // formData.append("uploadedBy", "60f71889c9d1f814c8a3b123");
   
-      const uploadRes = await fetch(`${apiUrl}/api/images/upload`, {
+      const uploadRes = await fetch(`${apiUrl}/api/images/cases/take-photo-or-import`, {
         method: "POST",
         headers: {
           Authorization: `Bearer ${token}`
@@ -346,7 +346,7 @@ useEffect(() => {
   
     // 1) Construís un FormData único
     const formData = new FormData();
-    formData.append("optionalDNI", dni);
+    formData.append("dni", dni);
     formData.append("region", region);
     formData.append("diagnostico", diagnostico);
     formData.append("fase", fase);
@@ -360,7 +360,7 @@ useEffect(() => {
     );
   
     // 3) Enviás TODO en un solo POST a un endpoint 'casos'
-    const res = await fetch(`${apiUrl}/api/images/upload`, {
+    const res = await fetch(`${apiUrl}/api/images/cases/take-photo-or-import`, {
       method: "POST",
       headers: { Authorization: `Bearer ${token}` },
       body: formData,
