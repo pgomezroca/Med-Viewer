@@ -27,13 +27,38 @@ const TakePhoto = () => {
   const [grabacionFinalizada, setGrabacionFinalizada] = useState(false);
   const [fotosAcumuladas, setFotosAcumuladas] = useState([]);
   const token = localStorage.getItem("token");
-  
    const mediaRecorderRef = useRef(null);
    const recordedChunksRef = useRef([]);
    const formularioRef = useRef(null);
    const [searchParams] = useSearchParams();
 const autoStartedRef = useRef(false);
+  
+const previewItems = React.useMemo(
+  () => [
+    ...fotosAcumuladas.map((src) => ({ type: "photo", src })),
+    ...videosAcumulados.map((src) => ({ type: "video", src })),
+  ],
+  [fotosAcumuladas, videosAcumulados]
+);
+const removePreviewItem = (idx) => {
+  const total = fotosAcumuladas.length + videosAcumulados.length;
 
+  if (idx < fotosAcumuladas.length) {
+    // eliminar foto
+    setFotosAcumuladas((prev) => prev.filter((_, i) => i !== idx));
+  } else {
+    // eliminar video
+    const vIdx = idx - fotosAcumuladas.length;
+    setVideosAcumulados((prev) => prev.filter((_, i) => i !== vIdx));
+  }
+
+  // si no queda nada, volvemos a la cámara
+  if (total - 1 === 0) {
+    setPhotoData(null);
+    setScreen("camera");
+  }
+};
+ 
 useEffect(() => {
   const qMode   = searchParams.get('mode');            // 'foto' | 'video'
   const qAuto   = searchParams.get('autostart') === '1';
@@ -196,61 +221,6 @@ useEffect(() => {
     }
   };
   
-  const savePhoto = async () => {
-    if (!photoData) return;
-    try {
-      const exifObj = {
-        "0th": {
-          [piexif.ImageIFD.Make]: "MedPhotoReact",
-          [piexif.ImageIFD.ImageDescription]: `DNI: ${dni} - Región: ${region} - Dx: ${diagnostico}`,
-        },
-        Exif: {
-          [piexif.ExifIFD.DateTimeOriginal]: new Date()
-            .toISOString()
-            .slice(0, 19)
-            .replace(/-/g, ":")
-            .replace("T", " "),
-        },
-      };
-      const exifBytes = piexif.dump(exifObj);
-      const newDataURL = piexif.insert(exifBytes, photoData);
-  
-      const res = await fetch(newDataURL);
-      const blob = await res.blob();
-  
-      const formData = new FormData();
-      formData.append("image", blob, "photo.jpg");
-      formData.append("region", region);
-      formData.append("diagnostico", diagnostico);
-      formData.append("optionalDNI", dni);
-      formData.append("uploadedBy", "60f71889c9d1f814c8a3b123");
-  
-      const uploadRes = await fetch(`${apiUrl}/api/images/upload`, {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${token}`
-        },
-        body: formData,
-      });
-  
-      if (!uploadRes.ok) {
-        const error = await uploadRes.json();
-        console.error("❌ Error al subir:", error);
-        alert("Error al subir la imagen");
-        return;
-      }
-  
-      const imageData = await uploadRes.json();
-      console.log("✅ Imagen subida:", imageData);
-      alert("Foto guardada con éxito");
-  
-      setPhotoData(null);
-      setScreen("camera");  
-    } catch (error) {
-      console.error(error);
-      alert("No se pudo subir la imagen: " + error.message);
-    }
-  };
   const startRecording = () => {
     if (!streamRef.current) return;
 
@@ -267,9 +237,10 @@ useEffect(() => {
     };
 
     mediaRecorder.onstop = () => {
-      console.log("🎬 onstop ejecutado");
+      
       const blob = new Blob(recordedChunksRef.current, { type: "video/webm" });
       const url = URL.createObjectURL(blob);
+      console.log("🎬 chunks:", recordedChunksRef.current.length, "url:", url);
       setVideosAcumulados((prev) => [...prev, url]);
       setGrabacionFinalizada(true);
     };
@@ -291,8 +262,8 @@ useEffect(() => {
   };
   useEffect(() => {
     if (grabacionFinalizada) {
-      setScreen("videoPreview");
-      setGrabacionFinalizada(false); // reseteamos para la próxima
+      setScreen("photo");
+      setGrabacionFinalizada(false); 
     }
   }, [grabacionFinalizada]);
    
@@ -300,20 +271,22 @@ useEffect(() => {
     if (videosAcumulados.length === 0) {
       alert("No hay videos para guardar");
       return;}
-
+      if (!dni || !region || !diagnostico) {
+        alert("Completá DNI, región y diagnóstico antes de guardar el video.");
+        return;
+        }
       setIsSaving(true);
     try {
       for (const url of videosAcumulados) {
         // descargamos el blob del video
         const res = await fetch(url);
         const blob = await res.blob();
-      const formData = new FormData();
-      formData.append("images", blob, "video.webm");
-      formData.append("region", region);
-      
-      formData.append("diagnostico", diagnostico);
-      
-      formData.append("optionalDNI", dni);
+        const formData = new FormData();
+        formData.append("images", blob, "video.webm");
+        formData.append("region", region);
+        formData.append("diagnostico", diagnostico);
+        formData.append("dni", dni);
+        formData.append("fase", fase);
       // formData.append("uploadedBy", "60f71889c9d1f814c8a3b123");
   
       const uploadRes = await fetch(`${apiUrl}/api/images/cases/take-photo-or-import`, {
@@ -330,7 +303,7 @@ useEffect(() => {
         alert("Error al subir el video");
         }
       }
-      alert("✅ Todos los videos fueron subidos con éxito");
+      alert("✅  videos fueron subidos con éxito");
       setVideosAcumulados([]);    // limpiamos el carrusel
       setScreen("form");    
       
@@ -340,338 +313,244 @@ useEffect(() => {
     }finally {
       setIsSaving(false);}
   };
-
   const guardarCaso = async () => {
     if (fotosAcumuladas.length === 0) return;
+    setIsSaving(true);
+    try {
+      const formData = new FormData();
+      formData.append("dni", dni);
+      formData.append("region", region);
+      formData.append("diagnostico", diagnostico);
+      formData.append("fase", fase);
+      await Promise.all([
+        ...fotosAcumuladas.map(async (foto, i) => {
+          const blob = await fetch(foto).then(r => r.blob());
+          formData.append("images", blob, `photo${i}.jpg`);
+        }),
+        ...videosAcumulados.map(async (url, j) => {
+          const blob = await fetch(url).then(r => r.blob());
+          formData.append("images", blob, `video${j}.webm`);
+        }),
+      ]);
+     
+      const res = await fetch(`${apiUrl}/api/images/cases/take-photo-or-import`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}` },
+        body: formData,
+      });
+      if (!res.ok) {
+        const msg = await res.text();
+        throw new Error(msg || "Error al guardar el caso");
+      }
   
-    // 1) Construís un FormData único
-    const formData = new FormData();
-    formData.append("dni", dni);
-    formData.append("region", region);
-    formData.append("diagnostico", diagnostico);
-    formData.append("fase", fase);
+      const { default: Swal } = await import("sweetalert2");
+      const n = fotosAcumuladas.length;
   
-    // 2) Agregás cada blob con el mismo campo 'images'
-    await Promise.all(
-      fotosAcumuladas.map(async (foto, idx) => {
-        const blob = await fetch(foto).then((r) => r.blob());
-        formData.append("images", blob, `photo${idx}.jpg`);
-      })
-    );
+      const { isDenied } = await Swal.fire({
+        icon: "success",
+        title: n === 1 ? "¡Imagen guardada!" : "¡Imágenes guardadas!",
+        text:
+          n === 1
+            ? "¿Querés cerrar el caso o seguir trabajando?"
+            : `Se guardaron ${n} imágenes. ¿Querés cerrar el caso o seguir trabajando?`,
+        confirmButtonText: "Seguir en este caso",
+        showDenyButton: true,
+        denyButtonText: "Cerrar caso",
+        allowOutsideClick: false,
+      });
   
-    // 3) Enviás TODO en un solo POST a un endpoint 'casos'
-    const res = await fetch(`${apiUrl}/api/images/cases/take-photo-or-import`, {
-      method: "POST",
-      headers: { Authorization: `Bearer ${token}` },
-      body: formData,
-    });
-    const { default: Swal } = await import("sweetalert2");
-
-      // cantidad para singular/plural
-const n = fotosAcumuladas.length;
-
-// 1) esperar al SweetAlert
-const { isConfirmed, isDenied } = await Swal.fire({
-  icon: "success",
-  title: n === 1 ? "¡Imagen guardada!" : "¡Imágenes guardadas!",
-  text:
-    n === 1
-      ? "¿Querés cerrar el caso o seguir trabajando?"
-      : `Se guardaron ${n} imágenes. ¿Querés cerrar el caso o seguir trabajando?`,
-  confirmButtonText: "Seguir en este caso",
-  showDenyButton: true,
-  denyButtonText: "Cerrar caso",
-  allowOutsideClick: false,
-});
-
-// 2) si eligió cerrar el caso, limpiar campos del formulario
-if (isDenied) {
-  setDni("");
-  setRegion("");
-  setDiagnostico("");
-  setFase("");
-  setCasosDelDni([]);
-}
-
-// 3) (opcional pero recomendado) limpiar la previsualización para no re-subir lo mismo
-setFotosAcumuladas([]);
-setPhotoData(null);
-
-// 4) ir SIEMPRE al formulario y cortar la función
-setScreen("form");
-return;
-
-   
+      // opcional: limpiar previsualización para no re-subir lo mismo
+      setFotosAcumuladas([]);
+      setVideosAcumulados([]);
+      setPhotoData(null);
+  
+      if (isDenied) {
+        // cerrar caso → limpiar campos
+        setDni("");
+        setRegion("");
+        setDiagnostico("");
+        setFase("");
+        setCasosDelDni([]);
+      }
+  
+      setScreen("form");
+      return;
+    } catch (err) {
+      const { default: Swal } = await import("sweetalert2");
+      await Swal.fire({
+        icon: "error",
+        title: "No se pudo guardar el caso",
+        text: String(err.message || err),
+      });
+    } finally {
+      setIsSaving(false);
+    }
   };
   
-  return (
-    <>
-      {/* FORMULARIO PRINCIPAL */}
-      {screen === "form" && (
-    <>
-    {/* FORMULARIO PRINCIPAL */}
-    <div id="formulario" ref={formularioRef} className={styles.formularioContainer}>
-        <FormularioJerarquico
-          campos={["dni", "region", "diagnostico", "fase"]}
-          valores={{ dni, region, diagnostico, fase }}
-          onChange={(data) => {
-            setDni(data.dni || "");
-            setRegion(data.region || "");
-            setDiagnostico(data.diagnostico || "");
-            setFase(data.fase || "");
-           }}
-         />
-
-         <div className={styles.botonesCentrados}>
-            <button className={styles.ContinuarButton} onClick={startCamera}>
-              Continuar
-            </button>
-            <button className={styles.camerabackbutton} onClick={() => navigate(-1)}>
-             <ArrowLeft size={20} /> Volver
-            </button>
-         </div>
-     </div>
-
-               {/* LISTA DE CASOS (SCROLLABLE) */}
-              {dni && (
-               <div className={styles.casosContainer}>
-                {casosDelDni.length > 0 ? (
-                <>
-               <h4>Casos previos para DNI {dni}:</h4>
-                <div className={styles.listaCasos}>
-                {casosDelDni.map((grupo, idx) => (
-                <button
-                  key={idx}
-                  className={styles.casoButton}
-                  onClick={() => {
-                    const ultimo = grupo.items[grupo.items.length - 1];
-                   setRegion(ultimo.region || "");
-                   setDiagnostico(ultimo.diagnostico || "");
-                   setFase(ultimo.fase || "");
-                   formularioRef.current?.scrollIntoView({ behavior: "smooth" });
-                 }}
-                 >
-                  📁 {grupo.fecha} — Dx: {grupo.diagnostico} ({grupo.items.length})
-                  
+    return (
+      <>
+        {/* FORMULARIO PRINCIPAL */}
+        {screen === "form" && (
+          <>
+            <div id="formulario" ref={formularioRef} className={styles.formularioContainer}>
+              <FormularioJerarquico
+                campos={["dni", "region", "diagnostico", "fase"]}
+                valores={{ dni, region, diagnostico, fase }}
+                onChange={(data) => {
+                  setDni(data.dni || "");
+                  setRegion(data.region || "");
+                  setDiagnostico(data.diagnostico || "");
+                  setFase(data.fase || "");
+                }}
+              />
+    
+              <div className={styles.botonesCentrados}>
+                <button className={styles.ContinuarButton} onClick={startCamera}>
+                  Continuar
                 </button>
-               ))}
-             </div>
-            </>
-           ) : (
-            <p className={styles.sinCasos}>
-              No hay datos del paciente con DNI {dni}
-            </p>
-           )}
-         </div>
-         )}
-       </>
-      )}
-
-  
-      {/* SELECCIÓN DE MODO */}
-      {screen === "selectMode" && (
-        <div
-          style={{
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-            justifyContent: "center",
-            background: "#000",
-            color: "#fff",
-            gap: "20px",
-          }}
-        >
-          <h2>¿Qué querés hacer?</h2>
-          <button
-            onClick={() => {
-              setModo("foto");
-              setScreen("camera");
-            }}
-          >
-            Sacar Foto
-          </button>
-          <button
-            onClick={() => {
-              setModo("video");
-              setScreen("camera");
-            }}
-          >
-            Grabar Video
-          </button>
-          <button
-            onClick={() => setScreen("form")}
-            style={{ marginTop: "20px" }}
-          >
-            <ArrowLeft size={20} />
-          </button>
-        </div>
-      )}
-  
-      {/* CÁMARA */}
-      {screen === "camera" && (
-        <div className={styles.cameraContainer}>
-          <video
-            ref={videoRef}
-            className={styles.video}
-            autoPlay
-            playsInline
-            muted
-          />
-  
-          <div className={styles.cameraOverlay}>
-            {modo === "foto" && (
-              <button className={styles.takePhotoButton} onClick={takePhoto}>
-                Tomar foto
-              </button>
-            )}
-            
-            {modo === "video" && (
-               <div
-               className={`${styles.recordButtonWrapper} ${isRecording ? styles.recording : ""}`}
-               onClick={() => {
-                console.log(isRecording ? "🟥 Deteniendo..." : "🔴 Grabando...");
-                isRecording ? stopRecording() : startRecording();
-              }}
-               title={isRecording ? "Detener grabación" : "Iniciar grabación"}
-             >
-               <div className={styles.recordButtonInner}></div>
-             </div>
-            )}
-            
-          </div>
-  
-          <button
-            id="camera-back-button"
-            onClick={() => setScreen("form")}
-            style={{ position: "absolute", top: 40, left: 10 }}
-          >
-            <ArrowLeft size={30} />
-          </button>
-        </div>
-      )}
-  
-      {/* PREVISUALIZACIÓN DE FOTOS */}
-      {screen === "photo" && (
-        <div style={{ padding: 20 }}>
-          <h3 style={{ textAlign: "center" }}>Pre-visualizacion</h3>
-  
-          <div
-            style={{
-              display: "flex",
-              overflowX: "auto",
-              gap: "10px",
-              padding: "10px",
-            }}
-          >
-            {fotosAcumuladas.map((foto, index) => (
-              <div key={index} style={{ position: "relative" }}>
-                <img
-                  src={foto}
-                  alt={`foto ${index}`}
-                  style={{
-                    width: "150px",
-                    borderRadius: "8px",
-                    boxShadow: "0 0 5px #aaa",
-                  }}
-                />
-                <button
-                  title="Eliminar esta foto"
-                  onClick={() => {
-                    const nuevasFotos = fotosAcumuladas.filter((_, i) => i !== index);
-                    setFotosAcumuladas(nuevasFotos);
-                    if (nuevasFotos.length === 0) {
-                      setPhotoData(null);
-                      setScreen("camera");
-                    }
-                  }}
-                  style={{
-                    position: "absolute",
-                    top: "5px",
-                    right: "5px",
-                    background: "rgba(255, 0, 0, 0.7)",
-                    border: "none",
-                    borderRadius: "50%",
-                    color: "#fff",
-                    width: "24px",
-                    height: "24px",
-                    cursor: "pointer",
-                  }}
-                >
-                  ✕
+                <button className={styles.camerabackbutton} onClick={() => navigate(-1)}>
+                  <ArrowLeft size={20} /> Volver
                 </button>
               </div>
-            ))}
-          </div>
-  
-           <div
-            style={{ display: "flex", justifyContent: "center", gap: 20, marginTop: 20 }}
-           >
-            <button onClick={() => setScreen("camera")}>➕ Agregar más</button>
-            <button  onClick={guardarCaso} disabled={isSaving}>
-              {isSaving ? "Guardando..." : "Guardar todas"}
+            </div>
+    
+            {/* LISTA DE CASOS */}
+            {dni && (
+              <div className={styles.casosContainer}>
+                {casosDelDni.length > 0 ? (
+                  <>
+                    <h4>Casos previos para DNI {dni}:</h4>
+                    <div className={styles.listaCasos}>
+                      {casosDelDni.map((grupo, idx) => (
+                        <button
+                          key={idx}
+                          className={styles.casoButton}
+                          onClick={() => {
+                            const ultimo = grupo.items[grupo.items.length - 1];
+                            setRegion(ultimo.region || "");
+                            setDiagnostico(ultimo.diagnostico || "");
+                            setFase(ultimo.fase || "");
+                            formularioRef.current?.scrollIntoView({ behavior: "smooth" });
+                          }}
+                        >
+                          📁 {grupo.fecha} — Dx: {grupo.diagnostico} ({grupo.items.length})
+                        </button>
+                      ))}
+                    </div>
+                  </>
+                ) : (
+                  <p className={styles.sinCasos}>No hay datos del paciente con DNI {dni}</p>
+                )}
+              </div>
+            )}
+          </>
+        )}
+    
+        {/* CÁMARA */}
+        {screen === "camera" && (
+          <div className={styles.cameraContainer}>
+            <div className={styles.modeToggle}>
+              <button
+                className={`${styles.modeBtn} ${modo === "foto" ? styles.active : ""}`}
+                onClick={() => {
+                  if (isRecording) stopRecording();
+                  setModo("foto");
+                }}
+              >
+                Foto
+              </button>
+              <button
+                className={`${styles.modeBtn} ${modo === "video" ? styles.active : ""}`}
+                onClick={() => setModo("video")}
+              >
+                Video
+              </button>
+            </div>
+    
+            <video className={styles.video} ref={videoRef} autoPlay playsInline muted />
+    
+            <div className={styles.cameraOverlay}>
+              {modo === "foto" && (
+                <button className={styles.takePhotoButton} onClick={takePhoto}>
+                  Tomar foto
+                </button>
+              )}
+    
+              {modo === "video" && (
+                <div
+                  className={`${styles.recordButtonWrapper} ${
+                    isRecording ? styles.recording : ""
+                  }`}
+                  onClick={() => (isRecording ? stopRecording() : startRecording())}
+                  title={isRecording ? "Detener grabación" : "Iniciar grabación"}
+                >
+                  <div className={styles.recordButtonInner}></div>
+                </div>
+              )}
+            </div>
+    
+            <button
+              id="camera-back-button"
+              className={styles.cameraBackBtn}
+              onClick={() => setScreen("form")}
+            >
+              <ArrowLeft size={30} />
             </button>
-            <button  onClick={() => {
-              streamRef.current?.getTracks().forEach((t) => t.stop());
-               setFotosAcumuladas([]);
-               setPhotoData(null);
-               setScreen("form");
-                }} >
-               
-                 Finalizar caso
+          </div>
+        )}
+    
+        {/* PREVISUALIZACIÓN */}
+        {screen === "photo" && (
+          <div className={styles.previewWrapper}>
+            <h3 className={styles.previewTitle}>Pre-visualización</h3>
+    
+            <div className={styles.previewStrip}>
+              {previewItems.map((item, index) => (
+                <div key={index} className={styles.previewItem}>
+                  {item.type === "photo" ? (
+                    <img src={item.src} alt={`media ${index}`} className={styles.previewImg} />
+                  ) : (
+                    <video src={item.src} controls className={styles.previewVideo}
+                    onLoadedData={(e) => {
+                      e.currentTarget.currentTime = 0;
+                    }} />
+                  )}
+    
+                  <button
+                    onClick={() => removePreviewItem(index)}
+                    title="Eliminar este elemento"
+                    className={styles.deleteBtn}
+                  >
+                    ✕
+                  </button>
+                </div>
+              ))}
+            </div>
+    
+            <div className={styles.previewControls}>
+              <button onClick={() => setScreen("camera")}>➕ Agregar más</button>
+              <button onClick={guardarCaso} disabled={isSaving}>
+                {isSaving ? "Guardando..." : "Guardar todas"}
+              </button>
+              <button
+                onClick={() => {
+                  streamRef.current?.getTracks().forEach((t) => t.stop());
+                  setFotosAcumuladas([]);
+                  setPhotoData(null);
+                  setScreen("form");
+                }}
+              >
+                Finalizar caso
               </button>
             </div>
           </div>
         )}
-  
-      {/* PREVISUALIZACIÓN DE VIDEO */}
-      {screen === "videoPreview" && videosAcumulados.length > 0 && (
-      <div className={styles.previewWrapper}>
-        <h3 className={styles.previewTitle}>Previsualización de Videos</h3>
-
-       <div className={styles.videoCarrusel}>
-        {videosAcumulados.map((videoURL, index) => (
-         <div key={index} className={styles.videoPreviewWrapper}>
-          <video src={videoURL} controls className={styles.previewVideo}/>
-          <button
-            className={styles.iconButton}
-            title="Eliminar este video"
-            onClick={() => {
-              const nuevosVideos = videosAcumulados.filter((_, i) => i !== index);
-              setVideosAcumulados(nuevosVideos);
-              if (nuevosVideos.length === 0) {
-                setScreen("camera");
-              }
-            }}
-           >
-            ✕
-           </button>
-          </div>
-        ))}
-      </div>
-
-      <div className={styles.postPreviewControls}>
-       <button className={styles.controlButton} onClick={saveVideo}>
-        Guardar videos
-       </button>
-       <button className={styles.controlButton} onClick={() => setScreen("camera")}>
-         Grabar otro
-       </button>
-       <button className={styles.controlButton}
-               onClick={() => {
-                setVideosAcumulados([]);
-                setScreen("form");
-                }}
-       >
-        Finalizar caso
-       </button>
-     </div>
-    </div>
-   )}
-  
-      {/* CANVAS OCULTO */}
-      <canvas ref={canvasRef} style={{ display: "none" }} />
-    </>
-  );
+    
+        {/* CANVAS OCULTO */}
+        <canvas ref={canvasRef} style={{ display: "none" }} />
+      </>
+    );
+    
   
 };
 

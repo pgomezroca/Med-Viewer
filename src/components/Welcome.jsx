@@ -489,7 +489,7 @@ const Welcome = () => {
                     typeof c.ts === "number" && c.ts >= six.getTime()
                       ? "abierto"
                       : "cerrado";
-
+                      console.log(JSON.stringify(c.items));
                   return (
                     <div
                       key={`${c.fecha}-${c.diagnostico}-${i}`}
