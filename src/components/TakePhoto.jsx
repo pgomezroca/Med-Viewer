@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef,useLayoutEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import piexif from "piexifjs";
 import { ArrowLeft, Columns } from "lucide-react";
@@ -9,7 +9,7 @@ import { useSearchParams } from 'react-router-dom';
 
 const TakePhoto = () => {
   const navigate = useNavigate();
-  const [screen, setScreen] = useState("form");
+ 
   const [dni, setDni] = useState("");
   const [region, setRegion] = useState("");
   const [diagnostico, setDiagnostico] = useState("");
@@ -31,16 +31,31 @@ const TakePhoto = () => {
    const recordedChunksRef = useRef([]);
    const formularioRef = useRef(null);
    const [searchParams] = useSearchParams();
-const autoStartedRef = useRef(false);
+   const autoStartedRef = useRef(false);
+   const skipPrefetchRef = useRef(false);
+   const [screen, setScreen] = useState(() => {
+      try {
+        return new URLSearchParams(window.location.search).get('autostart') === '1'
+          ? 'loading' : 'form';
+       } catch {
+        return 'form';
+       }
+     });
+     
+   useEffect(() => {
+     if (searchParams.get('autostart') === '1') {
+      skipPrefetchRef.current = true;
+     }
+  }, [searchParams]);
   
-const previewItems = React.useMemo(
+ const previewItems = React.useMemo(
   () => [
     ...fotosAcumuladas.map((src) => ({ type: "photo", src })),
     ...videosAcumulados.map((src) => ({ type: "video", src })),
   ],
   [fotosAcumuladas, videosAcumulados]
-);
-const removePreviewItem = (idx) => {
+ );
+ const removePreviewItem = (idx) => {
   const total = fotosAcumuladas.length + videosAcumulados.length;
 
   if (idx < fotosAcumuladas.length) {
@@ -60,6 +75,7 @@ const removePreviewItem = (idx) => {
 };
  
 useEffect(() => {
+  
   const qMode   = searchParams.get('mode');            // 'foto' | 'video'
   const qAuto   = searchParams.get('autostart') === '1';
   const qDni    = searchParams.get('dni')    || '';
@@ -76,6 +92,7 @@ useEffect(() => {
   const ready = qDni && qRegion && qDx;
   if (qAuto && ready && !autoStartedRef.current) {
     autoStartedRef.current = true;
+    setScreen('loading');
     startCamera({
       dniVal: qDni,
       regionVal: qRegion,
@@ -84,7 +101,7 @@ useEffect(() => {
     });
   }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-}, [searchParams]);
+ }, [searchParams]);
 
     useEffect(
       () => () => {
@@ -108,13 +125,19 @@ useEffect(() => {
       }
     }, [screen]);  
 
-     useEffect(() => {
+    useEffect(() => {
+      // ⬇️ NUEVO: si venís de autostart, no dispares la búsqueda ahora
+      if (skipPrefetchRef.current) {
+        skipPrefetchRef.current = false;
+        return;
+      }
+    
       if (dni.length === 8) {
         buscarCasosPorDNI();
       } else {
         setCasosDelDni([]);
       }
-     }, [dni]);
+    }, [dni]); // ← tus deps originales
     
      const startCamera = async ({ dniVal, regionVal, diagnosticoVal, modeVal } = {}) => {
       const d  = dniVal ?? dni;
@@ -192,7 +215,6 @@ useEffect(() => {
           d = new Date(raw);
         }
   
-        
         const fecha=  d && !Number.isNaN(d.getTime())
             ? d.toLocaleDateString("es-AR", options)
             : "Sin fecha";
@@ -213,7 +235,6 @@ useEffect(() => {
       .sort((a, b) => b.ts - a.ts)
       .map(({ fecha, diagnostico, items }) => ({ fecha, diagnostico, items }));
  
-  
       setCasosDelDni(grupos);
     } catch (err) {
       console.error(err);
@@ -223,9 +244,7 @@ useEffect(() => {
   
   const startRecording = () => {
     if (!streamRef.current) return;
-
     recordedChunksRef.current = [];
-
     const mediaRecorder = new MediaRecorder(streamRef.current, {
       mimeType: "video/webm;codecs=vp9",
     });
@@ -237,7 +256,6 @@ useEffect(() => {
     };
 
     mediaRecorder.onstop = () => {
-      
       const blob = new Blob(recordedChunksRef.current, { type: "video/webm" });
       const url = URL.createObjectURL(blob);
       console.log("🎬 chunks:", recordedChunksRef.current.length, "url:", url);
@@ -267,54 +285,17 @@ useEffect(() => {
     }
   }, [grabacionFinalizada]);
    
-  const saveVideo = async () => {
-    if (videosAcumulados.length === 0) {
-      alert("No hay videos para guardar");
-      return;}
-      if (!dni || !region || !diagnostico) {
-        alert("Completá DNI, región y diagnóstico antes de guardar el video.");
-        return;
-        }
-      setIsSaving(true);
-    try {
-      for (const url of videosAcumulados) {
-        // descargamos el blob del video
-        const res = await fetch(url);
-        const blob = await res.blob();
-        const formData = new FormData();
-        formData.append("images", blob, "video.webm");
-        formData.append("region", region);
-        formData.append("diagnostico", diagnostico);
-        formData.append("dni", dni);
-        formData.append("fase", fase);
-      // formData.append("uploadedBy", "60f71889c9d1f814c8a3b123");
-  
-      const uploadRes = await fetch(`${apiUrl}/api/images/cases/take-photo-or-import`, {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${token}`
-        },
-        body: formData,
-      });
-  
-      if (!uploadRes.ok) {
-        const error = await uploadRes.json();
-        console.error("❌ Error al subir video:", error);
-        alert("Error al subir el video");
-        }
-      }
-      alert("✅  videos fueron subidos con éxito");
-      setVideosAcumulados([]);    // limpiamos el carrusel
-      setScreen("form");    
-      
-    } catch (error) {
-      console.error("Error en saveVideo:", error);
-      alert("No se pudo subir el video: " + error.message);
-    }finally {
-      setIsSaving(false);}
-  };
   const guardarCaso = async () => {
-    if (fotosAcumuladas.length === 0) return;
+    const nFotos = fotosAcumuladas.length;
+    const nVideos = videosAcumulados.length;
+    if (nFotos + nVideos === 0) {
+      alert("No hay nada para guardar");
+      return;
+    }
+    if (!dni || !region || !diagnostico) {
+      alert("Completá DNI, región y diagnóstico antes de guardar.");
+      return;
+    }
     setIsSaving(true);
     try {
       const formData = new FormData();
@@ -389,6 +370,13 @@ useEffect(() => {
   
     return (
       <>
+        {screen === "loading" && (
+        <div className={styles.cameraContainer} style={{display:'grid',placeItems:'center',minHeight:'60vh'}}>
+         <p>Iniciando cámara…</p>
+       </div>
+        )}
+
+        
         {/* FORMULARIO PRINCIPAL */}
         {screen === "form" && (
           <>

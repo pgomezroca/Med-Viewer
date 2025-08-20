@@ -514,7 +514,7 @@ const Welcome = () => {
                           classNameBtn={styles.smallBtn}
                           items={[
                             {
-                              label: "Tomar Foto",
+                              label: "Capturar foto o video",
                               onClick: () => {
                                 const qs = new URLSearchParams({
                                   dni,
@@ -529,19 +529,7 @@ const Welcome = () => {
                                 navigate(`/welcome/take-photo?${qs}`);
                               },
                             },
-                            {
-                              label: "Grabar",
-                              onClick: () =>
-                                navigate(
-                                  `/welcome/take-photo?dni=${encodeURIComponent(
-                                    dni
-                                  )}&dx=${encodeURIComponent(
-                                    c.diagnostico
-                                  )}&fecha=${encodeURIComponent(
-                                    c.fecha
-                                  )}&mode=video`
-                                ),
-                            },
+                            
                             {
                               label: "Importar",
                               onClick: () =>
