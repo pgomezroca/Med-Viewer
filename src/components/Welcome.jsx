@@ -6,6 +6,7 @@ import { Camera, FolderOpen, Tags, Upload, UserPlus } from "lucide-react";
 import FormularioJerarquico from "./FormularioJerarquico";
 import SplitButton from "./SplitButton";
 import { useSearchParams } from "react-router-dom";
+import "sweetalert2/dist/sweetalert2.min.css";
 /* Helpers (asegurate de tenerlos definidos) */
 
 const actions = [
@@ -51,7 +52,8 @@ const Welcome = () => {
   const [ncDx, setNcDx] = useState("");
   const [searchParams] = useSearchParams();
   const autoStartedRef = useRef(false);
-
+  const [creating, setCreating] = useState(false);
+  const [latestCreatedCaseId, setLatestCreatedCaseId] = useState(null);
   const buscarCasosPorDNI = async () => {
     if (!dni) {
       alert("Ingresá un DNI para buscar.");
@@ -140,43 +142,97 @@ const Welcome = () => {
   };
 
   // crea un caso “provisorio” en UI (hasta tener backend)
-  const createNewCase = (e) => {
+  const createNewCase = async (e) => {
     e.preventDefault();
+    if (creating) return;
+  
     const v = (dni || "").replace(/\D/g, "");
     if (v.length !== 7 && v.length !== 8) {
       alert("DNI inválido");
       return;
     }
-    if (!ncRegion) {
-      alert("Elegí una región");
-      return;
+    if (!ncRegion) { alert("Elegí una región"); return; }
+    if (!ncDx) { alert("Elegí un diagnóstico"); return; }
+  
+    try {
+      setCreating(true);
+  
+      const res = await fetch(`${apiUrl}/api/images/cases/create-empty`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          dni: v,
+          region: ncRegion,
+          diagnostico: ncDx
+        })
+      });
+  
+      if (!res.ok) {
+        const msg = await res.text();
+        throw new Error(msg || "No se pudo crear el caso");
+      }
+  
+      const data = await res.json();
+      const c = data.case;
+  
+      const fecha = new Date(c.createdAt).toLocaleDateString("es-AR", {
+        day: "2-digit", month: "short", year: "numeric",
+      });
+  
+      const nuevo = {
+        id: c.id,
+        fecha,
+        region: c.region,
+        diagnostico: c.diagnostico,
+        items: [],
+        ts: new Date(c.createdAt).getTime(),
+        local: false
+      };
+  
+      setCasos((prev) => [nuevo, ...prev]);
+      setShowNewCaseForm(false);
+      setNcRegion("");
+      setNcDx("");
+      
+       const { default: Swal } = await import("sweetalert2");
+       await Swal.fire({
+       icon: "success",
+       title: "¡Caso creado con éxito!",
+        html: `<div style="text-align:left">
+           <b>DNI:</b> ${v}<br/>
+           <b>Región:</b> ${ncRegion}<br/>
+           <b>Diagnóstico:</b> ${ncDx}
+         </div>`,
+      confirmButtonText: "Ver casos",
+      background: "#ffffff",        // color de fondo del modal
+      color: "#114c5f",             // color de texto del modal
+      iconColor: "#00d6c6",         // color del ícono (success)
+      confirmButtonColor: "#00d6c6",
+     });
+
+// guardo el id para poder destacarlo luego
+    setLatestCreatedCaseId(c.id);
+
+// (opcional) scrolleo a la fila recién creada
+     requestAnimationFrame(() => {
+       document.getElementById(`case-row-${c.id}`)?.scrollIntoView({
+        behavior: "smooth",
+       block: "center",
+     });
+  // (foco lo vemos en el siguiente paso)
+   });
+ 
+    } catch (err) {
+      console.error("createNewCase error:", err);
+      alert(String(err.message || err));
+    } finally {
+      setCreating(false);
     }
-    if (!ncDx) {
-      alert("Elegí un diagnóstico");
-      return;
-    }
-
-    const now = new Date();
-    const fecha = now.toLocaleDateString("es-AR", {
-      day: "2-digit",
-      month: "short",
-      year: "numeric",
-    });
-
-    const nuevo = {
-      fecha,
-      region: ncRegion,
-      diagnostico: ncDx,
-      items: [],
-      ts: now.getTime(),
-      local: true, // ← provisorio (no persistido)
-    };
-
-    setCasos((prev) => [nuevo, ...prev]);
-    setShowNewCaseForm(false);
-    setNcRegion("");
-    setNcDx("");
   };
+  
   //nuevo paciente
   const handleNuevoPaciente = () => {
     const v = (dni || "").replace(/\D/g, "");
