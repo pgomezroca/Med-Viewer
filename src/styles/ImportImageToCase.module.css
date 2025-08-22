@@ -1,0 +1,86 @@
+.pantallaUpload {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  padding: 1rem;
+  background-color: #ffffff;
+}
+
+.scrollableContent {
+  flex: 1;
+  overflow-y: auto;
+}
+
+.topButtonRow {
+  display: flex;
+  justify-content: center;
+  margin: 1rem 0;
+}
+
+.button {
+  background-color: #00d6c6;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: 8px;
+  color: #fff;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.button:hover {
+  background-color: #00b8aa;
+}
+
+.previewContainer {
+  margin-top: 1rem;
+  display: flex;
+  justify-content: center;
+}
+
+.previewCarousel {
+  display: flex;
+  gap: 10px;
+  overflow-x: auto;
+  padding: 0.5rem 0;
+}
+
+.previewWrapper {
+  position: relative;
+  flex: 0 0 auto;
+}
+
+.previewImg {
+  max-height: 200px;
+  border-radius: 8px;
+  object-fit: cover;
+}
+
+.removeButton {
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  background: rgba(0,0,0,0.6);
+  color: #fff;
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+  padding: 2px 6px;
+}
+
+.finalButtons {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 1rem;
+}
+
+.backButton {
+  background: transparent;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  padding: 0.5rem 1rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}

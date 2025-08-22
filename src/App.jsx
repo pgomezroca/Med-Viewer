@@ -13,7 +13,7 @@ import SplitButton from './components/SplitButton';
 import Landing from './components/Landing';
 import Login from './components/Login';
 import Register from './components/Register';
-
+import ImportImageToCase from "./components/ImportImageToCase";
 function App() {
   return (
     <Router>
@@ -35,6 +35,7 @@ function App() {
           <Route path="despedida" element={<Despedida />} />
           <Route path="complete-image-labels" element={<CompleteImageLabels />} />
           <Route path="SplitButton" element={<SplitButton />} />
+          <Route path="/welcome/import/:caseId" element={<ImportImageToCase />} />
         </Route>
       </Routes>
     </Router>

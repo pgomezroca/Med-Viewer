@@ -63,47 +63,39 @@ const Welcome = () => {
       setLoading(true);
       setError("");
       setQueried(true);
-
+  
       console.log("[Welcome] consultando API");
-
+  
       const res = await fetch(`${apiUrl}/api/images/search?dni=${dni}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       if (!res.ok) throw new Error("Error al buscar casos");
-
-      const data = await res.json(); // array de fotos del DNI
-
+  
+      const data = await res.json(); // 🔹 ahora esto ya son CASOS, cada uno con su id e imágenes
+  
       const options = { day: "2-digit", month: "short", year: "numeric" };
-      const gruposObj = data.reduce((acc, img) => {
-        const raw = img.createdAt ?? img.uploadedAt ?? null;
-        let d = null;
-
-        if (typeof raw === "string") d = new Date(raw.replace(" ", "T"));
-        else if (raw) d = new Date(raw);
-
-        const fecha =
-          d && !Number.isNaN(d.getTime())
+  
+      // transformamos cada "Case" en la estructura que vos ya usabas
+      const grupos = data.map((caso) => {
+        const d = caso.createdAt ? new Date(caso.createdAt) : null;
+  
+        return {
+          id: caso.id,  // 👈 id REAL del caso
+          fecha: d
             ? d.toLocaleDateString("es-AR", options)
-            : "Sin fecha";
-        const dx = img.diagnostico || "Sin diagnóstico";
-        const clave = `${fecha}__${dx}`;
-
-        if (!acc[clave])
-          acc[clave] = {
-            fecha,
-            diagnostico: dx,
-            items: [],
-            ts: d ? d.getTime() : 0,
-          };
-        acc[clave].items.push(img);
-        if (d && d.getTime() > acc[clave].ts) acc[clave].ts = d.getTime();
-        return acc;
-      }, {});
-
-      const grupos = Object.values(gruposObj).sort((a, b) => b.ts - a.ts);
+            : "Sin fecha",
+          diagnostico: caso.diagnostico || "Sin diagnóstico",
+          region: caso.region || null,
+          items: caso.images || [],   // 👈 las imágenes vienen incluidas
+          ts: d ? d.getTime() : 0,
+        };
+      });
+  
+      // ordenamos por fecha descendente (como antes)
+      grupos.sort((a, b) => b.ts - a.ts);
+  
       setCasos(grupos);
-      console.log("[Welcome] grupos obtenidos", grupos.length);
-      setCasos(grupos);
+      console.log("[Welcome] grupos obtenidos", grupos.length, grupos);
     } catch (err) {
       console.error("[Welcome] buscarCasosPorDNI error", err);
       setError("No se pudieron buscar los casos.");
@@ -112,6 +104,7 @@ const Welcome = () => {
       setLoading(false);
     }
   };
+  
 
   useEffect(() => {
     if (dni.length === 8) {
@@ -155,6 +148,7 @@ const Welcome = () => {
     if (!ncDx) { alert("Elegí un diagnóstico"); return; }
   
     try {
+      console.log("🚀 Entrando a createNewCase");
       setCreating(true);
   
       const res = await fetch(`${apiUrl}/api/images/cases/create-empty`, {
@@ -212,10 +206,8 @@ const Welcome = () => {
       iconColor: "#00d6c6",         // color del ícono (success)
       confirmButtonColor: "#00d6c6",
      });
-
-// guardo el id para poder destacarlo luego
-    setLatestCreatedCaseId(c.id);
-
+     setLatestCreatedCaseId(c.id);
+     console.log("✅ latestCreatedCaseId seteado en:", c.id);
 // (opcional) scrolleo a la fila recién creada
      requestAnimationFrame(() => {
        document.getElementById(`case-row-${c.id}`)?.scrollIntoView({
@@ -343,8 +335,8 @@ const Welcome = () => {
 
     // 2) Pre-cargar estados si vienen
     if (qDni) setDni(qDni);
-    if (qRegion) setRegion(qRegion);
-    if (qDx) setDiagnostico(qDx);
+    if (qRegion) setNcRegion(qRegion);
+    if (qDx) setNcDx(qDx);
     if (qMode === "foto" || qMode === "video") setModo(qMode);
 
     // 3) Autostart a cámara SI y solo SI hay datos mínimos
@@ -546,6 +538,7 @@ const Welcome = () => {
                       ? "abierto"
                       : "cerrado";
                       console.log(JSON.stringify(c.items));
+                      console.log("🔎 caso en map:", c);
                   return (
                     <div
                       key={`${c.fecha}-${c.diagnostico}-${i}`}
@@ -566,8 +559,11 @@ const Welcome = () => {
                       </div>
                       <div className={styles.caseActions}>
                         <SplitButton
+                          id={`continuar-${c.id}`}
                           label="Continuar caso"
-                          classNameBtn={styles.smallBtn}
+                          classNameBtn={`${styles.smallBtn} ${
+                            String(latestCreatedCaseId) === String(c.id) ? styles.continuarBtnHighlight : ""
+                          }`}
                           items={[
                             {
                               label: "Capturar foto o video",
@@ -588,14 +584,7 @@ const Welcome = () => {
                             
                             {
                               label: "Importar",
-                              onClick: () =>
-                                navigate(
-                                  `/welcome/import-photo?dni=${encodeURIComponent(
-                                    dni
-                                  )}&dx=${encodeURIComponent(
-                                    c.diagnostico
-                                  )}&fecha=${encodeURIComponent(c.fecha)}`
-                                ),
+                              onClick: () => navigate(`/welcome/import/${c.id}`),
                             },
                             {
                               label: "Ver",
