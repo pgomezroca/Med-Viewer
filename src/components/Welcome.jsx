@@ -7,6 +7,7 @@ import FormularioJerarquico from "./FormularioJerarquico";
 import SplitButton from "./SplitButton";
 import { useSearchParams } from "react-router-dom";
 import "sweetalert2/dist/sweetalert2.min.css";
+import CaseGallery from "./CaseGallery"
 /* Helpers (asegurate de tenerlos definidos) */
 
 const actions = [
@@ -54,6 +55,11 @@ const Welcome = () => {
   const autoStartedRef = useRef(false);
   const [creating, setCreating] = useState(false);
   const [latestCreatedCaseId, setLatestCreatedCaseId] = useState(null);
+  const[galleryOpen,setGalleryOpen]=useState(false);
+  const[galleryCaseId,setGalleryCaseId]=useState(null);
+  const[galleryTitle,setGalleryTitle]=useState('');
+  const [showCasesList, setShowCasesList] = useState(true);
+
   const buscarCasosPorDNI = async () => {
     if (!dni) {
       alert("Ingresá un DNI para buscar.");
@@ -71,7 +77,7 @@ const Welcome = () => {
       });
       if (!res.ok) throw new Error("Error al buscar casos");
   
-      const data = await res.json(); // 🔹 ahora esto ya son CASOS, cada uno con su id e imágenes
+      const data = await res.json(); // 
   
       const options = { day: "2-digit", month: "short", year: "numeric" };
   
@@ -114,7 +120,6 @@ const Welcome = () => {
       setQueried(false);
       setError("");
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [dni]);
 
   // abrir el form de “nuevo caso” (con DNI ya cargado)
@@ -190,6 +195,8 @@ const Welcome = () => {
       setShowNewCaseForm(false);
       setNcRegion("");
       setNcDx("");
+      setLatestCreatedCaseId(String(c.id));
+      setTimeout(() => setLatestCreatedCaseId(null), 5000);
       
        const { default: Swal } = await import("sweetalert2");
        await Swal.fire({
@@ -200,13 +207,13 @@ const Welcome = () => {
            <b>Región:</b> ${ncRegion}<br/>
            <b>Diagnóstico:</b> ${ncDx}
          </div>`,
-      confirmButtonText: "Ver casos",
-      background: "#ffffff",        // color de fondo del modal
-      color: "#114c5f",             // color de texto del modal
-      iconColor: "#00d6c6",         // color del ícono (success)
+      confirmButtonText: "Continuar caso",
+      background: "#ffffff",        
+      color: "#114c5f",             
+      iconColor: "#00d6c6",         
       confirmButtonColor: "#00d6c6",
      });
-     setLatestCreatedCaseId(c.id);
+     
      console.log("✅ latestCreatedCaseId seteado en:", c.id);
 // (opcional) scrolleo a la fila recién creada
      requestAnimationFrame(() => {
@@ -224,18 +231,15 @@ const Welcome = () => {
       setCreating(false);
     }
   };
-  
-  //nuevo paciente
-  const handleNuevoPaciente = () => {
-    const v = (dni || "").replace(/\D/g, "");
-    if (v !== dni) setDni(v);
-    setShowNewForm(true);
+  const openGalleryByCase = (caseId, diagnostico, fecha) => {
+    setGalleryCaseId(caseId);
+    setGalleryTitle(`Caso ${caseId} — ${fecha} — ${diagnostico}`);
+    setGalleryOpen(true);
   };
-
-  // Guardar “provisorio” en UI (sin backend aún)
+  
   const handleCreateCase = async (e) => {
     e.preventDefault();
-    
+  
     // Validación del DNI
     const v = (dni || "").replace(/\D/g, "");
     if (v.length !== 7 && v.length !== 8) {
@@ -357,12 +361,15 @@ const Welcome = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchParams]);
   const showHeroCTA = !showNewForm && !(queried && !loading);
+
   return (
     <div className={styles.container}>
       {/* Saludo */}
       <div className={styles.greeting}>
         <p>Hola, {user?.nombre || "usuario"}</p>
         <h2>¿Qué hacemos hoy?</h2>
+        <hr/>
+        <h6>Busca tu caso por DNI</h6>
       </div>
 
       {/* DNI + Nuevo paciente */}
@@ -380,73 +387,19 @@ const Welcome = () => {
           aria-label="DNI del paciente"
           maxLength={8}
         />
-        <button className={styles.newPatientBtn} onClick={handleNuevoPaciente}>
-          <UserPlus size={18} /> Nuevo paciente
-        </button>
+        {dni && (
+       <button type="button"
+          className={styles.clearBtn}
+          onClick={() => {
+           setDni("");
+           setCasos([]);
+           setQueried(false);
+          }}
+       >
+        ✕
+       </button>
+        )}
       </div>
-
-      {/* Formulario inline: Nuevo paciente */}
-      {showNewForm && (
-        <div className={styles.newCaseBox}>
-          <h4>Nuevo paciente</h4>
-          <form onSubmit={handleCreateCase}>
-            {/* Un solo FormularioJerarquico (dni + región + diagnóstico) */}
-            <div className={styles.formRow}>
-              <label className={styles.label}>DNI, Región y Diagnóstico</label>
-              <div style={{ width: "100%" }}>
-                <FormularioJerarquico
-                  campos={["dni", "region", "diagnostico"]}
-                  valores={{ dni, region: newRegion, diagnostico: newDx }}
-                  onChange={(data) => {
-                    setDni(data?.dni || "");
-                    setNewRegion(data?.region || "");
-                    setNewDx(data?.diagnostico || "");
-                  }}
-                />
-              </div>
-            </div>
-
-            {/* Nombre (opcional) */}
-            <div className={styles.formRow}>
-              <label className={styles.label}>Nombre</label>
-              <input
-                className={styles.field}
-                type="text"
-                value={newNombre}
-                onChange={(e) => setNewNombre(e.target.value)}
-                placeholder="(opcional)"
-                aria-label="Nombre"
-              />
-            </div>
-
-            {/* Apellido (opcional) */}
-            <div className={styles.formRow}>
-              <label className={styles.label}>Apellido</label>
-              <input
-                className={styles.field}
-                type="text"
-                value={newApellido}
-                onChange={(e) => setNewApellido(e.target.value)}
-                placeholder="(opcional)"
-                aria-label="Apellido"
-              />
-            </div>
-
-            <div className={styles.formActions}>
-              <button
-                type="button"
-                className={styles.secondaryBtn}
-                onClick={handleCancelNew}
-              >
-                Cancelar
-              </button>
-              <button type="submit" className={styles.primaryBtn}>
-                Guardar
-              </button>
-            </div>
-          </form>
-        </div>
-      )}
 
       {/* Resultados de búsqueda */}
       {loading && <div className={styles.casosBox}>Buscando casos…</div>}
@@ -460,21 +413,82 @@ const Welcome = () => {
       {!loading && !error && queried && (
         <div className={styles.casosBox}>
           {casos.length === 0 ? (
+            <>
             <div className={styles.emptyNote}>
-              No hay casos para este DNI. Podés crear uno con{" "}
-              <strong>“Nuevo paciente”</strong>.
+              No hay casos para este DNI. Podés crear uno con desde este formulario
             </div>
+            <div className={styles.newCaseBox}>
+          <h4>Nuevo paciente</h4>
+          <form onSubmit={handleCreateCase}>
+            {/* Un solo FormularioJerarquico (dni + región + diagnóstico) */}
+            <div className={styles.formRow}>
+              <label className={styles.label}>DNI, Región y Diagnóstico</label>
+               <div style={{ width: "100%" }}>
+                 <FormularioJerarquico
+                  campos={["dni", "region", "diagnostico"]}
+                  valores={{ dni, region: newRegion, diagnostico: newDx }}
+                  onChange={(data) => {
+                    setDni(data?.dni || "");
+                    setNewRegion(data?.region || "");
+                    setNewDx(data?.diagnostico || "");
+                   }}
+                 />
+               </div>
+            </div>
+             {/* Nombre */}
+             <div className={styles.formRow}>
+              <label className={styles.label}>Nombre</label>
+              <input
+                className={styles.field}
+                type="text"
+                value={newNombre}
+                onChange={(e) => setNewNombre(e.target.value)}
+                aria-label="Nombre"
+              />
+            </div>
+            {/* Apellido */}
+            <div className={styles.formRow}>
+              <label className={styles.label}>Apellido</label>
+              <input
+                className={styles.field}
+                type="text"
+                value={newApellido}
+                onChange={(e) => setNewApellido(e.target.value)}
+                aria-label="Apellido"
+              />
+            </div>
+
+            <div className={styles.formActions}>
+              {/* Si querés, podés ocultar 'Cancelar' acá para que siempre quede el form visible */}
+              <button
+                type="submit"
+                className={styles.primaryBtn}
+              >
+                Guardar
+              </button>
+            </div>
+          </form>
+        </div>
+      </>
           ) : (
             <>
               <div className={styles.casosHeader}>
                 <h4>Casos previos para DNI {dni}:</h4>
+                
                 <button
                   type="button"
                   className={styles.secondaryBtn}
                   onClick={openNewCaseForm}
                 >
-                  + Nuevo caso
+                Crear un nuevo caso para este paciente
                 </button>
+                <button
+                 type="button"
+                 className={styles.toggleBtn}
+                 onClick={() => setShowCasesList(!showCasesList)}
+                 >
+                {showCasesList ? "▲" : "▼"}
+               </button>
               </div>
               {showNewCaseForm && (
                 <div className={styles.newCaseBox}>
@@ -521,7 +535,7 @@ const Welcome = () => {
                   </form>
                 </div>
               )}
-
+              {showCasesList && (
               <div>
                 {casos.map((c, i) => {
                   const regionParam =
@@ -537,13 +551,13 @@ const Welcome = () => {
                     typeof c.ts === "number" && c.ts >= six.getTime()
                       ? "abierto"
                       : "cerrado";
-                      console.log(JSON.stringify(c.items));
                       console.log("🔎 caso en map:", c);
                   return (
                     <div
-                      key={`${c.fecha}-${c.diagnostico}-${i}`}
+                      key={c.id}
                       className={styles.caseRow}
                     >
+                      
                       <div className={styles.caseInfo}>
                         <strong>{c.fecha}</strong> — Dx: {c.diagnostico} (
                         {c.items.length})
@@ -562,8 +576,11 @@ const Welcome = () => {
                           id={`continuar-${c.id}`}
                           label="Continuar caso"
                           classNameBtn={`${styles.smallBtn} ${
-                            String(latestCreatedCaseId) === String(c.id) ? styles.continuarBtnHighlight : ""
+                            String(latestCreatedCaseId) === String(c.id)
+                              ? styles.continuarBtnHighlight
+                              : ""
                           }`}
+
                           items={[
                             {
                               label: "Capturar foto o video",
@@ -588,14 +605,8 @@ const Welcome = () => {
                             },
                             {
                               label: "Ver",
-                              onClick: () =>
-                                navigate(
-                                  `/welcome/recover-photo?dni=${encodeURIComponent(
-                                    dni
-                                  )}&fecha=${encodeURIComponent(
-                                    c.fecha
-                                  )}&dx=${encodeURIComponent(c.diagnostico)}`
-                                ),
+                              onClick: () => openGalleryByCase(c.id, c.diagnostico, c.fecha),
+                              
                             },
                           ]}
                         />
@@ -604,6 +615,7 @@ const Welcome = () => {
                   );
                 })}
               </div>
+              )}
             </>
           )}
         </div>
@@ -628,6 +640,12 @@ const Welcome = () => {
           </button>
         ))}
       </div>
+      <CaseGallery
+  open={galleryOpen}
+  caseId={galleryCaseId}
+  title={galleryTitle}
+  onClose={() => setGalleryOpen(false)}
+/>
     </div>
   );
 };

@@ -1,10 +1,10 @@
 import React, { useEffect, useRef, useState } from 'react';
 import styles from "../styles/SplitButton.module.css";
 export default function SplitButton({
-  
+
   label = 'Continuar caso',
-  items = [],            // [{ label: string, onClick: () => void }]
-    
+  items = [],           
+  classNameBtn = ""    
 }) {
   const [open, setOpen] = useState(false);
   const ref = useRef(null);
@@ -27,7 +27,7 @@ export default function SplitButton({
     <div ref={ref} style={{ position: 'relative', display: 'inline-block' }}>
       <button
         type="button"
-        className={styles.Btn}
+        className={`${styles.Btn} ${classNameBtn}`} 
         onClick={() => setOpen(v => !v)}
         aria-haspopup="menu"
         aria-expanded={open}
