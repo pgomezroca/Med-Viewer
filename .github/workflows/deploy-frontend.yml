@@ -25,5 +25,4 @@ jobs:
           git pull origin main
           npm install
           npm run build
-          # Si usas Nginx, podrías necesitar reiniciar el servicio
-          # sudo systemctl restart nginx
+          systemctl restart nginx
