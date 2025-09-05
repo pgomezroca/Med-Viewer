@@ -628,6 +628,10 @@ const Welcome = () => {
         }`}
         role="navigation"
       >
+        <div>
+        <hr/>
+        <h6>Acciones rápidas</h6>
+        </div>
         {actions.map((a) => (
           <button
             key={a.path}
