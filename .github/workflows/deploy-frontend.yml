@@ -1,0 +1,29 @@
+name: Deploy Frontend to VPS
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'frontend/**'
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Deploy to VPS
+      uses: appleboy/ssh-action@v1.0.3
+      with:
+        host: ${{ secrets.VPS_HOST }}
+        username: ${{ secrets.VPS_USERNAME }}
+        password: ${{ secrets.VPS_PASSWORD }}
+        script: |
+          cd /var/www/medviewer/frontend/Med-Viewer
+          git pull origin main
+          npm install
+          npm run build
+          # Si usas Nginx, podrías necesitar reiniciar el servicio
+          # sudo systemctl restart nginx
