@@ -59,7 +59,7 @@ const Welcome = () => {
   const[galleryCaseId,setGalleryCaseId]=useState(null);
   const[galleryTitle,setGalleryTitle]=useState('');
   const [showCasesList, setShowCasesList] = useState(true);
-
+  const [busquedaPorDni, setBusquedaPorDni] = useState(false);
   const buscarCasosPorDNI = async () => {
     if (!dni) {
       alert("Ingresá un DNI para buscar.");
@@ -381,9 +381,16 @@ const Welcome = () => {
           pattern="[0-9]*"
           placeholder="DNI del paciente"
           value={dni}
-          onChange={(e) =>
-            setDni((e.target.value || "").replace(/\D/g, "").slice(0, 8))
-          }
+          onChange={(e) => {
+            const value = (e.target.value || "").replace(/\D/g, "").slice(0, 8);
+            setDni(value);
+            if (value.length > 0) {
+              setBusquedaPorDni(true);   // 🔑 se ocultan las tarjetas rápidas
+            } else {
+              setBusquedaPorDni(false);  // vuelve a mostrar si borran el DNI
+            }
+          }}
+          
           aria-label="DNI del paciente"
           maxLength={8}
         />
@@ -394,6 +401,7 @@ const Welcome = () => {
            setDni("");
            setCasos([]);
            setQueried(false);
+           setBusquedaPorDni(false);
           }}
        >
         ✕
@@ -622,28 +630,30 @@ const Welcome = () => {
       )}
 
       {/* Tarjetas de acción */}
-      <div
-        className={`${styles.actionsGrid} ${
-          showHeroCTA ? styles.actionsHero : styles.actionsCompact
-        }`}
-        role="navigation"
+      {!busquedaPorDni && (
+  <div
+    className={`${styles.actionsGrid} ${
+      showHeroCTA ? styles.actionsHero : styles.actionsCompact
+    }`}
+    role="navigation"
+  >
+    <div className={styles.actionsHeader}>
+      <hr />
+      <h6>Acciones rápidas</h6>
+    </div>
+    {actions.map((a) => (
+      <button
+        key={a.path}
+        className={styles.actionCard}
+        onClick={() => navigate(a.path)}
+        aria-label={a.label}
       >
-        <div>
-        <hr/>
-        <h6>Acciones rápidas</h6>
-        </div>
-        {actions.map((a) => (
-          <button
-            key={a.path}
-            className={styles.actionCard}
-            onClick={() => navigate(a.path)}
-            aria-label={a.label}
-          >
-            <span className={styles.icon}>{a.icon}</span>
-            <span className={styles.actionLabel}>{a.label}</span>
-          </button>
-        ))}
-      </div>
+        <span className={styles.icon}>{a.icon}</span>
+        <span className={styles.actionLabel}>{a.label}</span>
+      </button>
+    ))}
+  </div>
+)}
       <CaseGallery
   open={galleryOpen}
   caseId={galleryCaseId}
