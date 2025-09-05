@@ -99,7 +99,7 @@ export default function CaseGallery({ open, caseId, title, onClose }) {
 )}
 
         
-        )}
+        )
       </div>
     </div>
   );
