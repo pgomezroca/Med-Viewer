@@ -1,11 +1,11 @@
 // src/components/ImportPhoto.jsx
 
-import React, { useRef, useState } from "react";
+import React, { useRef, useState,useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import styles from "../styles/importPhoto.module.css";
 import FormularioJerarquico from "../components/FormularioJerarquico";
 import { FaArrowLeft } from 'react-icons/fa';
-
+import DropZone from "./DropZone";
 const ImportPhoto = () => {
   
   const [formData, setFormData] = useState({});
@@ -23,13 +23,18 @@ const ImportPhoto = () => {
     }
   };
 
-  const handleFileChange = (event) => {
-    const files = Array.from(event.target.files);
-    const urls = files.map((file) => URL.createObjectURL(file));
-    setPreviewImages((prev) => [...prev, ...urls]);
-    setFileList((prev) => [...prev, ...files]);
-  };
+  const handleFilesSelected = useCallback((files) => {
+    const array = Array.from(files || []);
+    if (!array.length) return;
 
+    const urls = array.map((file) => URL.createObjectURL(file));
+    setPreviewImages((prev) => [...prev, ...urls]);
+    setFileList((prev) => [...prev, ...array]);
+  }, []);
+  const handleFileChange = useCallback(
+    (e) => handleFilesSelected(e.target.files),
+    [handleFilesSelected]
+  );
   const handleGuardar = async () => {
     if (!formData.region || !formData.diagnostico || !formData.fase || fileList.length === 0) {
       alert("Faltan datos obligatorios (mínimo: región, diagnóstico, fase e imagen)");
@@ -67,8 +72,8 @@ const ImportPhoto = () => {
       }
 
       const result = await res.json();
-      console.log("✅ Caso creado con imágenes:", result);
-      alert("✅ Caso creado correctamente con todas las imágenes");
+      console.log(" Caso creado con imágenes:", result);
+      alert(" Caso creado correctamente con todas las imágenes");
       
       setPreviewImages([]);
       setFileList([]);
@@ -90,12 +95,9 @@ const ImportPhoto = () => {
     <div className={styles.pantallaUpload}>
        <div className={styles.scrollableContent}>
        <h3>Clasifica tus fotos:Importalas y luego dales etiquetas con el formulario</h3>
-    
-      <div className={styles.topButtonRow}>
-     <button className={styles.button} onClick={handleImportClick}>
-        Importar fotos
-      </button>
-     </div>
+       {/* ⬇️ NUEVA ZONA DE DRAG & DROP */}
+       <DropZone onFilesSelected={handleFilesSelected} />
+      
       {/* Input oculto */}
       <input
         type="file"
@@ -109,22 +111,19 @@ const ImportPhoto = () => {
       {/* Previsualización */}
       {previewImages.length > 0 && (
        <div className={styles.previewContainer}>
-      
-       <div className={styles.previewCarousel}>
-       {previewImages.map((src, index) => (
-    <div key={index} className={styles.previewWrapper}>
-      <img
-        src={src}
-        alt={`preview-${index}`}
-        className={styles.previewImg}
-      />
-      <button
-        className={styles.removeButton}
-        onClick={() => handleRemoveImage(index)}
-        aria-label="Eliminar imagen"
-      >
-        ✖
-      </button>
+        <div className={styles.previewCarousel}>
+          {previewImages.map((src, index) => (
+         <div key={index} className={styles.previewWrapper}>
+           <img src={src}
+           alt={`preview-${index}`}
+           className={styles.previewImg}
+           />
+         <button  className={styles.removeButton}
+                  onClick={() => handleRemoveImage(index)}
+                  aria-label="Eliminar imagen"
+         >
+           ✖
+        </button>
     </div>
   
   ))}
