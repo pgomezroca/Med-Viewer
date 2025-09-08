@@ -1,6 +1,6 @@
 import React, { useState, useRef, useCallback } from "react";
-import styles from "../styles/DropZone.module.css";
-
+import styles from "../styles/Dropzone.module.css";
+import { Upload } from "lucide-react";
 export default function DropZone({
   onFilesSelected,
   accept = "image/*",
@@ -65,8 +65,8 @@ export default function DropZone({
       aria-label="Zona para arrastrar o seleccionar imágenes"
     >
       <div className={styles.content}>
-        <div className={styles.icon} aria-hidden>
-          📥
+      <div className={styles.iconBadge} aria-hidden>
+          <Upload className={styles.iconSvg} />
         </div>
         <p className={styles.label}>{label}</p>
         <p className={styles.hint}>{hint}</p>
