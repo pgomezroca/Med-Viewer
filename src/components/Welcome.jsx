@@ -609,7 +609,14 @@ const Welcome = () => {
                             
                             {
                               label: "Importar",
-                              onClick: () => navigate(`/welcome/import/${c.id}`),
+                              onClick: () => {
+                                  const qs = new URLSearchParams({
+                                    dni,                           // lo tenés en estado
+                                    region: regionParam || "",     // la región del caso
+                                     dx: c.diagnostico || "",       // diagnóstico del caso
+                                  }).toString();
+                                  navigate(`/welcome/import/${c.id}?${qs}`);
+                                 },
                             },
                             {
                               label: "Ver",

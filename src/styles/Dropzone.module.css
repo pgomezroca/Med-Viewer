@@ -25,10 +25,26 @@
   gap: 6px;
   place-items: center;
 }
+.iconBadge {
+  width: 56px;
+  height: 56px;
+  border-radius: 9999px;
+  background: #4fd1c5;;         /* ← color del círculo (podés suavizarlo) */
+  display: grid;
+  place-items: center;
+  box-shadow: 0 8px 24px rgba(14,165,233,0.25);
+  margin-bottom: 4px;
+}
 
-.icon {
-  font-size: 32px;
-  line-height: 1;
+.iconSvg {
+  width: 28px;
+  height: 28px;
+  color: #fff;                  /* ← icono blanco */
+  stroke-width: 2.5;
+}
+
+.dragging .iconBadge {
+  background: #4fd1c5;;        /* más oscuro al arrastrar */
 }
 
 .label {
