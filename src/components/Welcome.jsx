@@ -404,7 +404,7 @@ const Welcome = () => {
            setBusquedaPorDni(false);
           }}
        >
-        ✕
+        ✕ Cerrar 
        </button>
         )}
       </div>
@@ -481,14 +481,14 @@ const Welcome = () => {
           ) : (
             <>
               <div className={styles.casosHeader}>
-                <h4>Casos previos para DNI {dni}:</h4>
+                <h6>Casos previos para DNI {dni}:</h6>
                 
                 <button
                   type="button"
                   className={styles.secondaryBtn}
                   onClick={openNewCaseForm}
                 >
-                Crear un nuevo caso para este paciente
+                Crear un nuevo caso
                 </button>
                 <button
                  type="button"
@@ -561,13 +561,12 @@ const Welcome = () => {
                       : "cerrado";
                       console.log("🔎 caso en map:", c);
                   return (
-                    <div
-                      key={c.id}
-                      className={styles.caseRow}
+                    <div className={styles.caseRow}
+                         key={c.id}
                     >
                       
                       <div className={styles.caseInfo}>
-                        <strong>{c.fecha}</strong> — Dx: {c.diagnostico} (
+                        <strong>{c.fecha}</strong> {c.diagnostico} (
                         {c.items.length})
                         <span
                           className={`${styles.badge} ${
