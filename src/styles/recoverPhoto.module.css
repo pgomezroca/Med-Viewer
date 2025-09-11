@@ -1,40 +1,331 @@
+/* ========= THEME TOKENS (scoped al componente) ========= */
+.recoverPhotoContainer {
+  --primary: #0ea5e9;
+  --primary-600: #0284c7;
+  --bg: #eaf6fb;
+  --surface: #ffffff;
+  --surface-2: #f8fafc;
+  --border: #e5e7eb;
+  --text: #0f172a;
+  --muted: #64748b;
+  --ring: #bae6fd;
+  --success-bg: #ecfdf5;
+  --success-br: #d1fae5;
+  --danger-bg: #fef2f2;
+  --danger-br: #fecaca;
+  --violet-bg: #f5f3ff;
+  --violet-br: #ddd6fe;
+  --info-bg: #eff6ff;
+  --info-br: #bfdbfe;
+}
+
+/* ========= CONTAINERS & HEADER ========= */
+.recoverPhotoContainer {
+  width: 100%;
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 12px;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface);
+}
+
+.header h2 {
+  margin: 0;
+  color: var(--text);
+  font-size: 1.35rem;
+  font-weight: 700;
+  letter-spacing: .2px;
+}
+
+/* ========= FORM BOX & SEARCH BUTTON ========= */
+.formularioBox {
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 16px;
+}
+
+.buscarBtn {
+  margin-top: 12px;
+  padding: 10px 14px;
+  background-color: var(--primary);
+  color: #fff;
+  border: 1px solid var(--primary);
+  border-radius: 10px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform .08s ease, filter .2s ease;
+}
+.buscarBtn:hover { filter: brightness(0.97); }
+.buscarBtn:active { transform: translateY(1px); }
+.buscarBtn:focus-visible { outline: 3px solid var(--ring); outline-offset: 2px; }
+
+/* ========= RESULTADOS: CARDS & MEDIA ========= */
+.resultadosContainer {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 12px;
+}
+
+/* Tu card original, pulida */
 .caseCard {
   background: #fff;
   border-radius: 12px;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-  margin-bottom: 20px;
+  box-shadow: 0 4px 14px rgba(15, 23, 42, 0.06);
+  border: 1px solid var(--border);
+  margin-bottom: 16px;
   overflow: hidden;
 }
 
-.caseMedia {
-  width: 100px;
-  height: 100px;
-  object-fit: cover;   /* recorta proporcionalmente */
-  border-radius: 6px;
-}
-.caseCard .swiper {
-  height: 120px; /* un poco más grande que la imagen */
-}
-.caseCard .swiper-slide {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
 .caseInfo {
-  padding: 10px;
+  padding: 12px;
+  color: var(--text);
 }
+.caseInfo p { margin: 2px 0; }
 
 .openBtn {
   margin-top: 10px;
   padding: 8px 12px;
-  background-color: #0ea5e9;
-  border: none;
-  border-radius: 6px;
+  background-color: var(--primary);
+  border: 1px solid var(--primary);
+  border-radius: 10px;
   color: #fff;
   cursor: pointer;
-  font-weight: 500;
+  font-weight: 700;
+  transition: transform .08s ease, filter .2s ease;
 }
-.openBtn:hover {
-  background-color: #0284c7;
+.openBtn:hover { filter: brightness(0.97); }
+.openBtn:active { transform: translateY(1px); }
+.openBtn:focus-visible { outline: 3px solid var(--ring); outline-offset: 2px; }
+
+/* Swiper mini */
+.caseCard .swiper { height: 120px; }
+.caseCard .swiper-slide {
+  display: flex; align-items: center; justify-content: center;
+}
+
+/* Miniatura en listado */
+.caseMedia {
+  width: 100px; height: 100px;
+  object-fit: cover; border-radius: 8px;
+  box-shadow: 0 1px 6px rgba(0,0,0,.05);
+}
+
+/* ========= MODAL FULLSCREEN ========= */
+.modalOverlay {
+  position: fixed; inset: 0;
+  background: rgba(10, 15, 20, 0.6);
+  display: grid; place-items: center;
+  z-index: 99999;
+}
+
+.modalContent {
+  width: min(1100px, 94vw);
+  max-height: 92vh;
+  background: var(--surface);
+  border-radius: 16px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 22px 60px rgba(2, 6, 23, .35);
+}
+
+/* Header sticky del modal */
+.modalContent .header {
+  position: sticky; top: 0; z-index: 2;
+  background: var(--surface);
+}
+
+.closeBtn {
+  background: transparent; color: var(--muted);
+  border: 1px solid transparent;
+  font-size: 22px; line-height: 1;
+  cursor: pointer; padding: 4px 10px; border-radius: 10px;
+  transition: background .2s, color .2s;
+}
+.closeBtn:hover { background: #f1f5f9; color: #0f172a; }
+
+/* ========= COMMAND BAR ========= */
+.commandBar {
+  display: flex; flex-wrap: wrap; align-items: center;
+  gap: 8px; padding: 10px 16px;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface-2);
+}
+
+.commandLabel {
+  font-weight: 700;
+  color: var(--muted);
+  margin-right: 4px;
+}
+
+/* Botón base (se aplica a Importar, Foto, Video, Exportar, Guardar) */
+.actionBtn {
+  display: inline-flex; align-items: center; gap: 8px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 8px 12px;
+  background: var(--surface);
+  color: var(--text);
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 1px 0 rgba(16,24,40,.04);
+  transition: transform .08s ease, background .2s ease, border-color .2s ease;
+}
+.actionBtn:hover { background: #fff; border-color: #dbe3ea; }
+.actionBtn:active { transform: translateY(1px); }
+.actionBtn:focus-visible { outline: 3px solid var(--ring); outline-offset: 2px; }
+
+/* Variantes de “contexto suave” */
+.importBtn { background: #f1f5f9; }
+.fotoBtn   { background: var(--success-bg);  border-color: var(--success-br); }
+.videoBtn  { background: var(--danger-bg);   border-color: var(--danger-br); }
+.exportBtn { background: var(--violet-bg);   border-color: var(--violet-br); }
+.saveBtn   { background: var(--info-bg);     border-color: var(--info-br); }
+
+/* ========= MEDIA STRIP (galería en modal) ========= */
+.caseMediaStrip {
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface);
+}
+
+.thumbnail { position: relative; }
+.thumbCheckbox {
+  position: absolute; top: 6px; left: 6px;
+  transform: scale(1.1);
+  z-index: 2;
+}
+
+/* usa la misma clase .caseMedia pero más grande dentro del modal */
+.modalContent .caseMedia {
+  width: 100%; height: 120px;
+  object-fit: cover; border-radius: 12px;
+  box-shadow: 0 1px 8px rgba(15,23,42,.06);
+}
+
+/* Si usás grid en algún punto */
+.thumbnailGrid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+  padding: 10px 12px;
+}
+
+/* ========= EDITOR DE CASO ========= */
+.caseEditor {
+  padding: 16px;
+  background: var(--surface);
+  overflow: auto;
+}
+
+.caseEditor h3 {
+  margin: 0 0 8px 0;
+  font-size: 1.05rem;
+  color: var(--text);
+  display: flex; align-items: center; gap: 8px;
+}
+
+.missingTags {
+  background: #fff7ed;
+  color: #9a3412;
+  border: 1px solid #fed7aa;
+  padding: 8px 10px;
+  border-radius: 10px;
+  margin-bottom: 10px;
+  font-size: 0.95rem;
+}
+
+.formGrid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0,1fr));
+  gap: 10px;
+}
+
+.formGrid input,
+.formGrid select {
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--surface);
+  color: var(--text);
+  font-size: .95rem;
+  transition: border-color .2s ease, box-shadow .2s ease;
+}
+.formGrid input::placeholder { color: #94a3b8; }
+
+.formGrid input:focus,
+.formGrid select:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px var(--ring);
+}
+
+.editorActions {
+  margin-top: 12px;
+  display: flex;
+  justify-content: flex-start;
+  gap: 8px;
+}
+
+/* ========= CAMERA PANEL ========= */
+.cameraPanel {
+  border-top: 1px solid var(--border);
+  padding: 12px 16px;
+  background: var(--surface-2);
+}
+
+.cameraRow {
+  display: grid;
+  grid-template-columns: 1fr 0;
+  gap: 12px; align-items: start;
+}
+
+.cameraVideo {
+  width: 100%;
+  max-height: 40vh;
+  background: #000;
+  border-radius: 14px;
+  box-shadow: 0 4px 14px rgba(2,6,23,.25);
+}
+
+.cameraCanvas { display: none; }
+
+.cameraActions {
+  margin-top: 10px;
+  display: flex; flex-wrap: wrap; gap: 8px;
+}
+
+.cameraError {
+  margin-top: 8px; color: #b91c1c; font-size: .95rem;
+}
+
+/* ========= RESPONSIVE ========= */
+@media (max-width: 1024px) {
+  .modalContent { width: 96vw; }
+}
+
+@media (max-width: 900px) {
+  .formGrid { grid-template-columns: repeat(2, minmax(0,1fr)); }
+  .thumbnailGrid { grid-template-columns: repeat(3, minmax(0,1fr)); }
+}
+
+@media (max-width: 560px) {
+  .header h2 { font-size: 1.15rem; }
+  .commandBar { gap: 6px; }
+  .actionBtn { padding: 8px 10px; border-radius: 10px; }
+  .modalContent .caseMedia { height: 100px; }
+  .caseCard .swiper { height: 110px; }
+  .caseMedia { width: 96px; height: 96px; }
+  .formGrid { grid-template-columns: 1fr; }
+  .thumbnailGrid { grid-template-columns: repeat(2, minmax(0,1fr)); }
 }
