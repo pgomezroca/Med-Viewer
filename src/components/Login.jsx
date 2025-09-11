@@ -83,6 +83,11 @@ function Login() {
         >
           ¿No tenés cuenta? Registrate
         </div>
+        <div className={styles.link}
+          onClick={() => navigate('/forgot-password')}
+        >
+            ¿Olvidaste tu contraseña?
+        </div>
       </div>
     </div>
   );

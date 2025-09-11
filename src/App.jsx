@@ -14,6 +14,10 @@ import Landing from './components/Landing';
 import Login from './components/Login';
 import Register from './components/Register';
 import ImportImageToCase from "./components/ImportImageToCase";
+import ForgotPassword from './components/ForgotPassword';
+import ResetPassword from './components/ResetPassword';
+import PasswordResetSuccess from './components/PasswordResetSuccess';
+
 function App() {
   return (
     <Router>
@@ -24,6 +28,11 @@ function App() {
         {/* LOGIN Y REGISTRO */}
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
+
+        {/* RECUPERACIÓN DE CONTRASEÑA */}
+        <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/reset-password" element={<ResetPassword />} />
+        <Route path="/password-reset-success" element={<PasswordResetSuccess />} />
 
         {/* APP PRIVADA CON LAYOUT */}
         <Route path="/welcome" element={<MainLayout />}>
