@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import styles from '../styles/Login.module.css';
 import { useAuth } from '../context/AuthContext';
-
+import { Eye, EyeOff } from 'lucide-react';
 function Login() {
   const navigate = useNavigate();
   const { login } = useAuth();
@@ -12,7 +12,7 @@ function Login() {
     email: '',
     password: '',
   });
-
+  const [showPassword, setShowPassword] = useState(false); 
   const handleChange = (e) => {
     const { name, value } = e.target;
     setCredentials((prev) => ({
@@ -61,15 +61,25 @@ function Login() {
 
           <div className={styles.formGroup}>
             <label htmlFor="password" className={styles.label}>Contraseña</label>
-            <input
-              className={styles.input}
-              type="password"
-              id="password"
-              name="password"
-              value={credentials.password}
-              onChange={handleChange}
-              required
-            />
+            <div className={styles.passwordWrapper}>
+              <input
+                className={styles.input}
+                type={showPassword ? "text" : "password"}  // 👈 alterna
+                id="password"
+                name="password"
+                value={credentials.password}
+                onChange={handleChange}
+                required
+              />
+              <button
+                type="button"
+                className={styles.eyeButton}
+                onClick={() => setShowPassword((prev) => !prev)}
+              >
+                {showPassword ? <EyeOff size={20}/> : <Eye size={20}/>}
+              </button>
+            </div>
+          
           </div>
 
           <button type="submit" className={styles.button}>
