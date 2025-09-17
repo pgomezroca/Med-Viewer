@@ -330,15 +330,28 @@ useEffect(() => {
       const { isDenied } = await Swal.fire({
         icon: "success",
         title: n === 1 ? "¡Imagen guardada!" : "¡Imágenes guardadas!",
-        text:
-          n === 1
-            ? "¿Querés cerrar el caso o seguir trabajando?"
-            : `Se guardaron ${n} imágenes. ¿Querés cerrar el caso o seguir trabajando?`,
-        confirmButtonText: "Seguir en este caso",
-        showDenyButton: true,
-        denyButtonText: "Cerrar caso",
-        allowOutsideClick: false,
-      });
+          html: `
+            <div style="text-align:center">
+              ${
+                n === 1
+                  ? "¿Querés cerrar el caso o seguir trabajando?"
+                  : `Se guardaron ${n} imágenes. ¿Querés cerrar el caso o seguir trabajando?`
+              }
+            </div>
+          `,
+          confirmButtonText: "Seguir en este caso",
+          denyButtonText: "Cerrar caso",
+          showDenyButton: true,
+          allowOutsideClick: false,
+        
+          // 🎨 estilos
+          background: "#ffffff",
+          color: "#114c5f",
+          iconColor: "#00d6c6",
+          confirmButtonColor: "#00d6c6",
+          denyButtonColor: "#f87171", // rojo suave para contraste
+        });
+      
   
       // opcional: limpiar previsualización para no re-subir lo mismo
       setFotosAcumuladas([]);
