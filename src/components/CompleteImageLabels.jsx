@@ -160,31 +160,28 @@ export default function CompleteImageLabels({
         ? { Authorization: `Bearer ${authToken}` }
         : {};
 
-      const res = await fetch(`${apiBase}/cases/${caseId}/images`, {
-        credentials: "include",
+      const res = await fetch(`${apiBase}/api/images/cases/${caseId}/images`, {
         headers,
       });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const data = await res.json();
-
+      const { data } = await res.json();
       // Normalizo formato
       // Espero: { id, dni, region, diagnostico, fase, media: [{id,type,url,thumbUrl}] }
-      const norm = {
-        id: data.id ?? data.caseId ?? data.case_id ?? caseId,
-        dni: data.dni ?? data.patientDni ?? data.case?.dni ?? null,
+     const norm = {
+        id: data.id ?? caseId,
+        dni: data.dni ?? data.patient?.dni ?? null,
         region: data.region ?? "",
-        diagnostico: data.diagnostico ?? data.dx ?? "",
-        fase: data.fase ?? data.stage ?? "",
-        media: Array.isArray(data.media)
-          ? data.media.map((m) => ({
-              id: m.id ?? m.imageId ?? m._id,
-              type: m.type ?? (m.mimeType?.startsWith("video/") ? "video" : "image"),
-              url: m.url ?? m.location ?? "",
-              thumbUrl: m.thumbUrl ?? m.thumbnail ?? null,
+        diagnostico: data.diagnostico ?? "",
+        media: Array.isArray(data.images)
+          ? data.images.map((m) => ({
+              id: m.id,
+              type: "image",
+              url: m.url,
+              thumbUrl: null,
+              fase: m.fase ?? "",
             }))
           : [],
       };
-
       setDetail(norm);
       setFormVals({
         region: norm.region || "",
