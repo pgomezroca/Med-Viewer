@@ -113,7 +113,7 @@ const Welcome = () => {
   
 
   useEffect(() => {
-    if (dni.length === 8) {
+    if (dni.length >=7) {
       buscarCasosPorDNI();
     } else {
       setCasos([]);
@@ -218,12 +218,9 @@ const Welcome = () => {
 // (opcional) scrolleo a la fila recién creada
      requestAnimationFrame(() => {
        document.getElementById(`case-row-${c.id}`)?.scrollIntoView({
-        behavior: "smooth",
-       block: "center",
+        behavior: "smooth",block: "center",
      });
-  // (foco lo vemos en el siguiente paso)
    });
- 
     } catch (err) {
       console.error("createNewCase error:", err);
       alert(String(err.message || err));
@@ -239,14 +236,12 @@ const Welcome = () => {
   
   const handleCreateCase = async (e) => {
     e.preventDefault();
-  
     // Validación del DNI
     const v = (dni || "").replace(/\D/g, "");
     if (v.length !== 7 && v.length !== 8) {
       alert("DNI inválido");
       return;
     }
-    
     // Validación del diagnóstico
     if (!newDx.trim()) {
       alert("Ingresá un diagnóstico");
@@ -263,7 +258,6 @@ const Welcome = () => {
       // Crear FormData para enviar tanto datos como imágenes
       const formData = new FormData();
       
-      // Agregar campos al FormData
       formData.append('dni', v);
       formData.append('diagnostico', newDx.trim());
       formData.append('nombre', newNombre.trim());
@@ -314,9 +308,7 @@ const Welcome = () => {
       setNewNombre("");
       setNewApellido("");
   
-      // Mostrar mensaje de éxito
       alert("Caso creado exitosamente");
-  
     } catch (err) {
       console.error('Error al crear caso:', err);
       alert(err.message || 'Error al crear el caso');
@@ -363,19 +355,40 @@ const Welcome = () => {
   const showHeroCTA = !showNewForm && !(queried && !loading);
 
   return (
-    <div className={styles.container}>
-      {/* Saludo */}
-      <div className={styles.greeting}>
+  <div className={styles.container}>
+    
+     <div className={styles.greeting}>
         <p>Hola, {user?.nombre || "usuario"}</p>
         <h2>¿Qué hacemos hoy?</h2>
-        <hr/>
-        <h6>Busca tu caso por DNI</h6>
+        
       </div>
-
-      {/* DNI + Nuevo paciente */}
-      <div className={styles.patientRow}>
-        <input
-          type="text"
+  <div className={styles.layout}>
+      {!busquedaPorDni && (
+      <div className={`${styles.actionsGrid}
+       ${ showHeroCTA ? styles.actionsHero : styles.actionsCompact }`}
+       role="navigation"
+      >
+     <div className={styles.actionsHeader}>
+      <h6>Acciones rápidas</h6>
+      </div>
+      {actions.map((a) => (
+      <button
+        key={a.path}
+        className={styles.actionCard}
+        onClick={() => navigate(a.path)}
+        aria-label={a.label}
+       >
+        <span className={styles.icon}>{a.icon}</span>
+        <span className={styles.actionLabel}>{a.label}</span>
+      </button>
+    ))}
+   </div>
+   )}
+   {/*}
+      //dninuevo paciente
+     <div className={styles.patientRow}>
+      <h6 className={styles.subtitle}>continuar caso existente</h6>
+        <input  type="text"
           className={styles.input}
           inputMode="numeric"
           pattern="[0-9]*"
@@ -390,7 +403,6 @@ const Welcome = () => {
               setBusquedaPorDni(false);  // vuelve a mostrar si borran el DNI
             }
           }}
-          
           aria-label="DNI del paciente"
           maxLength={8}
         />
@@ -408,8 +420,8 @@ const Welcome = () => {
        </button>
         )}
       </div>
-
-      {/* Resultados de búsqueda */}
+       
+     
       {loading && <div className={styles.casosBox}>Buscando casos…</div>}
 
       {!loading && error && (
@@ -428,7 +440,7 @@ const Welcome = () => {
             <div className={styles.newCaseBox}>
           <h4>Nuevo paciente</h4>
           <form onSubmit={handleCreateCase}>
-            {/* Un solo FormularioJerarquico (dni + región + diagnóstico) */}
+            
             <div className={styles.formRow}>
               <label className={styles.label}>DNI, Región y Diagnóstico</label>
                <div style={{ width: "100%" }}>
@@ -443,7 +455,7 @@ const Welcome = () => {
                  />
                </div>
             </div>
-             {/* Nombre */}
+             //nombre
              <div className={styles.formRow}>
               <label className={styles.label}>Nombre</label>
               <input
@@ -454,7 +466,7 @@ const Welcome = () => {
                 aria-label="Nombre"
               />
             </div>
-            {/* Apellido */}
+            //apellido
             <div className={styles.formRow}>
               <label className={styles.label}>Apellido</label>
               <input
@@ -467,7 +479,7 @@ const Welcome = () => {
             </div>
 
             <div className={styles.formActions}>
-              {/* Si querés, podés ocultar 'Cancelar' acá para que siempre quede el form visible */}
+             
               <button
                 type="submit"
                 className={styles.primaryBtn}
@@ -632,41 +644,19 @@ const Welcome = () => {
               )}
             </>
           )}
+              
         </div>
       )}
+*/}
+</div>
 
-      {/* Tarjetas de acción */}
-      {!busquedaPorDni && (
-  <div
-    className={`${styles.actionsGrid} ${
-      showHeroCTA ? styles.actionsHero : styles.actionsCompact
-    }`}
-    role="navigation"
-  >
-    <div className={styles.actionsHeader}>
-      <hr />
-      <h6>Acciones rápidas</h6>
-    </div>
-    {actions.map((a) => (
-      <button
-        key={a.path}
-        className={styles.actionCard}
-        onClick={() => navigate(a.path)}
-        aria-label={a.label}
-      >
-        <span className={styles.icon}>{a.icon}</span>
-        <span className={styles.actionLabel}>{a.label}</span>
-      </button>
-    ))}
-  </div>
-)}
       <CaseGallery
-  open={galleryOpen}
-  caseId={galleryCaseId}
-  title={galleryTitle}
-  onClose={() => setGalleryOpen(false)}
-/>
-    </div>
+      open={galleryOpen}
+      caseId={galleryCaseId}
+      title={galleryTitle}
+      onClose={() => setGalleryOpen(false)}
+      />
+</div>
   );
 };
 
