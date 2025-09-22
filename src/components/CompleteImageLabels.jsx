@@ -20,7 +20,7 @@ const normalizeStr = (s) =>
  */
 export default function CompleteImageLabels({
   apiBase = `${import.meta.env.VITE_API_URL}`,
-  authToken,
+  authToken = localStorage.getItem("token"),
 }) {
   
   // filtros (usamos tu FormularioJerarquico en modo simple)
@@ -62,11 +62,10 @@ export default function CompleteImageLabels({
         const base = (apiBase && !apiBase.includes("undefined") ? apiBase : baseDefault).replace(/\/+$/,"");
         
         // 2) Construí la URL CORRECTA a /incomplete y USALA en el fetch:
-        const url = `${base}/incomplete`;
+        const url = `${base}/api/images/incomplete`;
         console.log("[GET] ", url);
         
         const res = await fetch(url, {
-          credentials: "include",
           headers,
         });
         
