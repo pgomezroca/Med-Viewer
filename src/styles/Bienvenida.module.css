@@ -16,7 +16,7 @@
 }
 .greeting p {
   margin: 0 0 2px 0;
-  font-size: 14px;
+  font-size: 20px;
   opacity: 0.9;
 }
 .greeting h2 {
@@ -24,28 +24,79 @@
   font-size: 22px;
   font-weight: 800;
 }
+@media (min-width: 850px) {
+  
+  .layout > .patientRow {
+    padding-left: 20px;
+  }
+}
 
 /* Fila DNI + botón */
 .patientRow {
-  display: flex;
+  display: grid;
+  grid-template-columns: 1fr auto; /* input ocupa todo, botón a la derecha */
+  grid-auto-rows: auto;
   align-items: center;
-  gap: 10px;
-  flex-wrap: wrap;
-  margin: 12px 0 6px;
+  gap: 8px 10px;                   /* fila x col */
+  margin: 8px 0 12px;
 }
+
+/* Subtítulo arriba, ocupando todo el ancho */
+.subtitle {
+  grid-column: 1 / -1;
+  margin: 0;
+  font-size: 1rem;
+  line-height: 1.3;
+  font-weight: 800;
+  color: #114c5f;
+  letter-spacing: 0.2px;
+}
+
+/* Input DNI */
 .input {
-  flex: 1 1 260px;
-  min-width: 220px;
-  padding: 10px 12px;
-  border-radius: 10px;
-  border: 1px solid #cfe8f7;
-  background: #fff;
-  font-size: 14px;
+  grid-column: 1 / 2;
+  width: 100%;
+  background: #ffffff;
+  border: 1px solid #cfe4ea;
+  border-radius: 12px;
+  padding: 12px 14px;
+  min-height: 44px;               /* tamaño táctil */
+  font-size: 1rem;
+  color: #114c5f;
   outline: none;
+  transition: border-color .15s ease, box-shadow .15s ease;
 }
+
+.input::placeholder {
+  color: #8aa7b1;
+}
+
 .input:focus {
-  border-color: #0ea5e9;
-  box-shadow: 0 0 0 3px rgba(14,165,233,.15);
+  border-color: #00d6c6;
+  box-shadow: 0 0 0 3px rgba(0, 214, 198, 0.16);
+}
+
+/* Botón ✕ Cerrar */
+.clearBtn {
+  grid-column: 2 / 3;
+  background: #e2e8f0;
+  color: #0b4c6a;
+  border: none;
+  border-radius: 10px;
+  padding: 10px 14px;
+  min-height: 44px;               /* mismo alto “visual” que el input */
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background .15s ease, transform .05s ease;
+}
+
+.clearBtn:hover {
+  background: #dbe4ec;
+}
+
+.clearBtn:active {
+  transform: translateY(1px);
 }
 .newPatientBtn {
   display: inline-flex;
