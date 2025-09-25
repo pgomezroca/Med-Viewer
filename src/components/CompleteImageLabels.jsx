@@ -25,7 +25,7 @@ export default function CompleteImageLabels({
   
   // filtros (usamos tu FormularioJerarquico en modo simple)
   const [filters, setFilters] = useState({ region: "", diagnostico: "" });
-
+  const [hasSearched, setHasSearched] = useState(false);
   // lista
   const [cases, setCases] = useState([]);
   const [loadingList, setLoadingList] = useState(false);
@@ -38,7 +38,11 @@ export default function CompleteImageLabels({
   const [detailError, setDetailError] = useState("");
 
   // edición
-  const [formVals, setFormVals] = useState({ region: "", diagnostico: "", fase: "" });
+  const [formVals, setFormVals] = useState({ region: "",
+  etiologia: "",
+  tejido: "",
+  diagnostico: "",
+  tratamiento: "" });
   const [saving, setSaving] = useState(false);
   const [saveMsg, setSaveMsg] = useState("");
 
@@ -79,7 +83,14 @@ export default function CompleteImageLabels({
       const looksLikeCases =
         list.length > 0 &&
         ("id" in list[0] || "caseId" in list[0]) &&
-        ("region" in list[0] || "diagnostico" in list[0] || "fase" in list[0]);
+        (
+          "region" in list[0] ||
+          "diagnostico" in list[0] ||
+          "fase" in list[0] ||
+          "etiologia" in list[0] ||
+          "tejido" in list[0] ||
+          "tratamiento" in list[0]
+        );
 
       let aggregated = [];
 
@@ -87,8 +98,11 @@ export default function CompleteImageLabels({
         // Normalizo id de caso (puede venir como id o caseId)
         aggregated = list.map((c) => ({
           id: c.id ?? c.caseId ?? c.case_id,
-          dni: c.dni ?? c.patientDni,
+          dni: c.dni ?? c.patientDni ?? c.patient?.dni ?? null,
           region: c.region ?? "",
+          etiologia: c.etiologia ?? "",
+          tejido: c.tejido ?? "",
+          tratamiento: c.tratamiento ?? "",
           diagnostico: c.diagnostico ?? c.dx ?? "",
           fase: c.fase ?? c.stage ?? "",
           thumbUrl: c.thumbUrl ?? c.thumbnail ?? null,
@@ -103,27 +117,38 @@ export default function CompleteImageLabels({
           const prev = byCase.get(caseId) || {
             id: caseId,
             dni: img.dni ?? img.patientDni ?? img.case?.dni ?? null,
-            region: img.region ?? "",
-            diagnostico: img.diagnostico ?? img.dx ?? "",
-            fase: img.fase ?? "",
+            region: img.region ?? img.case?.region ?? "",
+            diagnostico: img.diagnostico ?? img.dx ?? img.case?.diagnostico ?? "",
+            fase: img.fase ?? img.case?.fase ?? "",
+            etiologia: img.etiologia ?? img.case?.etiologia ?? "",
+            tejido: img.tejido ?? img.case?.tejido ?? "",
+            tratamiento: img.tratamiento ?? img.case?.tratamiento ?? "",
             thumbUrl: img.thumbUrl ?? img.thumbnail ?? img.url ?? null,
           };
           // Si dentro del lote aparece un valor “más completo”, lo priorizamos
-          prev.region = prev.region || img.region || "";
-          prev.diagnostico = prev.diagnostico || img.diagnostico || img.dx || "";
-          prev.fase = prev.fase || img.fase || "";
+          prev.region ||= img.region || img.case?.region || "";
+          prev.diagnostico ||= img.diagnostico || img.dx || img.case?.diagnostico || "";
+          prev.fase ||= img.fase || img.case?.fase || "";
+          prev.etiologia ||= img.etiologia || img.case?.etiologia || "";
+          prev.tejido ||= img.tejido || img.case?.tejido || "";
+          prev.tratamiento ||= img.tratamiento || img.case?.tratamiento || "";
+
           byCase.set(caseId, prev);
         }
         aggregated = Array.from(byCase.values());
       }
-
+       // Filtrar por: al menos UNA de estas está vacía (requisito)
+      const onlyMissingETT = (c) =>
+      !c.etiologia || c.etiologia === "" ||
+      !c.tejido || c.tejido === "" ||
+      !c.tratamiento || c.tratamiento === "";
       // Filtro “incompletos” y por filtros UI (region/diagnostico) de forma robusta
       const nRegion = normalizeStr(filters.region);
       const nDx = normalizeStr(filters.diagnostico);
 
       const filtered = aggregated.filter((c) => {
         const incompleto =
-          !c.region || !c.diagnostico || !c.fase || c.region === "" || c.diagnostico === "" || c.fase === "";
+          !c.region || !c.diagnostico || !c.fase ;
 
         if (!incompleto) return false;
 
@@ -144,6 +169,7 @@ export default function CompleteImageLabels({
       setListError("No se pudo obtener la lista de casos incompletos.");
     } finally {
       setLoadingList(false);
+      setHasSearched(true);
     }
   };
 
@@ -172,6 +198,10 @@ export default function CompleteImageLabels({
         dni: data.dni ?? data.patient?.dni ?? null,
         region: data.region ?? "",
         diagnostico: data.diagnostico ?? "",
+        fase: data.fase ?? data.stage ?? "",
+        etiologia: data.etiologia ?? "",
+        tejido: data.tejido ?? "",
+        tratamiento: data.tratamiento ?? "",
         media: Array.isArray(data.images)
           ? data.images.map((m) => ({
               id: m.id,
@@ -187,6 +217,9 @@ export default function CompleteImageLabels({
         region: norm.region || "",
         diagnostico: norm.diagnostico || "",
         fase: norm.fase || "",
+        etiologia: norm.etiologia || "",
+        tejido: norm.tejido || "",
+        tratamiento: norm.tratamiento || "",
       });
     } catch (e) {
       console.error(e);
@@ -212,12 +245,15 @@ export default function CompleteImageLabels({
         region: formVals.region || "",
         diagnostico: formVals.diagnostico || "",
         fase: formVals.fase || "",
+        etiologia: formVals.etiologia || "",
+        tejido: formVals.tejido || "",
+        tratamiento: formVals.tratamiento || "",
       };
 
-      const res = await fetch(`${apiBase}/${detail.id}`, {
+      const res = await fetch(`${apiBase}/api/images/${detail.id}`, {
         method: "PUT",
         headers,
-        credentials: "include",
+        
         body: JSON.stringify(payload),
       });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
@@ -237,7 +273,10 @@ export default function CompleteImageLabels({
   const closeDetail = () => {
     setOpenId(null);
     setDetail(null);
-    setFormVals({ region: "", diagnostico: "", fase: "" });
+    setFormVals({ region: "", diagnostico: "", fase: "",etiologia: "",
+    tejido: "",
+    tratamiento: "",
+   });
     setSaveMsg("");
   };
 
@@ -284,10 +323,15 @@ export default function CompleteImageLabels({
                 <div key={i} className={styles.skeletonCard} />
               ))}
             </div>
+          ) : !hasSearched? (
+            <div className={styles.empty}>
+              <Folder size={28} />
+              <p>Usá los filtros y tocá <strong>Buscar</strong> para ver casos con etiquetas incompletas.</p>
+            </div>
           ) : !hasResults ? (
             <div className={styles.empty}>
               <Folder size={28} />
-              <p>No hay casos con etiquetas incompletas para este filtro.</p>
+              <p>No hay casos con <em>etiología/tejido/tratamiento</em> incompletos para este filtro.</p>
             </div>
           ) : (
             <ul className={styles.grid}>
@@ -310,7 +354,10 @@ export default function CompleteImageLabels({
                         <Badge label="Región" value={c.region} />
                         <Badge label="Dx" value={c.diagnostico} />
                         <Badge label="Fase" value={c.fase} />
-                      </div>
+                        <Badge label="Etiología" value={c.etiologia} />
+                       <Badge label="Tejido" value={c.tejido} />
+                       <Badge label="Tratamiento" value={c.tratamiento} />
+                        </div>
                     </div>
                   </button>
                 </li>
@@ -362,7 +409,7 @@ export default function CompleteImageLabels({
               <div className={styles.formBlock}>
                 <h4 className={styles.blockTitle}>Completar etiquetas</h4>
                 <FormularioJerarquico
-                  campos={["region", "diagnostico", "fase"]}
+                  campos={["region", "diagnostico", "fase", "etiologia", "tejido", "tratamiento"]}
                   valores={formVals}
                   onChange={(vals) => setFormVals((p) => ({ ...p, ...vals }))}
                 />
