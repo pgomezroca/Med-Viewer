@@ -56,7 +56,7 @@ function Navbar() {
 
               <button
                 className={styles.dropdownItem}
-                onClick={() => { setOpen(false); navigate('/profile'); }}
+                onClick={() => { setOpen(false); navigate('/welcome/profile'); }}
                 role="menuitem"
               >
                 Perfil

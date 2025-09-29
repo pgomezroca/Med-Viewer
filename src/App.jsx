@@ -17,6 +17,7 @@ import ImportImageToCase from "./components/ImportImageToCase";
 import ForgotPassword from './components/ForgotPassword';
 import ResetPassword from './components/ResetPassword';
 import PasswordResetSuccess from './components/PasswordResetSuccess';
+import Profile from './components/Profile';
 
 function App() {
   return (
@@ -33,7 +34,7 @@ function App() {
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/reset-password" element={<ResetPassword />} />
         <Route path="/password-reset-success" element={<PasswordResetSuccess />} />
-
+        
         {/* APP PRIVADA CON LAYOUT */}
         <Route path="/welcome" element={<MainLayout />}>
           <Route index element={<Welcome />} />
@@ -45,6 +46,7 @@ function App() {
           <Route path="complete-image-labels" element={<CompleteImageLabels />} />
           <Route path="SplitButton" element={<SplitButton />} />
           <Route path="/welcome/import/:caseId" element={<ImportImageToCase />} />
+          <Route path="profile" element={<Profile />} />
         </Route>
       </Routes>
     </Router>

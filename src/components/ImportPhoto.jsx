@@ -150,7 +150,7 @@ const ImportPhoto = () => {
 
       <button
         className={styles.button}
-        onClick={() => navigate("/despedida")}
+        onClick={() => navigate("/welcome/despedida")}
         style={{ marginTop: "1rem" }}
       >
         Finalizar
