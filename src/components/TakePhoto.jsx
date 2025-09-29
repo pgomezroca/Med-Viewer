@@ -75,7 +75,6 @@ const TakePhoto = () => {
 };
  
 useEffect(() => {
-  
   const qMode   = searchParams.get('mode');            // 'foto' | 'video'
   const qAuto   = searchParams.get('autostart') === '1';
   const qDni    = searchParams.get('dni')    || '';
@@ -281,7 +280,7 @@ useEffect(() => {
   useEffect(() => {
     if (grabacionFinalizada) {
       setGrabacionFinalizada(false); 
-      setScreen("photo");
+      setScreen("camera");
     }
   }, [grabacionFinalizada]);
    
