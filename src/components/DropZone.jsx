@@ -78,7 +78,8 @@ export default function DropZone({
       <input
         ref={inputRef}
         type="file"
-        accept={accept}
+        accept="image/*"   // opcional, restringe a imágenes
+        capture={false}  
         multiple={multiple}
         className={styles.hiddenInput}
         onChange={handleChange}
