@@ -102,6 +102,7 @@ const ImportPhoto = () => {
       <input
         type="file"
         accept="image/*"
+        capture={false}
         multiple
         ref={fileInputRef}
         style={{ display: "none" }}

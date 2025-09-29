@@ -52,6 +52,7 @@ h2{
 }
 .video {
   position: absolute;
+  inset: 0;
   top: 0;
   left: 0;
   width: 100%;
@@ -61,7 +62,7 @@ h2{
 }
 .modeToggle {
   position: absolute;
-  bottom:22px;
+  bottom: calc(var(--bottom-bar-h) + 12px);
   left: 50%;
   transform: translateX(-50%);
   display: flex;
@@ -70,7 +71,7 @@ h2{
   padding: 6px;
   border-radius: 9999px;
   backdrop-filter: blur(4px);
-  z-index: 3;
+  z-index: 6;
 }
 
 .modeBtn {
@@ -98,7 +99,8 @@ h2{
   justify-content: center; 
   align-items: flex-end;   
   padding-bottom: 1.5rem;  
-  pointer-events: none;     
+  pointer-events: none; 
+  z-index: 3;    
 }
 
 
@@ -302,6 +304,97 @@ h2{
   font-size: 1.2rem;
   color:black ;
 }
+/* ---------- NUEVO: Tira de miniaturas dentro de la CÁMARA ---------- */
+.previewStripInCamera {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: calc(var(--bottom-bar-h) + 8px);
+  height: var(--thumb-strip-h);
+  display: flex;
+  gap: 8px;
+  padding: 8px 12px;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  background: rgba(0,0,0,0.35);
+  backdrop-filter: blur(4px);
+  border-top: 1px solid rgba(255,255,255,0.08);
+  z-index: 2; /* sobre el video, debajo del toggle */
+}
+
+.previewItemThumb {
+  position: relative;
+  flex: 0 0 auto;
+  width: 76px;
+  height: 76px;
+  border-radius: 10px;
+  overflow: hidden;
+  background: #111;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.35);
+}
+.previewImgThumb,
+.previewVideoThumb {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.deleteBtnThumb {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  width: 20px;
+  height: 20px;
+  border: 0;
+  border-radius: 50%;
+  background: rgba(0,0,0,0.6);
+  color: #fff;
+  font-size: 12px;
+  line-height: 20px;
+  cursor: pointer;
+}
+
+/* ---------- NUEVO: Barra inferior con Guardar / Volver ---------- */
+.bottomBar {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: var(--bottom-bar-h);
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  padding: 10px 12px calc(12px + env(safe-area-inset-bottom));
+  background: rgba(0,0,0,0.55);
+  backdrop-filter: blur(6px);
+  border-top: 1px solid rgba(255,255,255,0.08);
+  z-index: 4; /* encima de la tira */
+}
+
+.primaryAction {
+  appearance: none;
+  border: none;
+  border-radius: 10px;
+  padding: 12px 14px;
+  font-weight: 700;
+  color: #0b4c5f;
+  background: #00d6c6; /* turquesa de la app */
+  cursor: pointer;
+}
+.primaryAction:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.secondaryAction {
+  appearance: none;
+  border: 1px solid rgba(255,255,255,0.55);
+  border-radius: 10px;
+  padding: 12px 14px;
+  font-weight: 700;
+  color: #fff;
+  background: transparent;
+  cursor: pointer;
+}
 
 @media (max-width: 600px) {
   h2 {
@@ -331,8 +424,6 @@ h2{
     font-size: 14px;
   }
 
- 
-
   .videoPreviewWrapper {
     width: 120px;
     height: 80px;
@@ -353,6 +444,10 @@ h2{
     left: 0.75rem;
     font-size: 1rem;
     padding: 0.25rem;
+  }
+  :root{
+    --bottom-bar-h: 68px;
+    --thumb-strip-h: 80px;
   }
 }
 @media (max-width: 600px) {

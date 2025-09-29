@@ -183,9 +183,9 @@ useEffect(() => {
     ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
     const dataURL = canvas.toDataURL("image/jpeg", 0.92);
   
+    setFotosAcumuladas(prev => [...prev, dataURL]); 
     setPhotoData(dataURL);
-    setFotosAcumuladas(prev => [...prev, dataURL]);      // Solo previsualiza
-    setScreen("photo");
+    
   };
   
   const buscarCasosPorDNI = async () => {
@@ -280,8 +280,8 @@ useEffect(() => {
   };
   useEffect(() => {
     if (grabacionFinalizada) {
-      setScreen("photo");
       setGrabacionFinalizada(false); 
+      setScreen("photo");
     }
   }, [grabacionFinalizada]);
    
@@ -380,177 +380,229 @@ useEffect(() => {
       setIsSaving(false);
     }
   };
+  return (
+    <>
+      {screen === "loading" && (
+        <div className={styles.cameraContainer} style={{ display: "grid", placeItems: "center", minHeight: "60vh" }}>
+          <p>Iniciando cámara…</p>
+        </div>
+      )}
   
-    return (
-      <>
-        {screen === "loading" && (
-        <div className={styles.cameraContainer} style={{display:'grid',placeItems:'center',minHeight:'60vh'}}>
-         <p>Iniciando cámara…</p>
-       </div>
-        )}
-
-        
-        {/* FORMULARIO PRINCIPAL */}
-        {screen === "form" && (
-          <>
-            <div id="formulario" ref={formularioRef} className={styles.formularioContainer}>
-              <FormularioJerarquico
-                campos={["dni", "region", "diagnostico", "fase"]}
-                valores={{ dni, region, diagnostico, fase }}
-                onChange={(data) => {
-                  setDni(data.dni || "");
-                  setRegion(data.region || "");
-                  setDiagnostico(data.diagnostico || "");
-                  setFase(data.fase || "");
-                }}
-              />
-    
-              <div className={styles.botonesCentrados}>
-                <button className={styles.ContinuarButton} onClick={startCamera}>
-                  Continuar
-                </button>
-                <button className={styles.camerabackbutton} onClick={() => navigate(-1)}>
-                  <ArrowLeft size={20} /> Volver
-                </button>
-              </div>
-            </div>
-    
-            {/* LISTA DE CASOS */}
-            {dni && (
-              <div className={styles.casosContainer}>
-                {casosDelDni.length > 0 ? (
-                  <>
-                    <h4>Casos previos para DNI {dni}:</h4>
-                    <div className={styles.listaCasos}>
-                      {casosDelDni.map((grupo, idx) => (
-                        <button
-                          key={idx}
-                          className={styles.casoButton}
-                          onClick={() => {
-                            const ultimo = grupo.items[grupo.items.length - 1];
-                            setRegion(ultimo.region || "");
-                            setDiagnostico(ultimo.diagnostico || "");
-                            setFase(ultimo.fase || "");
-                            formularioRef.current?.scrollIntoView({ behavior: "smooth" });
-                          }}
-                        >
-                          📁 {grupo.fecha} — Dx: {grupo.diagnostico} ({grupo.items.length})
-                        </button>
-                      ))}
-                    </div>
-                  </>
-                ) : (
-                  <p className={styles.sinCasos}>No hay datos del paciente con DNI {dni}</p>
-                )}
-              </div>
-            )}
-          </>
-        )}
-    
-        {/* CÁMARA */}
-        {screen === "camera" && (
-          <div className={styles.cameraContainer}>
-            <div className={styles.modeToggle}>
-              <button
-                className={`${styles.modeBtn} ${modo === "foto" ? styles.active : ""}`}
-                onClick={() => {
-                  if (isRecording) stopRecording();
-                  setModo("foto");
-                }}
-              >
-                Foto
+      {/* FORMULARIO PRINCIPAL */}
+      {screen === "form" && (
+        <>
+          <div id="formulario" ref={formularioRef} className={styles.formularioContainer}>
+            <FormularioJerarquico
+              campos={["dni", "region", "diagnostico", "fase"]}
+              valores={{ dni, region, diagnostico, fase }}
+              onChange={(data) => {
+                setDni(data.dni || "");
+                setRegion(data.region || "");
+                setDiagnostico(data.diagnostico || "");
+                setFase(data.fase || "");
+              }}
+            />
+  
+            <div className={styles.botonesCentrados}>
+              <button className={styles.ContinuarButton} onClick={startCamera}>
+                Continuar
               </button>
-              <button
-                className={`${styles.modeBtn} ${modo === "video" ? styles.active : ""}`}
-                onClick={() => setModo("video")}
-              >
-                Video
+              <button className={styles.camerabackbutton} onClick={() => navigate(-1)}>
+                <ArrowLeft size={20} /> Volver
               </button>
             </div>
-    
-            <video className={styles.video} ref={videoRef} autoPlay playsInline muted />
-    
-            <div className={styles.cameraOverlay}>
-              {modo === "foto" && (
-                <button className={styles.takePhotoButton} onClick={takePhoto}>
-                  Tomar foto
-                </button>
-              )}
-    
-              {modo === "video" && (
-                <div
-                  className={`${styles.recordButtonWrapper} ${
-                    isRecording ? styles.recording : ""
-                  }`}
-                  onClick={() => (isRecording ? stopRecording() : startRecording())}
-                  title={isRecording ? "Detener grabación" : "Iniciar grabación"}
-                >
-                  <div className={styles.recordButtonInner}></div>
-                </div>
+          </div>
+  
+          {/* LISTA DE CASOS */}
+          {dni && (
+            <div className={styles.casosContainer}>
+              {casosDelDni.length > 0 ? (
+                <>
+                  <h4>Casos previos para DNI {dni}:</h4>
+                  <div className={styles.listaCasos}>
+                    {casosDelDni.map((grupo, idx) => (
+                      <button
+                        key={idx}
+                        className={styles.casoButton}
+                        onClick={() => {
+                          const ultimo = grupo.items[grupo.items.length - 1];
+                          setRegion(ultimo.region || "");
+                          setDiagnostico(ultimo.diagnostico || "");
+                          setFase(ultimo.fase || "");
+                          formularioRef.current?.scrollIntoView({ behavior: "smooth" });
+                        }}
+                      >
+                        📁 {grupo.fecha} — Dx: {grupo.diagnostico} ({grupo.items.length})
+                      </button>
+                    ))}
+                  </div>
+                </>
+              ) : (
+                <p className={styles.sinCasos}>No hay datos del paciente con DNI {dni}</p>
               )}
             </div>
-    
+          )}
+        </>
+      )}
+  
+      {/* CÁMARA */}
+      {screen === "camera" && (
+        <div className={styles.cameraContainer}>
+          {/* Toggle de modos (NO SE TOCA) */}
+          <div className={styles.modeToggle}>
             <button
-              id="camera-back-button"
-              className={styles.cameraBackBtn}
-              onClick={() => setScreen("form")}
+              className={`${styles.modeBtn} ${modo === "foto" ? styles.active : ""}`}
+              onClick={() => {
+                if (isRecording) stopRecording();
+                setModo("foto");
+              }}
             >
-              <ArrowLeft size={30} />
+              Foto
+            </button>
+            <button
+              className={`${styles.modeBtn} ${modo === "video" ? styles.active : ""}`}
+              onClick={() => setModo("video")}
+            >
+              Video
             </button>
           </div>
-        )}
-    
-        {/* PREVISUALIZACIÓN */}
-        {screen === "photo" && (
-          <div className={styles.previewWrapper}>
-            <h3 className={styles.previewTitle}>Pre-visualización</h3>
-    
-            <div className={styles.previewStrip}>
+  
+          {/* Video */}
+          <video className={styles.video} ref={videoRef} autoPlay playsInline muted />
+  
+          {/* Overlay de disparo (NO SE TOCA) */}
+          <div className={styles.cameraOverlay}>
+            {modo === "foto" && (
+              <button className={styles.takePhotoButton} onClick={takePhoto}>
+                Tomar foto
+              </button>
+            )}
+  
+            {modo === "video" && (
+              <div
+                className={`${styles.recordButtonWrapper} ${isRecording ? styles.recording : ""}`}
+                onClick={() => (isRecording ? stopRecording() : startRecording())}
+                title={isRecording ? "Detener grabación" : "Iniciar grabación"}
+              >
+                <div className={styles.recordButtonInner}></div>
+              </div>
+            )}
+          </div>
+  
+          {/* Tira de miniaturas dentro de la cámara */}
+          {previewItems.length > 0 && (
+            <div className={styles.previewStripInCamera}>
               {previewItems.map((item, index) => (
-                <div key={index} className={styles.previewItem}>
+                <div key={index} className={styles.previewItemThumb}>
                   {item.type === "photo" ? (
-                    <img src={item.src} alt={`media ${index}`} className={styles.previewImg} />
+                    <img src={item.src} alt={`media ${index}`} className={styles.previewImgThumb} />
                   ) : (
-                    <video src={item.src} controls className={styles.previewVideo}
-                    onLoadedData={(e) => {
-                      e.currentTarget.currentTime = 0;
-                    }} />
+                    <video
+                      src={item.src}
+                      className={styles.previewVideoThumb}
+                      onLoadedData={(e) => {
+                        e.currentTarget.currentTime = 0;
+                      }}
+                    />
                   )}
-    
                   <button
                     onClick={() => removePreviewItem(index)}
-                    title="Eliminar este elemento"
-                    className={styles.deleteBtn}
+                    className={styles.deleteBtnThumb}
+                    title="Eliminar"
                   >
                     ✕
                   </button>
                 </div>
               ))}
             </div>
-    
-            <div className={styles.previewControls}>
-              <button onClick={() => setScreen("camera")}>➕ Agregar más</button>
-              <button onClick={guardarCaso} disabled={isSaving}>
-                {isSaving ? "Guardando..." : "Guardar todas"}
-              </button>
-              <button
-                onClick={() => {
-                  streamRef.current?.getTracks().forEach((t) => t.stop());
-                  setFotosAcumuladas([]);
-                  setPhotoData(null);
-                  setScreen("form");
-                }}
-              >
-                Finalizar caso
-              </button>
-            </div>
+          )}
+  
+          {/* Barra inferior con solo 2 botones */}
+          <div className={styles.bottomBar}>
+            <button
+              className={styles.primaryAction}
+              onClick={guardarCaso}
+              disabled={isSaving || fotosAcumuladas.length + videosAcumulados.length === 0}
+            >
+              {isSaving ? "Guardando..." : "Guardar"}
+            </button>
+  
+            <button
+              className={styles.secondaryAction}
+              onClick={() => {
+                setScreen("form"); // por ahora volver al formulario
+              }}
+            >
+              Volver
+            </button>
           </div>
-        )}
-    
-        {/* CANVAS OCULTO */}
-        <canvas ref={canvasRef} style={{ display: "none" }} />
-      </>
-    );
+  
+          {/* Botón atrás flotante (opcional) */}
+          <button
+            id="camera-back-button"
+            className={styles.cameraBackBtn}
+            onClick={() => setScreen("form")}
+          >
+            <ArrowLeft size={30} />
+          </button>
+        </div>
+      )}
+  
+      {/* PREVISUALIZACIÓN (ya no se usa) */}
+      {/*
+      {screen === "photo" && (
+        <div className={styles.previewWrapper}>
+          <h3 className={styles.previewTitle}>Pre-visualización</h3>
+          <div className={styles.previewStrip}>
+            {previewItems.map((item, index) => (
+              <div key={index} className={styles.previewItem}>
+                {item.type === "photo" ? (
+                  <img src={item.src} alt={`media ${index}`} className={styles.previewImg} />
+                ) : (
+                  <video
+                    src={item.src}
+                    controls
+                    className={styles.previewVideo}
+                    onLoadedData={(e) => {
+                      e.currentTarget.currentTime = 0;
+                    }}
+                  />
+                )}
+                <button
+                  onClick={() => removePreviewItem(index)}
+                  title="Eliminar este elemento"
+                  className={styles.deleteBtn}
+                >
+                  ✕
+                </button>
+              </div>
+            ))}
+          </div>
+          <div className={styles.previewControls}>
+            <button onClick={() => setScreen("camera")}>➕ Agregar más</button>
+            <button onClick={guardarCaso} disabled={isSaving}>
+              {isSaving ? "Guardando..." : "Guardar todas"}
+            </button>
+            <button
+              onClick={() => {
+                streamRef.current?.getTracks().forEach((t) => t.stop());
+                setFotosAcumuladas([]);
+                setPhotoData(null);
+                setScreen("form");
+              }}
+            >
+              Finalizar caso
+            </button>
+          </div>
+        </div>
+      )}
+      */}
+  
+      {/* CANVAS OCULTO */}
+      <canvas ref={canvasRef} style={{ display: "none" }} />
+    </>
+  );
+  
     
   
 };
