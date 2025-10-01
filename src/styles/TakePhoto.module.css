@@ -62,7 +62,7 @@ h2{
 }
 .modeToggle {
   position: absolute;
-  bottom: calc(var(--bottom-bar-h) + 12px);
+  top: calc(env(safe-area-inset-top) + 12px);
   left: 50%;
   transform: translateX(-50%);
   display: flex;
@@ -107,7 +107,7 @@ h2{
 .takePhotoButton {
   pointer-events: auto;
   position: fixed;
-  bottom: 8rem;
+  bottom: 6rem;
   left: 50%;
   transform: translateX(-50%);
   width: 80px;
