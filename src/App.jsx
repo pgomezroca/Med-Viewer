@@ -18,6 +18,7 @@ import ForgotPassword from './components/ForgotPassword';
 import ResetPassword from './components/ResetPassword';
 import PasswordResetSuccess from './components/PasswordResetSuccess';
 import Profile from './components/Profile';
+import PatientTracking from './components/PatientTracking';
 
 function App() {
   return (
@@ -47,6 +48,8 @@ function App() {
           <Route path="SplitButton" element={<SplitButton />} />
           <Route path="/welcome/import/:caseId" element={<ImportImageToCase />} />
           <Route path="profile" element={<Profile />} />
+          <Route path="patient-tracking" element={<PatientTracking />} /> {/* ✅ nueva */}
+          <Route path="import/:caseId" element={<ImportImageToCase />} />
         </Route>
       </Routes>
     </Router>

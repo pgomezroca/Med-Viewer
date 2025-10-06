@@ -34,6 +34,19 @@ function Navbar() {
         <Link to="/welcome" className={styles.logo}>
           MED‑VIEWER
         </Link>
+        {/* Botón central */}
+        <div className={styles.centerNav}>
+          <button
+            className={`${styles.centerBtn} ${
+              location.pathname.includes("patient-tracking")
+                ? styles.centerBtnActive
+                : ""
+            }`}
+            onClick={() => navigate("/welcome/patient-tracking")}
+          >
+            Seguimiento por paciente
+          </button>
+        </div>
 
         {/* Avatar + menú de usuario */}
         <div className={styles.userArea} ref={menuRef}>

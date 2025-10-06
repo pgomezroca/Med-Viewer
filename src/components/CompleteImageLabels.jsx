@@ -2,14 +2,46 @@ import React, { useEffect, useMemo, useState } from "react";
 import styles from "../styles/CompleteImageLabels.module.css";
 import { Folder, FolderOpen, Filter, Save, X, RefreshCw } from "lucide-react";
 import FormularioJerarquico from "./FormularioJerarquico";
+function guessExt(url = "") {
+  try {
+    const clean = url.split("?")[0].toLowerCase();
+    const parts = clean.split(".");
+    return parts.length > 1 ? parts.pop() : "";
+  } catch { return ""; }
+}
 
+function guessMimeFromUrl(url = "") {
+  const ext = guessExt(url);
+  // Videos comunes
+  if (["mp4","m4v","mov"].includes(ext)) return "video/mp4";
+  if (ext === "webm") return "video/webm";
+  if (ext === "ogv" || ext === "ogg") return "video/ogg";
+  // Imágenes comunes
+  if (["jpg","jpeg"].includes(ext)) return "image/jpeg";
+  if (ext === "png") return "image/png";
+  if (ext === "gif") return "image/gif";
+  if (ext === "webp") return "image/webp";
+  if (ext === "avif") return "image/avif";
+  return ""; // desconocido
+}
+
+function getMediaType(m = {}) {
+  const mime = m.mimeType || m.contentType || "";
+  if (mime.startsWith("video/")) return "video";
+  if (mime.startsWith("image/")) return "image";
+  // fallback por extensión
+  const ext = guessExt(m.url || "");
+  if (["mp4","m4v","mov","webm","ogv","ogg"].includes(ext)) return "video";
+  if (["jpg","jpeg","png","gif","webp","avif","bmp","tiff","heic","heif"].includes(ext)) return "image";
+  return "image"; // por defecto lo mostramos como imagen
+}
 // Normalizador: sin tildes, lowercase, trim
 const normalizeStr = (s) =>
   (s || "").toString().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim().toLowerCase();
 
 /**
  * CompleteImageLabels
- * Conecta a tus rutas:
+ * 
  *  - GET  {apiBase}/incomplete
  *  - GET  {apiBase}/cases/:caseId/images
  *  - PUT  {apiBase}/:caseId
@@ -23,20 +55,17 @@ export default function CompleteImageLabels({
   authToken = localStorage.getItem("token"),
 }) {
   
-  // filtros (usamos tu FormularioJerarquico en modo simple)
   const [filters, setFilters] = useState({ region: "", diagnostico: "" });
   const [hasSearched, setHasSearched] = useState(false);
-  // lista
+  // lista de casos
   const [cases, setCases] = useState([]);
   const [loadingList, setLoadingList] = useState(false);
   const [listError, setListError] = useState("");
-
   // detalle
   const [openId, setOpenId] = useState(null);
   const [detail, setDetail] = useState(null);
   const [loadingDetail, setLoadingDetail] = useState(false);
   const [detailError, setDetailError] = useState("");
-
   // edición
   const [formVals, setFormVals] = useState({ region: "",
   etiologia: "",
@@ -59,24 +88,19 @@ export default function CompleteImageLabels({
 
     try {
       const headers = authToken
-        ? { Authorization: `Bearer ${authToken}` }
-        : {};
-
-        const baseDefault = `${import.meta.env.VITE_API_URL}/api/patients`;
-        const base = (apiBase && !apiBase.includes("undefined") ? apiBase : baseDefault).replace(/\/+$/,"");
-        
-        // 2) Construí la URL CORRECTA a /incomplete y USALA en el fetch:
-        const url = `${base}/api/images/incomplete`;
-        console.log("[GET] ", url);
-        
-        const res = await fetch(url, {
+        ? { Authorization: `Bearer ${authToken}` }: {};
+      const baseDefault = `${import.meta.env.VITE_API_URL}/api/patients`;
+      const base = (apiBase && !apiBase.includes("undefined") ? apiBase : baseDefault).replace(/\/+$/,"");
+      const url = `${base}/api/images/incomplete`;
+      console.log("[GET] ", url);
+      const res = await fetch(url, {
           headers,
         });
         
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const raw = await res.json();
 
-      // Acepto distintos formatos: array directo, {items}, {data}
+      //  distintos formatos: array directo, {items}, {data}
       const list = Array.isArray(raw) ? raw : raw?.items || raw?.data || [];
 
       // Caso 1: el backend ya devuelve CASOS [{id, dni, region, diagnostico, fase, ...}]
@@ -93,9 +117,7 @@ export default function CompleteImageLabels({
         );
 
       let aggregated = [];
-
       if (looksLikeCases) {
-        // Normalizo id de caso (puede venir como id o caseId)
         aggregated = list.map((c) => ({
           id: c.id ?? c.caseId ?? c.case_id,
           dni: c.dni ?? c.patientDni ?? c.patient?.dni ?? null,
@@ -125,14 +147,13 @@ export default function CompleteImageLabels({
             tratamiento: img.tratamiento ?? img.case?.tratamiento ?? "",
             thumbUrl: img.thumbUrl ?? img.thumbnail ?? img.url ?? null,
           };
-          // Si dentro del lote aparece un valor “más completo”, lo priorizamos
+          // Si aparece un valor “más completo”, lo priorizamos
           prev.region ||= img.region || img.case?.region || "";
           prev.diagnostico ||= img.diagnostico || img.dx || img.case?.diagnostico || "";
           prev.fase ||= img.fase || img.case?.fase || "";
           prev.etiologia ||= img.etiologia || img.case?.etiologia || "";
           prev.tejido ||= img.tejido || img.case?.tejido || "";
           prev.tratamiento ||= img.tratamiento || img.case?.tratamiento || "";
-
           byCase.set(caseId, prev);
         }
         aggregated = Array.from(byCase.values());
@@ -145,24 +166,19 @@ export default function CompleteImageLabels({
       // Filtro “incompletos” y por filtros UI (region/diagnostico) de forma robusta
       const nRegion = normalizeStr(filters.region);
       const nDx = normalizeStr(filters.diagnostico);
-
       const filtered = aggregated.filter((c) => {
-        const incompleto =
-          !c.region || !c.diagnostico || !c.fase ;
-
+      const incompleto = !c.region || !c.diagnostico || !c.fase ;
+  
         if (!incompleto) return false;
 
-        const cRegion = normalizeStr(c.region);
-        const cDx = normalizeStr(c.diagnostico);
-
-        const passRegion = nRegion ? cRegion.includes(nRegion) : true;
-        const passDx = nDx ? cDx.includes(nDx) : true;
-
+      const cRegion = normalizeStr(c.region);
+      const cDx = normalizeStr(c.diagnostico);
+      const passRegion = nRegion ? cRegion.includes(nRegion) : true;
+      const passDx = nDx ? cDx.includes(nDx) : true;
         return passRegion && passDx;
       });
-
       setCases(filtered);
-      // console.debug("incomplete fetched", { total: list.length, aggregated: aggregated.length, filtered: filtered.length });
+       console.debug("incomplete fetched", { total: list.length, aggregated: aggregated.length, filtered: filtered.length });
 
     } catch (e) {
       console.error(e);
@@ -172,7 +188,6 @@ export default function CompleteImageLabels({
       setHasSearched(true);
     }
   };
-
   // ---- abrir caso: GET /cases/:caseId/images ----
   const openCase = async (caseId) => {
     setOpenId(caseId);
@@ -182,10 +197,7 @@ export default function CompleteImageLabels({
     setSaveMsg("");
 
     try {
-      const headers = authToken
-        ? { Authorization: `Bearer ${authToken}` }
-        : {};
-
+      const headers = authToken ? { Authorization: `Bearer ${authToken}` }: {};
       const res = await fetch(`${apiBase}/api/images/cases/${caseId}/images`, {
         headers,
       });
@@ -203,14 +215,21 @@ export default function CompleteImageLabels({
         tejido: data.tejido ?? "",
         tratamiento: data.tratamiento ?? "",
         media: Array.isArray(data.images)
-          ? data.images.map((m) => ({
-              id: m.id,
-              type: "image",
-              url: m.url,
-              thumbUrl: null,
-              fase: m.fase ?? "",
-            }))
-          : [],
+  ? data.images.map((m) => {
+      const type = getMediaType(m);
+      return {
+        id: m.id,
+        type, // 👈 ahora sí: "video" o "image"
+        url: m.url,
+        mimeType: m.mimeType || m.contentType || guessMimeFromUrl(m.url),
+        thumbUrl: m.thumbUrl ?? m.thumbnail ?? null,
+        fase: m.fase ?? "",
+        etiologia: m.etiologia ?? "",
+        tejido: m.tejido ?? "",
+        tratamiento: m.tratamiento ?? "",
+      };
+    })
+  : [],
       };
       setDetail(norm);
       setFormVals({
@@ -253,7 +272,6 @@ export default function CompleteImageLabels({
       const res = await fetch(`${apiBase}/api/images/${detail.id}`, {
         method: "PUT",
         headers,
-        
         body: JSON.stringify(payload),
       });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
@@ -263,7 +281,7 @@ export default function CompleteImageLabels({
       await fetchIncomplete();        // refresco lista
     } catch (e) {
       console.error(e);
-      setSaveMsg("Error al guardar etiquetas.");
+      setSaveMsg("Hubo un error al guardar etiquetas.");
     } finally {
       setSaving(false);
       setTimeout(() => setSaveMsg(""), 2400);
@@ -298,7 +316,7 @@ export default function CompleteImageLabels({
           </button>
         </div>
 
-        {/* Tu formulario jerárquico en modo simple (region + diagnostico) */}
+        {/* formulario jerárquico simple (region + diagnostico) */}
         <FormularioJerarquico
           campos={["region", "diagnostico"]}
           valores={filters}
@@ -317,13 +335,13 @@ export default function CompleteImageLabels({
       <section className={styles.content}>
         {/* LISTA */}
         <div className={styles.caseList}>
-          {loadingList ? (
-            <div className={styles.skeletonList}>
-              {Array.from({ length: 6 }).map((_, i) => (
-                <div key={i} className={styles.skeletonCard} />
+        {loadingList ? (
+          <div className={styles.skeletonList}>
+            {Array.from({ length: 6 }).map((_, i) => (
+              <div key={i} className={styles.skeletonCard} />
               ))}
-            </div>
-          ) : !hasSearched? (
+          </div> ) : !hasSearched? (
+          
             <div className={styles.empty}>
               <Folder size={28} />
               <p>Usá los filtros y tocá <strong>Buscar</strong> para ver casos con etiquetas incompletas.</p>
@@ -355,9 +373,9 @@ export default function CompleteImageLabels({
                         <Badge label="Dx" value={c.diagnostico} />
                         <Badge label="Fase" value={c.fase} />
                         <Badge label="Etiología" value={c.etiologia} />
-                       <Badge label="Tejido" value={c.tejido} />
-                       <Badge label="Tratamiento" value={c.tratamiento} />
-                        </div>
+                        <Badge label="Tejido" value={c.tejido} />
+                        <Badge label="Tratamiento" value={c.tratamiento} />
+                      </div>
                     </div>
                   </button>
                 </li>
@@ -391,10 +409,25 @@ export default function CompleteImageLabels({
                   detail.media.map((m) => (
                     <figure key={m.id} className={styles.mediaItem}>
                       {m.type === "video" ? (
-                        <video className={styles.mediaThumb} src={m.url} poster={m.thumbUrl || undefined} controls />
-                      ) : (
-                        <img className={styles.mediaThumb} src={m.thumbUrl || m.url} alt={`Media ${m.id}`} loading="lazy" />
-                      )}
+  <video
+    className={styles.mediaThumb}
+    controls
+    playsInline
+    preload="metadata"
+    poster={m.thumbUrl || undefined}
+  >
+    <source src={m.url} type={m.mimeType || guessMimeFromUrl(m.url)} />
+    {/* Fallback accesible */}
+    Tu navegador no puede reproducir este video.
+  </video>
+) : (
+  <img
+    className={styles.mediaThumb}
+    src={m.thumbUrl || m.url}
+    alt={`Media ${m.id}`}
+    loading="lazy"
+  />
+)}
                     </figure>
                   ))
                 ) : (

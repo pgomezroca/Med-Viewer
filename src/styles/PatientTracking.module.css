@@ -1,0 +1,45 @@
+.container {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 16px;
+  color: #0b4c6a;
+}
+
+.searchRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 16px 0;
+}
+
+.input {
+  flex: 1;
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: 2px solid #cde9f6;
+  font-size: 16px;
+}
+
+.clearBtn {
+  background: #f87171;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  padding: 6px 10px;
+  cursor: pointer;
+}
+
+.casosHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: 12px 0;
+}
+
+.caseRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0;
+  border-bottom: 1px solid #e2eef5;
+}

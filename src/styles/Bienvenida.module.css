@@ -3,7 +3,7 @@
   max-width: 1100px;
   margin: 0 auto;
   padding: 16px 18px;
-  background: var(--bg);      /* celeste global (#e0f2fe) */
+  background: var(--bg);  
   color: var(--text);   
 }
 .mainContent{
@@ -31,15 +31,6 @@
   }
 }
 
-/* Fila DNI + botón */
-.patientRow {
-  display: grid;
-  grid-template-columns: 1fr auto; /* input ocupa todo, botón a la derecha */
-  grid-auto-rows: auto;
-  align-items: center;
-  gap: 8px 10px;                   /* fila x col */
-  margin: 8px 0 12px;
-}
 
 /* Subtítulo arriba, ocupando todo el ancho */
 .subtitle {
