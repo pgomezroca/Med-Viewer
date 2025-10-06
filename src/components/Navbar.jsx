@@ -83,14 +83,6 @@ function Navbar() {
                 Configuración
               </button>
 
-              <button
-                className={styles.dropdownItem}
-                onClick={() => { setOpen(false); navigate('/help'); }}
-                role="menuitem"
-              >
-                Centro de ayuda
-              </button>
-
               <div className={styles.divider} />
 
               <button
