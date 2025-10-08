@@ -308,6 +308,21 @@
 .cameraError {
   margin-top: 8px; color: #b91c1c; font-size: .95rem;
 }
+.exportFolderBtn {
+  background: #10b981;
+  border: 1px solid #0ea371;
+  color: #ffffff;
+  padding: 8px 12px;
+  border-radius: 10px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+.exportFolderBtn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 3px 10px rgba(16,185,129,0.25);
+}
+
 
 /* ========= RESPONSIVE ========= */
 @media (max-width: 1024px) {
