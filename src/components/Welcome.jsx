@@ -6,25 +6,26 @@ import { Camera, FolderOpen, Tags, Upload } from "lucide-react";
 
 const actions = [
   {
-    label: "Tomar foto",
+    label: "Tomar foto o video",
     path: "/welcome/take-photo",
     icon: <Camera size={24} />,
-  },
-  {
-    label: "Clasificar fotos",
-    path: "/welcome/import-photo",
-    icon: <Upload size={24} />,
-  },
-  {
-    label: "Archivo por patología",
-    path: "/welcome/recover-photo",
-    icon: <FolderOpen size={24} />,
   },
   {
     label: "Completar etiquetas",
     path: "/welcome/complete-image-labels",
     icon: <Tags size={24} />,
   },
+  {
+    label: "Clasificar fotos viejas",
+    path: "/welcome/import-photo",
+    icon: <Upload size={24} />,
+  },
+  {
+    label: " Mi archivo por patología",
+    path: "/welcome/recover-photo",
+    icon: <FolderOpen size={24} />,
+  },
+  
 ];
 
 const Welcome = () => {
@@ -35,7 +36,10 @@ const Welcome = () => {
     <div className={styles.container}>
       {/* Saludo */}
       <div className={styles.greeting}>
-        <p>Hola, {user?.nombre || "usuario"}</p>
+        <p> Hola,{" "}
+    {user?.nombre
+      ? user.nombre.charAt(0).toUpperCase() + user.nombre.slice(1).toLowerCase()
+      : "Usuario"}</p>
         <h2>¿Qué hacemos hoy?</h2>
       </div>
 

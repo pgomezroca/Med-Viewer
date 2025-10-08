@@ -197,19 +197,6 @@ const RecoverPhoto = () => {
     );
   };
 
-  const handleExportSelected = () => {
-    selectedFiles.forEach((fileUrl, index) => {
-      const link = document.createElement("a");
-      link.href = fileUrl;
-      link.download = `archivo_${index + 1}${
-        fileUrl.endsWith(".mp4") ? ".mp4" : ".jpg"
-      }`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-    });
-  };
-
   // Cámara on/off por estado
   useEffect(() => {
     if (mostrarCamara) {
@@ -233,7 +220,152 @@ const RecoverPhoto = () => {
       };
     }
   }, [selectedCase]);
+   //handler para exportar 
+  // 1) Permiso explícito sobre la carpeta
+async function verifyDirectoryPermission(dirHandle) {
+  try {
+    const opts = { mode: "readwrite" };
+    const q = await dirHandle.queryPermission?.(opts);
+    if (q === "granted") return true;
+    const r = await dirHandle.requestPermission?.(opts);
+    return r === "granted";
+  } catch (e) {
+    console.error("[permiso] error solicitando permiso:", e);
+    return false;
+  }
+}
 
+// 2) Descarga robusta con variantes (token opcional)
+async function fetchBlobAndExtDiag(url, token) {
+  const pickExt = (res) => {
+    const ct = res.headers.get("Content-Type") || "";
+    const m = url.match(/\.(jpg|jpeg|png|webp|gif|bmp|tif|tiff|mp4|mov|avi|mkv|webm)(?:\?|$)/i);
+    if (ct.startsWith("image/")) return "." + (ct.split("/")[1]?.split(";")[0] || "jpg");
+    if (ct.startsWith("video/")) return "." + (ct.split("/")[1]?.split(";")[0] || "mp4");
+    return m ? "." + m[1].toLowerCase() : ".bin";
+  };
+
+  const tries = [
+    token ? { headers: { Authorization: `Bearer ${token}` }, credentials: "include", mode: "cors", cache: "no-store" } : null,
+    token ? { headers: { Authorization: `Bearer ${token}` }, mode: "cors", cache: "no-store" } : null,
+    { credentials: "include", mode: "cors", cache: "no-store" },
+    { mode: "cors", cache: "no-store" },
+  ].filter(Boolean);
+
+  let lastErr;
+  for (const opts of tries) {
+    console.log("[fetch] probando", url, opts);
+    try {
+      const res = await fetch(url, opts);
+      console.log("[fetch] status", res.status, "type", res.type);
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      if (res.type === "opaque") throw new Error("opaque response (CORS no habilitado)");
+      const blob = await res.blob();
+      const ext = pickExt(res);
+      return { blob, ext };
+    } catch (e) {
+      console.warn("[fetch] fallo variante:", e);
+      lastErr = e;
+    }
+  }
+  throw lastErr || new Error("Failed to fetch");
+}
+
+const handleExportToFolder = async () => {
+  try {
+    console.log("== EXPORT START ==");
+    const selection = selectedFiles || [];
+    if (!selection.length) {
+      alert("No hay archivos seleccionados.");
+      return;
+    }
+
+    if (!window.showDirectoryPicker) {
+      alert("Tu navegador no permite elegir carpeta (usá Chrome/Edge/Brave con HTTPS o localhost).");
+      return;
+    }
+
+    console.log("[step] elegir carpeta…");
+    const baseDir = await window.showDirectoryPicker({
+      id: "med_viewer_export",
+      mode: "readwrite",
+      startIn: "downloads",
+    });
+    console.log("[ok] carpeta elegida:", baseDir);
+
+    console.log("[step] verificar permiso…");
+    const okPerm = await verifyDirectoryPermission(baseDir);
+    console.log("[permiso]", okPerm);
+    if (!okPerm) {
+      alert("No concediste permiso de escritura sobre la carpeta.");
+      return;
+    }
+
+    console.log("[step] pedir nombre de subcarpeta…");
+    let folderName = window.prompt(
+      "Nombre de la carpeta donde guardar:",
+      `export_${new Date().toISOString().slice(0, 10)}`
+    );
+    if (!folderName || !folderName.trim()) {
+      alert("Debés ingresar un nombre de carpeta.");
+      return;
+    }
+    folderName = folderName
+      .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+      .replace(/[^a-zA-Z0-9_-]+/g, "_");
+
+    console.log("[step] crear/abrir subcarpeta:", folderName);
+    let targetDir = baseDir;
+    try {
+      targetDir = await baseDir.getDirectoryHandle(folderName, { create: true });
+      console.log("[ok] subcarpeta lista");
+    } catch (e) {
+      console.warn("[warn] no pude crear subcarpeta, uso baseDir:", e);
+      targetDir = baseDir;
+    }
+
+    const token = localStorage.getItem("token");
+
+    // Guardado con diagnóstico
+    for (let i = 0; i < selection.length; i++) {
+      const fileUrl = selection[i];
+      console.log(`-- archivo ${i + 1}/${selection.length}`, fileUrl);
+
+      console.log("[step] descargando…");
+      const { blob, ext } = await fetchBlobAndExtDiag(fileUrl, token);
+      console.log("[ok] descargado, ext:", ext, "size:", blob.size);
+
+      console.log("[step] creando fileHandle…");
+      const fileHandle = await targetDir.getFileHandle(
+        `${String(i + 1).padStart(3, "0")}${ext}`,
+        { create: true }
+      );
+      console.log("[ok] fileHandle creado:", fileHandle);
+
+      console.log("[step] escribiendo…");
+      const writable = await fileHandle.createWritable();
+      await writable.write(blob);
+      await writable.close();
+      console.log("[ok] escrito");
+    }
+
+    alert("¡Listo! Archivos guardados en la carpeta elegida ✅");
+    console.log("== EXPORT DONE ==");
+  } catch (err) {
+    console.error("❌ Error al exportar:", err);
+    if (err?.message?.includes("opaque")) {
+      alert("CORS bloquea la lectura de la imagen (respuesta 'opaque'). Ajustá CORS o usá URL pública/presignada.");
+    } else if (err?.name === "NotAllowedError" || /permission|denied/i.test(err?.message || "")) {
+      alert("El navegador bloqueó la escritura por permisos. Reintentá y aceptá el acceso a la carpeta.");
+    } else if (/HTTP\s\d+/.test(err?.message || "")) {
+      alert(`Descarga falló: ${err.message}. Verificá que la URL sea válida y accesible.`);
+    } else {
+      alert("No se pudo completar la exportación. Revisá permisos, HTTPS/localhost y CORS/Auth. Mirá la consola para detalles.");
+    }
+  }
+};
+
+  
   // =============================
   // RENDER
   // =============================
@@ -397,13 +529,12 @@ const RecoverPhoto = () => {
 
               {/* Exportar seleccionados */}
               {selectedFiles.length > 0 && (
-                <button
-                  onClick={handleExportSelected}
-                  className={`${styles.actionBtn} ${styles.exportBtn}`}
+                <button onClick={handleExportToFolder}
+                 className={`${styles.actionBtn} ${styles.exportFolderBtn}`}
                 >
-                  📥 Exportar seleccionados
-                </button>
-              )}
+              📁 Exportar a carpeta
+              </button>
+               )}
             </div>
 
             {/* Galería compacta del caso */}
