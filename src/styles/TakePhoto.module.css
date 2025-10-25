@@ -409,7 +409,9 @@ h2{
   }
 
   .cameraContainer {
-    height: 100dvh; /* aseguramos altura real en mobile también */
+    height: 100dvh; 
+    padding-bottom:env(safe-area-inset-bottom, 12px);
+  
   }
 
   video {
