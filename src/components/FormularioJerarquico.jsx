@@ -20,6 +20,16 @@ const FormularioJerarquico = ({ campos = [], onChange, valores = {} }) => {
   const [source, setSource] = useState("default");
 
   useEffect(() => {
+    if ('dni' in valores) setDni(valores.dni || '');
+    if ('region' in valores) setRegion(valores.region || '');
+    if ('etiologia' in valores) setEtiologia(valores.etiologia || '');
+    if ('tejido' in valores) setTejido(valores.tejido || '');
+    if ('diagnostico' in valores) setDiagnostico(valores.diagnostico || '');
+    if ('tratamiento' in valores) setTratamiento(valores.tratamiento || '');
+    if ('fase' in valores) setFase(valores.fase || '');
+  }, [valores]);
+
+  useEffect(() => {
     const fetchEstructura = async () => {
       try {
         const res = await fetch(`${import.meta.env.VITE_API_URL}/api/formulario-jerarquico`, {
