@@ -1,34 +1,68 @@
-// src/components/FormularioJerarquico.jsx
 import React, { useState, useEffect, useMemo } from 'react';
-import { estructuraJerarquica } from '../data/estructura-jerarquica';
+import { estructuraJerarquica as estructuraDefault } from '../data/estructura-jerarquica';
 import { extraerDiagnosticosPorRegion } from '../helpers/extraerDiagnosticosPorRegion';
 import styles from '../styles/FormularioJerarquico.module.css';
 
 const FormularioJerarquico = ({ campos = [], onChange, valores = {} }) => {
-  // 🔒 Normalizo campos para evitar "includes is not a function"
   const camposList = Array.isArray(campos) ? campos : [];
 
-  // Estado local
-  const [dni, setDni]                 = useState(valores.dni || '');
-  const [region, setRegion]           = useState(valores.region || '');
-  const [etiologia, setEtiologia]     = useState(valores.etiologia || '');
-  const [tejido, setTejido]           = useState(valores.tejido || '');
+  // Estados de valores del form
+  const [dni, setDni] = useState(valores.dni || '');
+  const [region, setRegion] = useState(valores.region || '');
+  const [etiologia, setEtiologia] = useState(valores.etiologia || '');
+  const [tejido, setTejido] = useState(valores.tejido || '');
   const [diagnostico, setDiagnostico] = useState(valores.diagnostico || '');
   const [tratamiento, setTratamiento] = useState(valores.tratamiento || '');
-  const [fase, setFase]               = useState(valores.fase || '');
+  const [fase, setFase] = useState(valores.fase || '');
 
-  // Sync de valores entrantes (evita doble useEffect)
+  // 🔹 Estructura dinámica
+  const [estructura, setEstructura] = useState(estructuraDefault);
+  const [source, setSource] = useState("default");
+
   useEffect(() => {
-    if ('dni' in valores) setDni(valores.dni || '');
-    if ('region' in valores) setRegion(valores.region || '');
-    if ('etiologia' in valores) setEtiologia(valores.etiologia || '');
-    if ('tejido' in valores) setTejido(valores.tejido || '');
-    if ('diagnostico' in valores) setDiagnostico(valores.diagnostico || '');
-    if ('tratamiento' in valores) setTratamiento(valores.tratamiento || '');
-    if ('fase' in valores) setFase(valores.fase || '');
-  }, [valores]);
+    const fetchEstructura = async () => {
+      try {
+        const res = await fetch(`${import.meta.env.VITE_API_URL}/api/formulario-jerarquico`, {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        });
+        if (!res.ok) throw new Error("Error al obtener formulario personalizado");
 
-  // Propago cambios al padre (incluye ETT)
+        const data = await res.json();
+        if (data?.structure?.length) {
+          const estructuraFinal = {};
+          data.structure.forEach((region) => {
+            estructuraFinal[region.nombre] = {};
+            region.etiologias?.forEach((eti) => {
+              estructuraFinal[region.nombre][eti.nombre] = {};
+              eti.tejidos?.forEach((tej) => {
+                estructuraFinal[region.nombre][eti.nombre][tej.nombre] = {};
+                tej.diagnosticos?.forEach((dx) => {
+                  estructuraFinal[region.nombre][eti.nombre][tej.nombre][dx.nombre] =
+                    dx.tratamientos?.map((t) => t.nombre) || [];
+                });
+              });
+            });
+          });
+
+          setEstructura(estructuraFinal);
+          setSource("user");
+        } else {
+          setEstructura(estructuraDefault);
+          setSource("default");
+        }
+      } catch (err) {
+        console.error("Error cargando estructura jerárquica personalizada:", err);
+        setEstructura(estructuraDefault);
+      }
+    };
+
+    fetchEstructura();
+  }, []);
+
+  // Sincronización
   useEffect(() => {
     const payload = {};
     if (camposList.includes('dni')) payload.dni = dni;
@@ -39,86 +73,41 @@ const FormularioJerarquico = ({ campos = [], onChange, valores = {} }) => {
     if (camposList.includes('tratamiento')) payload.tratamiento = tratamiento;
     if (camposList.includes('fase')) payload.fase = fase;
     onChange?.(payload);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [dni, region, etiologia, tejido, diagnostico, tratamiento, fase, camposList.join('|')]);
+  }, [dni, region, etiologia, tejido, diagnostico, tratamiento, fase]);
 
-  // ¿Modo simple? (solo region+diagnostico)
+  // Detección de modo simple
   const esSimple = useMemo(() => {
-    return camposList.includes('region') &&
-           camposList.includes('diagnostico') &&
-           !camposList.includes('etiologia') &&
-           !camposList.includes('tejido') &&
-           !camposList.includes('tratamiento'); // si simple, no debería pedir tratamiento
+    return (
+      camposList.includes('region') &&
+      camposList.includes('diagnostico') &&
+      !camposList.includes('etiologia') &&
+      !camposList.includes('tejido') &&
+      !camposList.includes('tratamiento')
+    );
   }, [camposList]);
 
-  // Helpers seguros para leer estructura
-  const regiones = useMemo(() => Object.keys(estructuraJerarquica || {}), []);
-  const etiologias = useMemo(() => {
-    if (!region) return [];
-    const nodo = estructuraJerarquica?.[region];
-    return nodo ? Object.keys(nodo) : [];
-  }, [region]);
-
-  const tejidos = useMemo(() => {
-    if (!region || !etiologia) return [];
-    const nodo = estructuraJerarquica?.[region]?.[etiologia];
-    return nodo ? Object.keys(nodo) : [];
-  }, [region, etiologia]);
-
+  // Derivaciones
+  const regiones = useMemo(() => Object.keys(estructura || {}), [estructura]);
+  const etiologias = useMemo(() => (region ? Object.keys(estructura?.[region] || {}) : []), [region, estructura]);
+  const tejidos = useMemo(() => (region && etiologia ? Object.keys(estructura?.[region]?.[etiologia] || {}) : []), [region, etiologia, estructura]);
   const diagnosticos = useMemo(() => {
     if (!camposList.includes('diagnostico')) return [];
-    if (esSimple) {
-      return region ? extraerDiagnosticosPorRegion(estructuraJerarquica, region) : [];
-    }
+    if (esSimple) return region ? extraerDiagnosticosPorRegion(estructura, region) : [];
     if (!region || !etiologia || !tejido) return [];
-    const nodo = estructuraJerarquica?.[region]?.[etiologia]?.[tejido];
-    return nodo ? Object.keys(nodo) : [];
-  }, [camposList, esSimple, region, etiologia, tejido]);
-
+    return Object.keys(estructura?.[region]?.[etiologia]?.[tejido] || {});
+  }, [camposList, esSimple, region, etiologia, tejido, estructura]);
   const tratamientos = useMemo(() => {
-    // Tratamiento solo tiene sentido en modo completo (no simple)
     if (!camposList.includes('tratamiento') || esSimple) return [];
     if (!region || !etiologia || !tejido || !diagnostico) return [];
-    const nodo = estructuraJerarquica?.[region]?.[etiologia]?.[tejido]?.[diagnostico];
+    const nodo = estructura?.[region]?.[etiologia]?.[tejido]?.[diagnostico];
+    return Array.isArray(nodo) ? nodo : [];
+  }, [camposList, esSimple, region, etiologia, tejido, diagnostico, estructura]);
 
-    // Normalizo varias formas posibles:
-    // 1) Array directo
-    if (Array.isArray(nodo)) return nodo;
-
-    // 2) Objeto con { tratamientos: [...] }
-    if (nodo && Array.isArray(nodo.tratamientos)) return nodo.tratamientos;
-
-    // 3) Objeto con values string
-    if (nodo && typeof nodo === 'object') {
-      const vals = Object.values(nodo).filter(v => typeof v === 'string');
-      if (vals.length) return vals;
-    }
-    return [];
-  }, [camposList, esSimple, region, etiologia, tejido, diagnostico]);
-
-  // Handlers con reseteos en cascada
-  const onChangeRegion = (v) => {
-    setRegion(v);
-    setEtiologia('');
-    setTejido('');
-    setDiagnostico('');
-    setTratamiento('');
-  };
-  const onChangeEtiologia = (v) => {
-    setEtiologia(v);
-    setTejido('');
-    setDiagnostico('');
-    setTratamiento('');
-  };
-  const onChangeTejido = (v) => {
-    setTejido(v);
-    setDiagnostico('');
-    setTratamiento('');
-  };
-  const onChangeDiagnostico = (v) => {
-    setDiagnostico(v);
-    setTratamiento('');
-  };
+  // Handlers cascada
+  const onChangeRegion = (v) => { setRegion(v); setEtiologia(''); setTejido(''); setDiagnostico(''); setTratamiento(''); };
+  const onChangeEtiologia = (v) => { setEtiologia(v); setTejido(''); setDiagnostico(''); setTratamiento(''); };
+  const onChangeTejido = (v) => { setTejido(v); setDiagnostico(''); setTratamiento(''); };
+  const onChangeDiagnostico = (v) => { setDiagnostico(v); setTratamiento(''); };
 
   return (
     <div className={styles.formContainer}>
@@ -161,7 +150,6 @@ const FormularioJerarquico = ({ campos = [], onChange, valores = {} }) => {
         </select>
       )}
 
-      {/* Tratamiento solo en modo completo y con todo el contexto */}
       {camposList.includes('tratamiento') && region && etiologia && tejido && diagnostico && !esSimple && (
         <select value={tratamiento} onChange={(e) => setTratamiento(e.target.value)}>
           <option value="">Seleccioná tratamiento</option>
