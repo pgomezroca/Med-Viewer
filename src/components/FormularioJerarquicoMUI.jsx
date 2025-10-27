@@ -1,32 +1,60 @@
-// src/components/FormularioJerarquicoMUI.jsx
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Autocomplete from "@mui/material/Autocomplete";
 import TextField from "@mui/material/TextField";
 import Box from "@mui/material/Box";
-import { estructuraJerarquica } from "../data/estructura-jerarquica.js";
+import { estructuraJerarquica as estructuraDefault } from "../data/estructura-jerarquica";
 import { extraerDiagnosticosPorRegion } from "../helpers/extraerDiagnosticosPorRegion";
 
 const FormularioJerarquicoMUI = ({ onChange }) => {
+  const [estructura, setEstructura] = useState(estructuraDefault);
   const [region, setRegion] = useState(null);
   const [diagnostico, setDiagnostico] = useState(null);
 
-  // Todas las regiones disponibles
-  const regiones = Object.keys(estructuraJerarquica);
+  useEffect(() => {
+    const fetchEstructura = async () => {
+      try {
+        const res = await fetch(`${import.meta.env.VITE_API_URL}/api/formulario-jerarquico`, {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        });
+        const data = await res.json();
+        if (data?.structure?.length) {
+          const estructuraFinal = {};
+          data.structure.forEach((region) => {
+            estructuraFinal[region.nombre] = {};
+            region.etiologias?.forEach((eti) => {
+              estructuraFinal[region.nombre][eti.nombre] = {};
+              eti.tejidos?.forEach((tej) => {
+                estructuraFinal[region.nombre][eti.nombre][tej.nombre] = {};
+                tej.diagnosticos?.forEach((dx) => {
+                  estructuraFinal[region.nombre][eti.nombre][tej.nombre][dx.nombre] =
+                    dx.tratamientos?.map((t) => t.nombre) || [];
+                });
+              });
+            });
+          });
+          setEstructura(estructuraFinal);
+        }
+      } catch {
+        setEstructura(estructuraDefault);
+      }
+    };
+    fetchEstructura();
+  }, []);
 
-  // Diagnósticos sugeridos a partir de la región (usando tu helper ✅)
-  const diagnosticos = region
-    ? extraerDiagnosticosPorRegion(estructuraJerarquica, region)
-    : [];
+  const regiones = Object.keys(estructura || {});
+  const diagnosticos = region ? extraerDiagnosticosPorRegion(estructura, region) : [];
 
   const handleChange = (campo, valor) => {
     if (campo === "region") {
       setRegion(valor);
-      setDiagnostico(null); // reset diagnóstico al cambiar región
+      setDiagnostico(null);
     } else if (campo === "diagnostico") {
       setDiagnostico(valor);
     }
 
-    // Avisar al padre (RecoverPhoto)
     onChange?.({
       region: campo === "region" ? valor : region,
       diagnostico: campo === "diagnostico" ? valor : diagnostico,
@@ -46,7 +74,6 @@ const FormularioJerarquicoMUI = ({ onChange }) => {
         margin: "0 auto",
       }}
     >
-      {/* REGION */}
       <Autocomplete
         options={regiones}
         value={region}
@@ -56,7 +83,6 @@ const FormularioJerarquicoMUI = ({ onChange }) => {
         )}
       />
 
-      {/* DIAGNOSTICO */}
       <Autocomplete
         options={diagnosticos}
         value={diagnostico}

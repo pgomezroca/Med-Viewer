@@ -19,6 +19,8 @@ import ResetPassword from './components/ResetPassword';
 import PasswordResetSuccess from './components/PasswordResetSuccess';
 import Profile from './components/Profile';
 import PatientTracking from './components/PatientTracking';
+import Settings from './components/Settings';
+import ArmadorJerarquico from './components/ArmadorJerarquico';
 
 function App() {
   return (
@@ -35,6 +37,10 @@ function App() {
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/reset-password" element={<ResetPassword />} />
         <Route path="/password-reset-success" element={<PasswordResetSuccess />} />
+
+        {/* CONFIGURACIÓN */}
+        <Route path="/settings" element={<Settings />} />
+        <Route path="/settings/formulario-jerarquico" element={<ArmadorJerarquico />} />
         
         {/* APP PRIVADA CON LAYOUT */}
         <Route path="/welcome" element={<MainLayout />}>

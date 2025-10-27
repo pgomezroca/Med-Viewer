@@ -1,0 +1,145 @@
+:root {
+  --bg: #e0f2fe;
+  --text: #0b4c6a;
+  --accent: #0284c7;
+  --muted: #475569;
+  --bs-primary: #0b4c6a;
+}
+
+.container {
+  display: flex;
+  height: 100vh;
+  background-color: var(--bg);
+  color: var(--text);
+  font-family: "Inter", sans-serif;
+}
+
+/* Sidebar */
+.sidebar {
+  width: 240px;
+  background-color: var(--bs-primary);
+  color: white;
+  display: flex;
+  flex-direction: column;
+  padding-top: 1rem;
+  box-shadow: 2px 0 8px rgba(0, 0, 0, 0.1);
+}
+
+.logoSection {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.menu {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.menuItem {
+  padding: 1rem 1.5rem;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.menuItem:hover {
+  background-color: #0d5e8a;
+}
+
+/* Content */
+.content {
+  flex: 1;
+  padding: 3rem;
+  overflow-y: auto;
+}
+
+.section {
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+  padding: 2rem;
+  max-width: 700px;
+  margin: 0 auto;
+}
+
+.section h3 {
+  margin-bottom: 1rem;
+}
+
+.description {
+  color: var(--muted);
+  font-size: 0.95rem;
+  line-height: 1.5;
+  margin-bottom: 2rem;
+}
+
+.btnPrimary {
+  background-color: var(--accent);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 0.8rem 1.4rem;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background-color 0.2s, transform 0.1s;
+}
+
+.btnPrimary:hover {
+  background-color: #0369a1;
+  transform: scale(1.02);
+}
+
+.armadorContainer {
+  padding: 2rem;
+  background-color: var(--bg);
+  min-height: 100vh;
+  color: var(--text);
+}
+
+.formContainer {
+  margin: 1rem 0 2rem;
+}
+
+.formGrid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.input {
+  flex: 1;
+  padding: 0.6rem 1rem;
+  border-radius: 4px;
+  border: 1px solid #ccc;
+}
+
+.feedback {
+  color: var(--accent);
+  font-weight: 600;
+  margin-bottom: 1rem;
+}
+
+.previewSection {
+  background: #fff;
+  padding: 1.5rem;
+  border-radius: 8px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+}
+
+.treeList {
+  list-style-type: none;
+  padding-left: 1rem;
+}
+
+.treeList li {
+  margin-bottom: 0.3rem;
+}
+
+.deleteBtn {
+  margin-left: 0.5rem;
+  background: none;
+  border: none;
+  color: crimson;
+  cursor: pointer;
+  font-size: 1rem;
+}
