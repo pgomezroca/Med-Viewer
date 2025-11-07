@@ -6,22 +6,32 @@ import { Camera, FolderOpen, Tags, Upload } from "lucide-react";
 
 const actions = [
   {
-    label: "Tomar foto o video",
-    path: "/welcome/take-photo",
+    label: "Caso Nuevo",
+    subtitle:"",
+    path: "/welcome/patient-tracking",
     icon: <Camera size={24} />,
   },
   {
-    label: "Completar etiquetas",
+    label: "Completar casos",
+    subtitle:"Agrega las etiquetas",
     path: "/welcome/complete-image-labels",
     icon: <Tags size={24} />,
   },
+  /*{
+    label: "Agregar fotos a los casos",
+    subtitle:"en construccion",
+    path: "/welcome/import-photo",
+    icon: <Upload size={24} />,
+  },*/
   {
-    label: "Clasificar fotos viejas",
+    label: "Ordenar mis archivos",
+    subtitle:"Carga fotos y etiquetalas para cargar casos antiguos",
     path: "/welcome/import-photo",
     icon: <Upload size={24} />,
   },
   {
-    label: " Mi archivo por patología",
+    label: " Buscar mis casos",
+    subtitle:"Encontra casos por tipo de lesion o diagnostico",
     path: "/welcome/recover-photo",
     icon: <FolderOpen size={24} />,
   },
@@ -40,7 +50,7 @@ const Welcome = () => {
     {user?.nombre
       ? user.nombre.charAt(0).toUpperCase() + user.nombre.slice(1).toLowerCase()
       : "Usuario"}</p>
-        <h2>¿Qué hacemos hoy?</h2>
+        <p>¿Qué hacemos hoy?</p>
       </div>
 
       {/* Acciones rápidas */}
@@ -48,10 +58,7 @@ const Welcome = () => {
         className={`${styles.actionsGrid} ${styles.actionsHero}`}
         role="navigation"
       >
-        <div className={styles.actionsHeader}>
-          <h6>Acciones rápidas</h6>
-        </div>
-
+       
         {actions.map((a) => (
           <button
             key={a.path}
@@ -59,8 +66,11 @@ const Welcome = () => {
             onClick={() => navigate(a.path)}
             aria-label={a.label}
           >
-            <span className={styles.icon}>{a.icon}</span>
-            <span className={styles.actionLabel}>{a.label}</span>
+            <div className={styles.textContent}>
+              <span className={styles.actionLabel}>{a.label}</span>
+              <span className={styles.actionSubtitle}>{a.subtitle}</span>
+            </div>
+           <div className={styles.iconRight}>{a.icon}</div>
           </button>
         ))}
       </div>

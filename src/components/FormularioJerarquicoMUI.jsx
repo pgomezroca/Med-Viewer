@@ -64,7 +64,7 @@ const FormularioJerarquicoMUI = ({ onChange }) => {
   return (
     <Box
       sx={{
-        backgroundColor: "#e0f2fe",
+        backgroundColor: "#FDFDFD",
         padding: 3,
         borderRadius: 2,
         display: "flex",

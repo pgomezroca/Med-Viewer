@@ -4,6 +4,8 @@ import { useNavigate } from "react-router-dom";
 import styles from "../styles/PatientTracking.module.css";
 import SplitButton from "./SplitButton";
 import CaseGallery from "./CaseGallery";
+import { useSearchParams } from "react-router-dom";
+import playIcon from "../assets/play.png";
 
 const PatientTracking = () => {
   const navigate = useNavigate();
@@ -16,17 +18,36 @@ const PatientTracking = () => {
   const [error, setError] = useState("");
   const [queried, setQueried] = useState(false);
   const [showCasesList, setShowCasesList] = useState(true);
-
+  const [nombre, setNombre] = useState("");
+  const [apellido, setApellido] = useState("");
   // 🎞️ Estado para la galería (igual que en Welcome)
   const [galleryOpen, setGalleryOpen] = useState(false);
   const [galleryCaseId, setGalleryCaseId] = useState(null);
   const [galleryTitle, setGalleryTitle] = useState("");
+  const [creatingNewCase, setCreatingNewCase] = useState(false);
+  const [galleryRegion, setGalleryRegion] = useState("");
+const [galleryDiagnostico, setGalleryDiagnostico] = useState("");
+const [galleryDni, setGalleryDni] = useState("");
+const [searchParams] = useSearchParams();
 
-  const openGalleryByCase = (caseId, diagnostico, fecha) => {
-    setGalleryCaseId(caseId);
-    setGalleryTitle(`Caso ${caseId} — ${fecha} — ${diagnostico}`);
-    setGalleryOpen(true);
-  };
+useEffect(() => {
+  const dniParam = searchParams.get("dni");
+
+  if (dniParam) {
+    setDni(dniParam);
+    buscarCasosPorDNI(dniParam);
+  }
+}, [searchParams]);
+
+
+const openGalleryByCase = (caseId, diagnostico, fecha, regionValue, dniPaciente) => {
+  setGalleryCaseId(caseId);
+  setGalleryTitle(`Caso ${caseId} — ${fecha} — ${diagnostico}`);
+  setGalleryRegion(regionValue || "");     
+  setGalleryDiagnostico(diagnostico || ""); 
+  setGalleryDni(dniPaciente || "");        
+  setGalleryOpen(true);
+};
 
   const buscarCasosPorDNI = async () => {
     if (!dni) return;
@@ -92,7 +113,7 @@ const PatientTracking = () => {
 
   return (
     <div className={styles.container}>
-      <h2>Seguimiento por paciente</h2>
+      <p>Identifiquemos al paciente</p>
 
       {/* Entrada DNI */}
       <div className={styles.searchRow}>
@@ -125,22 +146,74 @@ const PatientTracking = () => {
         <div className={styles.casosList}>
           {!hasResults ? (
             <div className={styles.emptyNote}>
-              No se encontraron casos para este paciente.
+            <p>No se encontraron casos para este paciente.</p>
+          
+            <div className={styles.newPatientBox}>
+              <p>¿Querés crear un nuevo paciente con este DNI?</p>
+          
+              <div className={styles.casosContainer}>
+              
+                <p className={styles.dniInfo}>DNI: {dni}</p>
+
+                <input
+                  type="text"
+                  placeholder="Nombre (opcional)"
+                  value={nombre}
+                  onChange={(e) => setNombre(e.target.value)}
+                  className={styles.input}
+                />
+                <input
+                  type="text"
+                  placeholder="Apellido (opcional)"
+                  value={apellido}
+                  onChange={(e) => setApellido(e.target.value)}
+                  className={styles.input}
+                />
+                <button
+                  className={styles.Button}
+                  onClick={() => {
+                    const params = new URLSearchParams({ dni, from: "patient-tracking" });
+                    if (nombre) params.append("nombre", nombre);
+                    if (apellido) params.append("apellido", apellido);
+                    navigate(`/welcome/take-photo?${params.toString()}`);
+                  }}
+                >
+                  Nuevo paciente
+                </button>
+              </div>
             </div>
+          </div>
+          
           ) : (
             <>
               <div className={styles.casosHeader}>
-                <h4>Casos previos para DNI {dni}</h4>
+                <p> Se encontraron casos previos para el paciente DNI {dni}</p>
                 <button
-                  className={styles.toggleBtn}
+                  className={`${styles.toggleBtn} ${showCasesList ? styles.rotated : ""}`}
                   onClick={() => setShowCasesList((v) => !v)}
                   aria-expanded={showCasesList}
                 >
-                  {showCasesList ? "▲" : "▼"}
+                  <img src={playIcon} alt="toggle" className={styles.icon} />
                 </button>
               </div>
+                 {/* 🆕 Nuevo caso */}
+              <div className={styles.newCaseBox}>
+                <button className={styles.Button}
+                 onClick={() => {
+                  setCreatingNewCase(true);
+                 const qs = new URLSearchParams({
+                  dni,
+                  from: "patient-tracking",
+                  mode: "foto",
+                 }).toString();
+                 navigate(`/welcome/take-photo?${qs}`);
+                  }}
+                 >
+                  Nuevo caso
+               </button>
+             </div>
 
-              {showCasesList && (
+             {!creatingNewCase && showCasesList &&  (
                 <div className={styles.casosContainer}>
                   {casos.map((c) => {
                     const count =
@@ -206,7 +279,9 @@ const PatientTracking = () => {
                                   openGalleryByCase(
                                     c.id,
                                     c.diagnostico,
-                                    c.fecha
+                                    c.fecha,
+                                    c.region, 
+                                    dni      
                                   ),
                               },
                             ]}
@@ -227,6 +302,9 @@ const PatientTracking = () => {
         open={galleryOpen}
         caseId={galleryCaseId}
         title={galleryTitle}
+        diagnostico={galleryDiagnostico}
+        region={galleryRegion}
+        dni={galleryDni || dni}
         onClose={() => setGalleryOpen(false)}
       />
     </div>

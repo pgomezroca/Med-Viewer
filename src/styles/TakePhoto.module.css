@@ -13,7 +13,32 @@ h2{
   justify-content: space-between;
   margin: 16px 0;
 }
+.ContinuarButton {
+  background: #8bbbd9;           /* celeste más oscuro */
+  border: none;
+  border-radius: 14px;
+  padding: 14px 28px;
+  color: white;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s ease, transform 0.1s ease;
+}
+.ContinuarButton:hover {
+  background: #7aaac7;
+  transform: translateY(-1px);
+}
 
+.ContinuarButton:active {
+  transform: scale(0.98);
+}
+.backButton  {
+  background: none !important;
+  border: none !important;
+  box-shadow: none !important;
+  padding: 0;
+  margin: 0;
+}
 .casosContainer {
   max-height: 40vh;
   overflow-y: auto;
@@ -23,20 +48,79 @@ h2{
 
 .listaCasos {
   display: flex;
-  flex-wrap: wrap;
+  flex-direction: column;
   gap: 10px;
-  justify-content: center;
+  margin-top:10px ;
+  width: 100%;
+
 }
+.casoWrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px; /* separa la tarjeta de la flecha */
+}
+
 
 .casoButton {
-  flex: 0 0 45%;
-  padding: 8px;
-  background: #eee;
+  width: 100%;
+  background: #d0e4f0;           /* 💙 celeste más oscuro */
   border: none;
-  border-radius: 6px;
+  border-radius: 14px;
+  padding: 14px 18px;
+  color: #0b4c6a;
+  text-align: left;
+  font-size: 15px;
+  font-weight: 500;
   cursor: pointer;
+  transition: background 0.25s ease, transform 0.1s ease;
+}
+.casoHeader {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 6px;
+  font-weight: 600;
 }
 
+.casoFecha {
+  color: #4b6a7a;
+  font-size: 14px;
+}
+
+.casoDiagnostico {
+  font-weight: 600;
+  color: #0b4c6a;
+  font-size: 15px;
+}
+
+.casoCount {
+  font-size: 13.5px;
+  color: #5c7180;
+}
+.casoFecha {
+  font-size: 14px;
+  color: #4b6a7a;
+}
+.casoIconWrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.casoArrowIcon {
+  color: #0b4c6a;
+  border: 1.8px solid #0b4c6a;  /* borde redondo */
+  border-radius: 50%;
+  padding: 4px;
+  width: 22px;
+  height: 22px;
+  transition: background 0.2s ease, transform 0.1s ease;
+}
+
+.casoArrowIcon:hover {
+  background: #e4f0f7;
+  transform: translateY(-1px);
+}
 .sinCasos {
   color: #666;
   text-align: center;
@@ -160,20 +244,7 @@ h2{
   margin-top: 24px;
 }
 
-/* Reutilizamos la anterior */
-.ContinuarButton {
-  width: 60%;
-  max-width: 400px;
-  padding: 12px 20px;
-  font-size: 16px;
-  border-radius: 8px;
-  border: 1.5px solid var(--color-accent);
-  background-color: white;
-  color: var(--color-text);
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
-  transition: background-color 0.3s ease;
-  cursor: pointer;
-}
+
 
 /*carrousel*/
 .videoCarrusel {
@@ -295,7 +366,7 @@ h2{
   padding: 12px 8px;
   
   overflow-y: auto;
-  background-color:#e0f2fe;;
+  background-color:#FDFDFD;;
   color: white;
   text-align: center;
 }
@@ -420,7 +491,7 @@ h2{
     object-fit: contain;
   }
 
-  .ContinuarButton,
+  
   .VolverButton {
     width: 80%;
     font-size: 14px;
@@ -457,6 +528,14 @@ h2{
   .previewVideo {
     width: 100%;
     height: auto;
+  }
+  .casoButton {
+    font-size: 14px;
+    padding: 12px 14px;
+  }
+  .casoHeader {
+    flex-direction: column;
+    gap: 2px;
   }
 }
 

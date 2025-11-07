@@ -121,59 +121,81 @@ const FormularioJerarquico = ({ campos = [], onChange, valores = {} }) => {
 
   return (
     <div className={styles.formContainer}>
-      {camposList.includes('dni') && (
-        <input
-          type="text"
-          value={dni}
-          onChange={(e) => setDni(e.target.value)}
-          placeholder="DNI del paciente"
-          maxLength={8}
-          className={styles.dniInput}
-        />
+       {camposList.includes('dni') && (
+        <div className={styles.inputGroup}>
+          
+          <input
+            type="text"
+            value={dni}
+            onChange={(e) => setDni(e.target.value)}
+            placeholder="DNI del paciente"
+            maxLength={8}
+          />
+        </div>
       )}
 
-      {camposList.includes('region') && (
-        <select value={region} onChange={(e) => onChangeRegion(e.target.value)}>
-          <option value="">Seleccioná región</option>
-          {regiones.map(r => <option key={r} value={r}>{r}</option>)}
-        </select>
+      
+
+    {camposList.includes('region') && (
+        <div className={styles.inputGroup}>
+          
+          <select value={region} onChange={(e) => onChangeRegion(e.target.value)}>
+            <option value="">Seleccioná región</option>
+            {regiones.map(r => <option key={r} value={r}>{r}</option>)}
+          </select>
+        </div>
+      )}   
+
+    {camposList.includes('etiologia') && region && !esSimple && (
+        <div className={styles.inputGroup}>
+          
+          <select value={etiologia} onChange={(e) => onChangeEtiologia(e.target.value)}>
+            <option value="">Seleccioná etiología</option>
+            {etiologias.map(e => <option key={e} value={e}>{e}</option>)}
+          </select>
+        </div>
       )}
 
-      {camposList.includes('etiologia') && region && !esSimple && (
-        <select value={etiologia} onChange={(e) => onChangeEtiologia(e.target.value)}>
-          <option value="">Seleccioná etiología</option>
-          {etiologias.map(e => <option key={e} value={e}>{e}</option>)}
-        </select>
+   {camposList.includes('tejido') && region && etiologia && !esSimple && (
+        <div className={styles.inputGroup}>
+          
+          <select value={tejido} onChange={(e) => onChangeTejido(e.target.value)}>
+            <option value="">Seleccioná tejido</option>
+            {tejidos.map(t => <option key={t} value={t}>{t}</option>)}
+          </select>
+        </div>
       )}
 
-      {camposList.includes('tejido') && region && etiologia && !esSimple && (
-        <select value={tejido} onChange={(e) => onChangeTejido(e.target.value)}>
-          <option value="">Seleccioná tejido</option>
-          {tejidos.map(t => <option key={t} value={t}>{t}</option>)}
-        </select>
+
+    {camposList.includes('diagnostico') && region && (
+        <div className={styles.inputGroup}>
+          
+          <select value={diagnostico} onChange={(e) => onChangeDiagnostico(e.target.value)}>
+            <option value="">Seleccioná diagnóstico</option>
+            {diagnosticos.map(d => <option key={d} value={d}>{d}</option>)}
+          </select>
+        </div>
       )}
 
-      {camposList.includes('diagnostico') && region && (
-        <select value={diagnostico} onChange={(e) => onChangeDiagnostico(e.target.value)}>
-          <option value="">Seleccioná diagnóstico</option>
-          {diagnosticos.map(d => <option key={d} value={d}>{d}</option>)}
-        </select>
+     {camposList.includes('tratamiento') && region && etiologia && tejido && diagnostico && !esSimple && (
+        <div className={styles.inputGroup}>
+          <label>Tratamiento</label>
+          <select value={tratamiento} onChange={(e) => setTratamiento(e.target.value)}>
+            <option value="">Seleccioná tratamiento</option>
+            {tratamientos.map((t, i) => <option key={i} value={t}>{t}</option>)}
+          </select>
+        </div>
       )}
-
-      {camposList.includes('tratamiento') && region && etiologia && tejido && diagnostico && !esSimple && (
-        <select value={tratamiento} onChange={(e) => setTratamiento(e.target.value)}>
-          <option value="">Seleccioná tratamiento</option>
-          {tratamientos.map((t, i) => <option key={i} value={t}>{t}</option>)}
-        </select>
-      )}
-
-      {camposList.includes('fase') && (
-        <select value={fase} onChange={(e) => setFase(e.target.value)}>
-          <option value="">Seleccioná fase</option>
-          <option value="pre">pre</option>
-          <option value="intra">intra</option>
-          <option value="post">post</option>
-        </select>
+       {camposList.includes('fase') && (
+        <div className={styles.inputGroup}>
+          <label>Fase</label>
+          <select value={fase} onChange={(e) => setFase(e.target.value)}>
+            <option value="">Seleccioná fase</option>
+            <option value="pre">Pre-quirúrgica</option>
+            <option value="intra">Intra-quirúrgica</option>
+            <option value="post">Post-quirúrgica</option>
+          </select>
+        </div>
       )}
     </div>
   );

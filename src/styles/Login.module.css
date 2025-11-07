@@ -5,7 +5,7 @@
   align-items: center;
   justify-content: center;
   min-height: 100vh;
-  background-color: #e0f2fe; /* sky-100 */
+  background-color: #FDFDFD; /* sky-100 */
   padding: 2rem;
 }
 
@@ -98,7 +98,7 @@
     align-items:center;
     justify-content:space-around;
     min-height: 100vh;
-    background-color: #e0f2fe; /* sky-100 */
+    background-color: #FDFDFD; /* sky-100 */
     padding:0.2rem;
   }
   .card {

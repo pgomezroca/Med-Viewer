@@ -13,20 +13,34 @@
 }
 
 .input {
-  flex: 1;
-  padding: 8px 12px;
-  border-radius: 8px;
-  border: 2px solid #cde9f6;
-  font-size: 16px;
+  background: #e2eef5;               /* celeste claro */
+  border-radius: 14px;
+  border:none;
+  padding: 12px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  color: #0b4c6a;                   /* tono institucional */
+  font-size: 15px;
+  width: 100%;
+  box-sizing: border-box;
+  transition: background 0.2s ease;
 }
-
+.input:focus {
+  outline: none; 
+  box-shadow: 0 0 2px 2px #c0e0f3; 
+  background: #d8e9f2; 
+}
 .clearBtn {
-  background: #f87171;
-  color: #fff;
+  color:black;
   border: none;
-  border-radius: 6px;
-  padding: 6px 10px;
   cursor: pointer;
+}
+.casosContainer{
+  margin-top: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
 }
 
 .casosHeader {
@@ -40,6 +54,39 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 8px 0;
-  border-bottom: 1px solid #e2eef5;
+  padding: 18px 0;
+  border: 1px solid #e2eef5;
+  border-radius: 10px;
+  background-color:#e2eef5;
+}
+.toggleBtn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  transition: transform 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.icon {
+  width: 20px;
+  height: 20px;
+  transition: transform 0.3s ease;
+}
+
+.rotated .icon {
+  transform: rotate(0deg);
+}
+.Button{
+  background-color:#326DEA;
+  color: #e2eef5;
+  border: none;
+  border-radius: 6px;
+  
+  padding: 10px;
+  display: inline-block;
+  max-width:300px ;
+  margin: 0 auto;
+  
 }

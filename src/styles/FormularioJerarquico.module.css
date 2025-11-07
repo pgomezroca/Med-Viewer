@@ -1,5 +1,5 @@
 :root {
-  --color-bg: #e0f2fe;
+  --color-bg: #FDFDFD;
   --color-text: #114c5f;
   --color-accent: #00d6c6;
 }
@@ -7,31 +7,69 @@
 .formContainer {
   display: flex;
   flex-direction: column;
-  overflow-y: auto;
-  align-items: center;
   gap: 12px;
-  padding: 20px;
-  background-color: var(--color-bg);
-}
-
-/* Estilo unificado para inputs y selects */
-.formContainer input,
-.formContainer select {
   width: 100%;
-  max-width: 400px;
-  padding: 10px 14px;
-  font-size: 14px;
-  border-radius: 8px;
-  border: 1.5px solid var(--color-accent);
-  background-color: white;
-  color: var(--color-text);
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
-  transition: border-color 0.3s ease;
+}
+.inputGroup {
+  background: #dcecf5;   ;              /* celeste claro */
+  border-radius: 14px;
+  padding: 12px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  color: #0b4c6a;                   /* tono institucional */
+  font-size: 15px;
+  width: 100%;
+  box-sizing: border-box;
+  transition: background 0.2s ease;
+}
+.inputGroup:hover {
+  background: #e9f1f8;              /* leve hover */
 }
 
-/* Enfasis al enfocar */
-.formContainer input:focus,
-.formContainer select:focus {
-  outline: none;
-  border-color: #0bbfb0;
+/* Label sobrio arriba del campo */
+.inputGroup label {
+  font-weight: 500;
+  font-size: 14px;
+  color: #0b4c6a;
+  opacity: 0.8;
 }
+
+/* Inputs y selects uniformes */
+.inputGroup input,
+.inputGroup select {
+  border: none;
+  background: transparent;
+  font-size: 15px;
+  color: #0b4c6a;
+  outline: none;
+  width: 100%;
+  padding: 2px 0;
+  appearance: none;                 /* elimina estilo nativo del select */
+}
+
+/* Flechita del select minimalista */
+.inputGroup select {
+  background-image: url("data:image/svg+xml;utf8,<svg fill='%230b4c6a' height='16' viewBox='0 0 24 24' width='16' xmlns='http://www.w3.org/2000/svg'><path d='M7 10l5 5 5-5z'/></svg>");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  background-size: 16px;
+  padding-right: 30px;
+}
+
+/* Placeholder de input */
+.inputGroup input::placeholder {
+  color: #6b7c8a;
+  opacity: 0.7;
+}
+@media (max-width: 600px) {
+  .inputGroup {
+    font-size: 14px;
+    padding: 10px 14px;
+  }
+
+  .inputGroup label {
+    font-size: 13px;
+  }
+}
+

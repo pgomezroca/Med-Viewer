@@ -3,7 +3,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import styles from '../styles/Navbar.module.css';
 import { useAuth } from '../context/AuthContext';
-import { User } from 'lucide-react'; // ícono genérico
+
 
 function Navbar() {
   const [open, setOpen] = useState(false);
@@ -26,6 +26,7 @@ function Navbar() {
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
+  const initial = user?.nombre ? user.nombre.charAt(0).toUpperCase() : 'U';
 
   return (
     <nav className={styles.navbar}>
@@ -34,7 +35,7 @@ function Navbar() {
         <Link to="/welcome" className={styles.logo}>
           MED‑VIEWER
         </Link>
-        {/* Botón central */}
+        {/* Botón central 
         <div className={styles.centerNav}>
           <button
             className={`${styles.centerBtn} ${
@@ -47,7 +48,7 @@ function Navbar() {
             Seguimiento por paciente
           </button>
         </div>
-
+       */}
         {/* Avatar + menú de usuario */}
         <div className={styles.userArea} ref={menuRef}>
           <button
@@ -57,7 +58,7 @@ function Navbar() {
             aria-expanded={open}
             title={user?.nombre || 'Cuenta'}
           >
-            <User size={22} />
+            <div className={styles.avatarCircle}>{initial}</div>
           </button>
 
           {open && (

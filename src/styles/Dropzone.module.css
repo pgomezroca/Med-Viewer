@@ -11,12 +11,12 @@
 }
 
 .dropZone:hover {
-  background: #e0f2fe;
+  background: #FDFDFD;
 }
 
 .dragging {
   border-color: #0ea5e9;
-  background: #e0f2fe;
+  background: #FDFDFD;
   box-shadow: 0 0 0 4px rgba(14, 165, 233, 0.15);
 }
 

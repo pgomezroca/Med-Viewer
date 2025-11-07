@@ -2,6 +2,7 @@ import React, { useEffect, useRef,useLayoutEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import piexif from "piexifjs";
 import { ArrowLeft, Columns } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import FormularioJerarquico from "./FormularioJerarquico";
 import styles from '../styles/TakePhoto.module.css';
 import "sweetalert2/dist/sweetalert2.min.css";
@@ -10,7 +11,7 @@ import { useSearchParams } from 'react-router-dom';
 const TakePhoto = () => {
   const navigate = useNavigate();
  
-  const [dni, setDni] = useState("");
+  const [dni, setDni] = useState("")
   const [region, setRegion] = useState("");
   const [diagnostico, setDiagnostico] = useState("");
   const [photoData, setPhotoData] = useState(null);
@@ -33,6 +34,10 @@ const TakePhoto = () => {
    const [searchParams] = useSearchParams();
    const autoStartedRef = useRef(false);
    const skipPrefetchRef = useRef(false);
+   const [mostrarCasosPrevios, setMostrarCasosPrevios] = useState(true);
+   const [dniBloqueado, setDniBloqueado] = useState(false);
+   const [fromPage, setFromPage] = useState(null);
+
    const [screen, setScreen] = useState(() => {
       try {
         return new URLSearchParams(window.location.search).get('autostart') === '1'
@@ -41,6 +46,12 @@ const TakePhoto = () => {
         return 'form';
        }
      });
+
+     useEffect(() => {
+      const qFrom = searchParams.get("from");
+      if (qFrom) setFromPage(qFrom);
+    }, [searchParams]);
+    
      
    useEffect(() => {
      if (searchParams.get('autostart') === '1') {
@@ -48,24 +59,24 @@ const TakePhoto = () => {
      }
   }, [searchParams]);
   
- const previewItems = React.useMemo(
-  () => [
-    ...fotosAcumuladas.map((src) => ({ type: "photo", src })),
-    ...videosAcumulados.map((src) => ({ type: "video", src })),
-  ],
-  [fotosAcumuladas, videosAcumulados]
- );
- const removePreviewItem = (idx) => {
-  const total = fotosAcumuladas.length + videosAcumulados.length;
+       const previewItems = React.useMemo(
+       () => [
+        ...fotosAcumuladas.map((src) => ({ type: "photo", src })),
+        ...videosAcumulados.map((src) => ({ type: "video", src })),
+       ],
+      [fotosAcumuladas, videosAcumulados]
+      );
+     const removePreviewItem = (idx) => {
+     const total = fotosAcumuladas.length + videosAcumulados.length;
 
-  if (idx < fotosAcumuladas.length) {
+     if (idx < fotosAcumuladas.length) {
     // eliminar foto
-    setFotosAcumuladas((prev) => prev.filter((_, i) => i !== idx));
-  } else {
+      setFotosAcumuladas((prev) => prev.filter((_, i) => i !== idx));
+     } else {
     // eliminar video
-    const vIdx = idx - fotosAcumuladas.length;
-    setVideosAcumulados((prev) => prev.filter((_, i) => i !== vIdx));
-  }
+      const vIdx = idx - fotosAcumuladas.length;
+      setVideosAcumulados((prev) => prev.filter((_, i) => i !== vIdx));
+    }
 
   // si no queda nada, volvemos a la cámara
   if (total - 1 === 0) {
@@ -80,13 +91,16 @@ useEffect(() => {
   const qDni    = searchParams.get('dni')    || '';
   const qRegion = searchParams.get('region') || '';
   const qDx     = searchParams.get('dx')     || '';
-
+  const qFrom   = searchParams.get('from');
   // precargar estados visibles en el
   if (qDni)    setDni(qDni);
   if (qRegion) setRegion(qRegion);
   if (qDx)     setDiagnostico(qDx);
   if (qMode === 'foto' || qMode === 'video') setModo(qMode);
-
+  if (qFrom === 'patient-tracking') {
+    setMostrarCasosPrevios(false);  // ocultar listado de casos previos
+    setDniBloqueado(true);          // bloquear campo DNI
+  }
   // si vienen los 3 y se pidió autostart, abrir cámara directo (una sola vez)
   const ready = qDni && qRegion && qDx;
   if (qAuto && ready && !autoStartedRef.current) {
@@ -137,7 +151,31 @@ useEffect(() => {
         setCasosDelDni([]);
       }
     }, [dni]); // ← tus deps originales
-    
+    const handleVolver = () => {
+      const dniParam = dni?.trim() || searchParams.get("dni") || "";
+      const fromParam = fromPage || searchParams.get("from");
+      const openParam = searchParams.get("open");
+      const caseIdParam = searchParams.get("caseId");     
+      console.log("🔙 handleVolver →", { dniParam, fromParam, caseIdParam, openParam, screen });
+
+  if (screen === "camera") {
+    // 🖼️ Si la cámara fue abierta desde una galería
+    if (fromParam === "gallery" && dniParam && caseIdParam) {
+      navigate(`/welcome/patient-tracking?dni=${dniParam}&caseId=${caseIdParam}&open=gallery`);
+      return;
+    }
+
+    if (fromParam === "patient-tracking" && dniParam) {
+      navigate(`/welcome/patient-tracking?dni=${dniParam}`);
+      return;
+    }
+
+    setScreen("form");
+  } else {
+    navigate(-1);
+  }
+};
+     
      const startCamera = async ({ dniVal, regionVal, diagnosticoVal, modeVal } = {}) => {
       const d  = dniVal ?? dni;
       const r  = regionVal ?? region;
@@ -339,35 +377,28 @@ useEffect(() => {
             </div>
           `,
           confirmButtonText: "Seguir en este caso",
-          denyButtonText: "Cerrar caso",
+          denyButtonText: "Salir del caso",
           showDenyButton: true,
           allowOutsideClick: false,
         
           // 🎨 estilos
           background: "#ffffff",
           color: "#114c5f",
-          iconColor: "#00d6c6",
+          iconColor: "#326DEA",
           confirmButtonColor: "#00d6c6",
-          denyButtonColor: "#f87171", // rojo suave para contraste
+          denyButtonColor: "#326DEA", 
         });
-      
-  
-      // opcional: limpiar previsualización para no re-subir lo mismo
-      setFotosAcumuladas([]);
-      setVideosAcumulados([]);
-      setPhotoData(null);
-  
-      if (isDenied) {
-        // cerrar caso → limpiar campos
-        setDni("");
-        setRegion("");
-        setDiagnostico("");
-        setFase("");
-        setCasosDelDni([]);
-      }
-  
-      setScreen("form");
-      return;
+        if (isDenied) {
+          // 🏠 Redirigir directamente a la pantalla de inicio
+          navigate("/welcome");
+        } else {
+          // 🩻 Continuar en el mismo caso
+          setFotosAcumuladas([]);
+          setVideosAcumulados([]);
+          setPhotoData(null);
+          setScreen("form");
+        }
+     
     } catch (err) {
       const { default: Swal } = await import("sweetalert2");
       await Swal.fire({
@@ -390,12 +421,22 @@ useEffect(() => {
       {/* FORMULARIO PRINCIPAL */}
       {screen === "form" && (
         <>
+          <div className={styles.headerBack}>
+         <button className={styles.backButton}
+            onClick={() => navigate(-1)}
+          >
+           <ArrowLeft size={22} />
+        
+        </button>
+       </div>
           <div id="formulario" ref={formularioRef} className={styles.formularioContainer}>
+            <p>Identificando al paciente</p>
             <FormularioJerarquico
               campos={["dni", "region", "diagnostico", "fase"]}
               valores={{ dni, region, diagnostico, fase }}
+              dniBloqueado={dniBloqueado}
               onChange={(data) => {
-                setDni(data.dni || "");
+                if (!dniBloqueado) setDni(data.dni || "");
                 setRegion(data.region || "");
                 setDiagnostico(data.diagnostico || "");
                 setFase(data.fase || "");
@@ -404,45 +445,61 @@ useEffect(() => {
   
             <div className={styles.botonesCentrados}>
               <button className={styles.ContinuarButton} onClick={startCamera}>
-                Continuar
+                Abrir la camara
               </button>
-              <button className={styles.camerabackbutton} onClick={() => navigate(-1)}>
-                <ArrowLeft size={20} /> Volver
-              </button>
+              
             </div>
           </div>
   
           {/* LISTA DE CASOS */}
-          {dni && (
+          {dni && mostrarCasosPrevios &&(
             <div className={styles.casosContainer}>
               {casosDelDni.length > 0 ? (
                 <>
-                  <h4>Casos previos para DNI {dni}:</h4>
+                  <p>
+                  Paciente encontrado con {casosDelDni.length}{" "}
+                   {casosDelDni.length === 1 ? "caso registrado" : "casos registrados"}:
+                  </p>
                   <div className={styles.listaCasos}>
-                    {casosDelDni.map((grupo, idx) => (
-                      <button
-                        key={idx}
-                        className={styles.casoButton}
-                        onClick={() => {
-                          const ultimo = grupo.items[grupo.items.length - 1];
-                          setRegion(ultimo.region || "");
-                          setDiagnostico(ultimo.diagnostico || "");
-                          setFase(ultimo.fase || "");
-                          formularioRef.current?.scrollIntoView({ behavior: "smooth" });
-                        }}
-                      >
-                        📁 {grupo.fecha} — Dx: {grupo.diagnostico} ({grupo.items.length})
-                      </button>
-                    ))}
-                  </div>
-                </>
-              ) : (
-                <p className={styles.sinCasos}>No hay datos del paciente con DNI {dni}</p>
-              )}
+                  {casosDelDni.map((grupo, idx) => (
+        <div key={idx} className={styles.casoWrapper}>
+          <button
+            className={styles.casoButton}
+            onClick={() => {
+              const ultimo = grupo.items[grupo.items.length - 1];
+              setRegion(ultimo.region || "");
+              setDiagnostico(ultimo.diagnostico || "");
+              setFase(ultimo.fase || "");
+              formularioRef.current?.scrollIntoView({ behavior: "smooth" });
+            }}
+          >
+            <div className={styles.casoHeader}>
+              <span className={styles.casoDiagnostico}>Dx: {grupo.diagnostico}</span>
+              <span className={styles.casoFecha}>{grupo.fecha}</span>
             </div>
+
+            <span className={styles.casoCount}>
+              {grupo.items.length}{" "}
+              {grupo.items.length === 1 ? "imagen asociada" : "imágenes asociadas"}
+            </span>
+            <div className={styles.casoIconWrapper}>
+            <ArrowRight className={styles.casoArrowIcon} size={16} />
+           </div>
+          </button>
+
+          {/* Icono de flecha debajo */}
+          
+        </div>
+      ))}
+                    </div>
+                    </>
+                  ) : (
+                 <p className={styles.sinCasos}>No hay casos  del paciente con DNI {dni}</p>
+                )}
+              </div>
+             )}
+           </>
           )}
-        </>
-      )}
   
       {/* CÁMARA */}
       {screen === "camera" && (
@@ -528,9 +585,8 @@ useEffect(() => {
   
             <button
               className={styles.secondaryAction}
-              onClick={() => {
-                setScreen("form"); // por ahora volver al formulario
-              }}
+              onClick={handleVolver}
+              
             >
               Volver
             </button>

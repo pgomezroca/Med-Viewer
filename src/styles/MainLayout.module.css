@@ -1,5 +1,5 @@
 :root {
-  --color-bg: #e0f2fe;
+  --color-bg: #FDFDFD;
   --color-text: #114c5f;
   --color-accent: #00d6c6;
   --color-secondary: #3e5f68;
@@ -13,6 +13,6 @@
 
 .mainContent {
   min-height: calc(100vh - 60px); 
-  background-color: #e0f2fe;
+  background-color: #FDFDFD;
   overflow-y: hidden; 
 }

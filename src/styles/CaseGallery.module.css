@@ -84,6 +84,27 @@
   color: #475569;
   text-align: center;
 }
+.plusButton {
+  position: absolute;
+  bottom: 3.5rem;
+  right: 3.5rem;
+  width: 70px;
+  height: 70px;
+  
+  color:#0ea5e9;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 36px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.25);
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.plusButton:hover {
+  background-color: #0284c7;
+}
 
 @keyframes fadeIn {
   from { opacity: 0; transform: translateY(10px); }

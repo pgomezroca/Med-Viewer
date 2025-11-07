@@ -4,7 +4,7 @@
 
 /* Variables de color (ajustables) */
 :root {
-  --bg: #e0f2fe;        /* fondo celeste global */
+  --bg: #FDFDFD;        /* fondo celeste global */
   --text: #0b4c6a;      /* texto principal */
   --accent: #0284c7;    /* links / acentos */
   --muted: #475569;     /* textos secundarios */
